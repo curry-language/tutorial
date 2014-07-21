@@ -1,0 +1,31 @@
+#!/bin/bash
+
+# Generate a pdf file from a curry file
+# Sergio Antoy, Thu May 16 17:23:48 PDT 2002
+
+PROGURL="http://www.informatik.uni-kiel.de/~curry/tutorial"
+
+for dir in `find . -type d`
+do
+  pushd $dir > /dev/null 2>&1
+  curry=`ls *.curry 2> /dev/null`
+  if [ "$curry" != "" ]; then
+    echo generating pdf of all programs in directory $dir
+    for prog in $curry
+    do
+      name=`echo $prog | sed  -e "s/\.curry//"`
+      echo "\documentclass[11pt,fleqn]{report}" > $name.tex
+      echo "\usepackage[colorlinks,linkcolor=blue]{hyperref}" >> $name.tex
+      echo "\begin{document}\begin{center}" >> $name.tex
+      echo "\href{$PROGURL/$dir/$prog}{[Browse source program]}" >> $name.tex
+      echo "\href{run:$name.sh}{[Execute source program]}" >> $name.tex
+      echo "\end{center}\begin{verbatim}" >> $name.tex
+      cat $prog >> $name.tex
+      echo "\end{verbatim}\end{document}" >> $name.tex
+      pdflatex $name > /dev/null
+      rm -f $name.tex $name.aux $name.log $name.out
+    done
+  fi
+  popd > /dev/null 2>&1
+done
+

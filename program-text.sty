@@ -1,0 +1,38 @@
+\renewcommand{\tt}{\usefont{OT1}{cmtt}{m}{n}\selectfont}
+\newcommand{\codefont}{\tt}
+
+% \DeclareFixedFont{\codefont}{OT1}{cmtt}{m}{n}{10pt}
+% \DeclareFixedFont{\codefontsmall}{OT1}{cmtt}{m}{n}{8pt}
+
+% \DeclareFixedFont{\codefont}{T1}{pcr}{b}{n}{10pt}
+% \DeclareFixedFont{\codefontsmall}{T1}{pcr}{b}{n}{8pt}
+
+\newenvironment{prog}%
+  {\vspace{2ex}\par\setlength{\parindent}{2em}%
+   \parskip=0ex\obeylines\@vobeyspaces\small\codefont}%
+  {\vspace{2ex}\noindent\kern-.3em}
+
+% program text in normal text
+\newcommand{\code}[1]{\mbox{\codefont #1}}
+
+% program text in normal text with apostrophs
+\newcommand{\ccode}[1]{``\mbox{\codefont #1}''}
+
+% program text in small text
+\newcommand{\smallcode}[1]{\mbox{\codefontsmall #1}}
+
+% italic in program mode
+\newcommand{\progit}[1]{{\fontfamily{cmr}\fontsize{11}{0}\fontshape{n}\fontshape{it}\selectfont#1}}
+
+% anonymous variable in programs
+\newcommand{\panon}{\raisebox{-0.5ex}{-}}
+
+\newcommand{\lineComment}{-{}-}
+
+% boolean operations
+\newcommand{\boolAnd}{\&\&}
+\newcommand{\constraintSeqAnd}{\&>}
+\newcommand{\boolOr}{||}
+
+% user input
+\newcommand{\userinput}[1]{\underline{#1}}

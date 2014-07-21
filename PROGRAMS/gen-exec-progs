@@ -1,0 +1,23 @@
+#!/bin/bash
+#!/bin/sh
+# Generate a shell script for each Curry program in order to execute it
+# Michael Hanus, Mon Oct 28 23:41:49 MET 2002
+
+for dir in `find . -type d`
+do
+  pushd $dir > /dev/null 2>&1
+  curry=`ls *.curry 2> /dev/null`
+  if [ "$curry" != "" ]; then
+    echo generating shell scripts to execute programs in directory $dir
+    for prog in $curry
+    do
+      name=`echo $prog | sed  -e "s/\.curry//"`
+      echo "#!/bin/sh" > $name.sh
+      echo "cd \`(cd \\\`dirname \$0\\\` ; pwd)\`" >> $name.sh
+      echo "xterm -e pakcs -l $name" >> $name.sh
+      chmod 755 $name.sh
+    done
+  fi
+  popd > /dev/null 2>&1
+done
+

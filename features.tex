@@ -1,0 +1,1884 @@
+\chapter{Main Features of Curry}
+
+\section{Overview}
+
+The major elements declared in program are
+\emph{functions} and \emph{data structures}.
+
+\begin{itemize}
+\item{} 
+A \emph{function}\index{function} defines
+a computation similar to an expression.
+However, the expression computed by a function
+has a name and is often parameterized.
+These characteristics enable you to execute the same computation, possibly
+with different parameters, over and over in the same program
+by simply invoking the computation's name
+and setting the values of its parameters.
+A function also provides a \emph{procedural abstraction}.
+Rather than coding a computation by means of a possibly
+complicated expression, you can factor out portions of this computation
+and abstract them by their names.
+\item{} 
+A \emph{data structure}\index{data structure} is a way to organize data.
+For example, you can record the movements of your bank account
+in a column in which deposits are positive numbers and withdrawals
+are negative numbers.  Or you can record the same movements in
+two columns, one for deposits and another for withdrawals,
+in which all numbers are positive.
+With the second option,
+the columns rather than the signs specialize the meaning of the numbers.
+The way in which information is organized may ease some computations,
+such as retrieving portions of information, and
+is intimately related, through pattern matching,
+to the way in which functions are coded.
+\end{itemize}
+%
+This section describes in some detail both of these features and
+a number of related concepts.
+Curry has some additional features not described in this section.
+Since they are useful to support particular programming tasks,
+we introduce them later when we discuss such programming techniques.
+
+
+\section{Expressions}
+
+A function can be regarded as a parameterized expression with a name.
+Thus, we begin by explaining what an expression is and
+how it is used.
+Most expressions are built from simpler subexpressions,
+a situation that calls for a recursive, or inductive, definition.
+%
+\begin{quote}
+An \emph{expression}\index{expression!definition}
+is either a symbol or literal value or
+is the application of an expression to another expression.
+\end{quote}
+%
+A symbol or literal value is referred to as an \emph{atom}\index{atom}.
+For example, numbers and the Boolean symbols \ccode{True}
+and \ccode{False} are examples of atoms.
+Atoms constitute the most elementary expressions.
+These elementary expressions can be combined to create
+more complex expressions, e.g., \ccode{2\,+\,3} or
+\ccode{not\,\,True}.
+The combination is referred to as a
+\emph{function application}\index{function!application}.
+Since a function application is a very common activity,
+it is convenient to denote it as simply as possible.
+This convenience is obtained to the extreme by writing the two expressions one
+near the other as in \ccode{not\,\,True}.
+This notation is referred to as \emph{juxtaposition}\index{juxtaposition}.
+
+In the above expressions, the symbols \ccode{+} and
+\ccode{not} are operations.
+Both are predefined in the standard library \code{Prelude}\pindex{Prelude}.
+Although conceptually the symbols \ccode{+} and \ccode{not}
+are alike, syntactically they differ.
+The symbol \ccode{+} is a \emph{infix operator}
+as in the ordinary mathematical notation.  
+Infix operators have a \emph{precedence}\index{infix operator!precedence}
+and an \emph{associativity}\index{infix operator!associativity}
+so that the expression \ccode{2\,+\,3\,*\,4}
+is understood as \ccode{2\,+\,(3\,*\,4)} and
+the expression \ccode{4\,-\,3\,-\,2} is understood
+as \ccode{(4\,-\,3)\,-\,2}.
+The precedence and associativity of an infix symbol
+are defined in a program by a declaration.
+The following declarations, from the prelude,
+define these parameters for some ordinary arithmetic operations:
+%
+\begin{prog}
+infixl 7 *, `div`, `mod`
+infixl 6 +, -
+infix  4  <, >, <=, >=
+\end{prog}
+%
+For example, 
+the precedence of the addition and subtraction operators is 6
+and their associativity is left.
+The relational operators have precedence 4 and are not associative.
+Operators with a higher precedence bind stronger, i.e.,
+the expression \ccode{4\,<\,2\,+\,3} is interpreted as
+\ccode{4\,<\,(2\,+\,3)}.\index{infix operator!precedence}
+%
+\begin{quote}
+\emph{Infix declarations}\index{infix operator!declaration}
+must always occur at the beginning of a program.
+The precedence of an operator\index{precedence!values}
+is an integer between 0 and 9 inclusive.
+The associativity of an operator\index{associativity!values} is either
+\emph{left}, denoted by the keyword \ccode{infixl}\pindex{infixl}
+or \emph{right}, denoted by the keyword \ccode{infixr}\pindex{infixr}.
+Non-associative infix operators are declared using the 
+keyword \ccode{infix}\pindex{infix}.
+\end{quote}
+%
+Most often, an infix operator is any user-defined sequence of characters
+taken from the set
+``\verb`~!@#$%^&*+-=<>?./|\:`''\index{infix operator!character set}.
+% $ to balance groups
+Alphanumeric identifiers can be defined and used as infix operators
+if they are surrounded by backquotes, as \ccode{`div`} and
+\ccode{`mod`} in the previous declaration.
+For example, for any integer value $x$, the following expression
+evaluates to $x$ itself.
+%
+\begin{prog}
+$x$ `div` 2 * 2 + $x$ `mod` 2
+\end{prog}
+%
+Non-infix symbols are \emph{prefix}\index{prefix}.
+They are applied by prefixing them to their arguments as in
+\ccode{not\,\,True}.
+
+\begin{exercise}
+\label{ex_factor}
+Define a predicate, read as ``factors'' and denoted by
+the infix operator ``\verb|./.|'', that tells whether an
+integer is a factor of another integer.
+The predicate should work for every input and \code{0}
+should not be a factor of any integer.
+The operator should be non-associative and have precedence 7.
+\proghref{ex_factor}{Answer}
+\end{exercise}
+
+A symbol, whether infix or prefix, can only be applied to
+values of an appropriate type.
+As one would expect, the Boolean negation operator can be
+applied only to a Boolean value.
+For example, the expression \ccode{not\,\,2} is an error.
+The compiler/interpreter would
+report that the expression is incorrectly typed.
+We will discuss types in more detail after presenting
+data declarations.
+
+The application of an expression to another is a binary operation.
+The expression that is being applied is referred to as the
+\emph{function} of the application.
+The other expression is referred to as the \emph{argument}.
+Thus, in \ccode{not\,\,True}, \ccode{not} is the function
+and \ccode{True} is the argument.
+The situation is slightly more complicated for infix operations.
+The reading of \ccode{2\,+\,3} is that the function \ccode{+}
+is applied to the expression \ccode{2}.
+The result is a function which is further applied to the expression
+\ccode{3}.
+
+Expressions can also be conditional, i.e., depend
+on the value of a Boolean expression.
+Such \emph{conditional expressions}%
+\index{conditional expression}\index{expression!conditional}%
+\pindex{if-then-else}
+have the form \ccode{if $b$ then $e_1$ else $e_2$}.
+The value of this expression is the value of $e_1$ if $b$ evaluates
+to \code{True}, or the value of $e_2$ if $b$ evaluates to \code{False}.
+Thus, the value of \ccode{if 3>4 then 2*2 else 3*4} is \code{12}.
+
+
+\section{Predefined Types}
+\label{Predefined Types}
+
+A \emph{type}\index{type} is a set of values.
+Ubiquitous types, such as integers or characters,
+are predefined by most programming languages.
+Curry makes no exception.
+These types are referred to as \emph{builtin}\index{type!builtin}
+and are denoted with a familiar, somewhat special, syntax.
+Both the availability of builtin types and their characteristics
+may depend on a specific implementation of Curry.
+The following table summarizes some types available in \pakcs.
+%
+\begin{center}
+\begin{tabular}{@{} || l | l | l || @{}}
+\hline \hline
+\bf Type & \bf Declaration & \bf Examples \\
+\hline
+\hline
+Integer & \code{Int} & \verb|...,-2,-1,0,1,2,...| \\
+\hline
+Boolean & \code{Bool} & \code{False, True} \\
+\hline
+Character & \code{Char} & \verb|'a','b','c',...,'\n',...| \\
+\hline
+String & \code{String} & \code{"hello", "world"} \\
+\hline
+List of $\tau$ & \code{[$\tau$]} & \code{[], [0,1,2], 0:1:2:[]} \\
+\hline
+Success & \code{Success} & \code{success} \\
+\hline
+Unit & \code{()} & \code{()} \\
+\hline \hline
+\end{tabular}
+\end{center}
+\pindex{Int}\pindex{Bool}\pindex{Char}%
+\pindex{String}\index{List}\pindex{Success}\index{unit type}\pindex{()}
+%
+The details of these types are found in the {\pakcs} User Manual.
+Below, we only outline a few crucial characteristics of the builtin types.
+The integers have arbitrary precision.
+Some frequently used non-printable characters are denoted,
+as in other popular programming languages,
+by escape sequences, e.g., \emph{newline} is denoted by \verb|\n|.
+The type \emph{List}\index{list} represents sequences of values.
+This type is polymorphic, i.e.,
+for any type $\tau$, the type list of $\tau$,
+denoted by \ccode{[$\tau$]}, is a type whose instances
+are sequences of instances of $\tau$.
+The last two examples in the \emph{List} row of the table
+denote a list of integers,
+their type denoted by \ccode{[Int]}.
+The notation of lists will be further discussed later.
+The type \emph{Success}\pindex{Success} has no visible literal values
+and is intended to denote the result of successfully solved constraints.
+Hence, expressions of type \emph{Success} are also called
+\emph{constraints}\index{constraint}.
+Usually, they occur in conditions and are checked for satisfiability.
+The symbol \emph{success}\pindex{success} is a predefined
+function that denotes an always satisfiable constraint.
+The symbol \ccode{()}\pindex{()} denotes the unit type as well as the only
+element of this type. The unit type is useful in situations
+where the return value of a function is not important.
+Another useful type available in {\pakcs},
+the \emph{tuple}\index{tuple}, will be described later.
+
+
+\section{Predefined Operations}
+\label{Predefined Operations}
+
+Many frequently-used functions and infix operators,
+similar to frequently-used types, are predefined in Curry.
+Some of these can be found in the \ccode{Prelude},
+a Curry source program automatically loaded when the
+compiler/interpreter starts.
+A few others are so fundamental that they are built into the language.
+Some of these functions and operators are shown in the following table.
+%
+\begin{center}
+\begin{tabular}{@{} || l | c | c | c | l || @{}}
+\hline \hline
+\bf Description & \bf Ident. & \bf Fix. & \bf Prec. & \bf Type \\
+\hline \hline
+Boolean equality & {\tt ==} & & 4 & {\tt a -> a -> Bool} \\
+\hline
+Constrained equality & {\tt =:=} & & 4 & {\tt a -> a -> Success} \\
+\hline
+Boolean conjunction & {\tt \&\&} & R & 3 & {\tt Bool -> Bool -> Bool} \\
+\hline
+Boolean disjunction & {\tt ||} & R & 2 & {\tt Bool -> Bool -> Bool} \\
+\hline
+Parallel conjunction & {\tt \&} & R & 0 & {\tt Success -> Success -> Success} \\
+\hline
+Constrained expression & {\tt \&>} & R & 0 & {\tt Success -> a -> a} \\
+\hline
+\hline
+\end{tabular}
+\end{center}
+\pindex{==}\pindex{=:=}\pindex{\&\&}\pindex{\char124\char124}\pindex{\&}\pindex{\&>}
+
+\vspace{3ex}
+\noindent
+The \emph{Boolean equality}\index{Boolean equality}\index{equality!Boolean}
+applied to expressions $u$ and $v$, i.e.,
+$u\;\mbox{\tt ==}\;v$, returns \ccode{True}
+if and only if $u$ and $v$ can be evaluated to the
+same \emph{value}---a precise definition will be given later. 
+If the evaluation of $u$ and/or $v$ ends in an expression that
+still contains functions, e.g., \code{1 `div` 0} the computation
+\emph{fails} and neither \ccode{True} nor \ccode{False} is returned.
+\\[1ex]
+The \emph{constrained equality}\index{constrained equality}%
+\index{equality!constrained}
+applied to expressions $u$ and $v$, i.e.,
+$u\;\mbox{\tt =:=}\;v$, succeeds
+if and only if $u$ and $v$ can be evaluated to the
+same \emph{value}---a precise definition will be given later. 
+Otherwise, the computation \emph{fails} and no value is returned.
+A key difference between the Boolean and the constrained equalities
+is how they evaluate expressions containing variables.
+This will be discussed in some detail in Section~\ref{Logic variables}.
+\\[1ex]
+The \emph{Boolean conjunction}\index{Boolean conjunction}%
+\index{conjunction!Boolean}
+applied to expressions $u$ and $v$, i.e.,
+$u\;\mbox{\tt \&\&}\;v$, returns \ccode{True}
+if and only if $u$ and $v$ can be evaluated to \ccode{True}.
+\\[1ex]
+The \emph{Boolean disjunction}\index{Boolean disjunction}%
+\index{disjunction!Boolean}
+applied to expressions $u$ and $v$, i.e.,
+$u\;\mbox{\tt ||}\;v$, returns \ccode{True}
+if and only if $u$ or $v$ can be evaluated to \ccode{True}.
+\\[1ex]
+The \emph{parallel conjunction}\index{parallel conjunction}%
+\index{conjunction!parallel}
+applied to expressions $u$ and $v$, i.e.,
+$u\;\mbox{\tt \&}\;v$, evaluates $u$ and $v$ concurrently.
+If both succeeds, the evaluation succeeds;
+otherwise it fails.
+\\[1ex]
+The \emph{constrained expression}\index{constrained expression}%
+\index{expression!constrained}
+applied to a constraint $c$ and an expression $e$, i.e.,
+$c\;\mbox{\tt \&>}\;e$, evaluates first $c$ and, if this evaluation
+succeeds, then $e$, otherwise it fails.
+
+Curry predefines many more functions and operations, e.g.,
+the standard arithmetic and relational operators on numbers.
+A complete list can be found both in the Report and the \ccode{Prelude}.
+
+\section{Functions}
+
+\subsection{Basic Concepts}
+\label{Basic concepts}
+
+A program function abstracts a function in the mathematical sense.
+A function is a device that takes arguments and returns a result.
+The result is obtained by evaluating an expression
+which generally involves the function's arguments.
+The following function computes the \emph{square} of a number.
+%
+\begin{prog}
+square x = x * x
+\end{prog}
+%
+The symbols \ccode{square} is the name or
+\emph{identifier}\index{function!identifier} of the function.
+The symbol \ccode{x} is the function's 
+\emph{argument}\index{function!argument}.
+The above declaration is referred to as a
+\emph{rewrite rule}\index{rewrite rule}, or simply a rule,
+defining a function.
+The portion of the declaration to the left of the symbol \ccode{=}
+is the rule's \emph{left-hand side}\index{rewrite rule!left-hand side}.
+The expression \ccode{x\,*\,x} is the rule's
+\emph{right-hand side}\index{rewrite rule!right-hand side}.
+
+When the \ccode{square} symbol is applied to an expression,
+e.g., \ccode{2\,+\,3}, this expression is
+\emph{bound}\index{function!argument binding}
+to the argument \ccode{x}.
+The result of the application is
+\ccode{(2\,+\,3)\,*\,(2\,+\,3)}, i.e., the body
+in which the argument is replaced by its binding.
+Thus:
+%
+\begin{prog}
+Prelude> \userinput{square (2+3)}
+Result: 25 ?
+\end{prog}
+%
+Functions can be \emph{anonymous}\index{function!anonymous},
+i.e., without a name.
+An anonymous function is useful when a function is referenced
+only once.  In this case, the reference to the function
+can be replaced by the expression defining the function.
+In the following example:
+%
+\begin{prog}
+result = (\char92x -> x * x) (2+3)
+\end{prog}
+%
+the value of \code{result} is \code{25}.
+It is obtained by applying the expression
+\code{(\char92x -> x * x)}, an anonymous function,
+to \code{(2+3)}, its argument.
+An anonymous function definition has the following structure:
+%
+\begin{prog}
+\char92\progit{args} -> \progit{left-hand side}
+\end{prog}
+%
+% The arguments are provided as in any rewrite rule,
+% in particular pattern matching, which is discussed, is allowed
+% whereas conditions, \code{where} clauses or multiple rules are not.
+A more motivating example of anonymous function
+is presented in Section~\ref{Higher-Order}
+
+The evaluation\index{evaluation} of any expression,
+in particular of a function application,
+is \emph{lazy}\index{evaluation!lazy}.
+This means that the computation of any expression,
+including the subexpressions of a larger expression,
+is delayed until the expression's value is actually needed.
+The exact meaning of ``actually needed'' is quite technical,
+but the intuitive meaning suffices for our purposes.
+Many programming languages, such as C and Java,
+adopt this evaluation strategy, under the name of
+\emph{short circuit}\index{evaluation!short circuit},
+only for Boolean expressions.
+
+We will discuss this issue in more detail later.
+Although the lazy evaluation strategy is conceptually simpler
+than any other strategy, many traditional programming languages
+evaluate the arguments of a function call eagerly, i.e.,
+before applying a function to its arguments.
+This fact is sometimes a source of confusion for the beginner.
+
+\subsection{Pattern Matching}
+
+The definition of a function can be broken into several
+rules\index{rewrite rule}.
+A single rule would suffice in many cases.
+However, several rules allows a definition style,
+called \emph{pattern matching}\index{pattern matching},
+which is easier to code and understand.
+This feature allows a function to dispatch the expression
+to be returned depending on the values of its arguments.
+The following example shows the definition of the Boolean 
+negation function \ccode{not}:
+%
+\begin{prog}
+not True = False
+not False = True
+\end{prog}
+%
+The above definition is equivalent to the following one
+which does not use pattern matching but relies on a conditional
+expression:
+%
+\begin{prog}
+not x = if x == True then False else True
+\end{prog}
+%
+Pattern matching is particularly convenient for functions
+that operate on algebraic datatypes.
+We will further discuss this aspect after discussing
+data declarations.
+
+\subsection{Conditions}
+
+Each rule defining a function
+can include one or more \emph{conditions}\index{rule!conditional}.
+For Boolean conditions, a rule has the following general
+structure\index{rewrite rule!structure}:
+%
+\[
+\begin{array}{@{} l @{\;|\;} c @{\;=\;} c @{}}
+\emph{functId} \;\; arg_1 \ldots arg_m & cond_1 & expr_1 \\
+                           & \ldots & \ldots \\
+                           & cond_n & expr_n
+\end{array}
+\]
+%
+A condition is tested after binding
+the arguments of a call to the corresponding arguments
+in the left-hand side of the rule.
+The function is applied to the arguments only if the condition holds.
+%
+Each condition $cond_i$ is an expression of type \emph{Boolean}.
+The conditions are tested in their textual order.
+Thus, the first right-hand side with a condition evaluable to \code{True}
+is taken. Furthermore, the last condition can be
+\ccode{otherwise}\pindex{otherwise} which is equivalent to \code{True},
+i.e., it holds regardless of any value of the arguments.
+%
+The following example shows a plausible definition of the maximum
+of two numbers:
+%
+\begin{prog}
+max x y | x < y     = y
+        | otherwise = x
+\end{prog}
+%
+A rule can also have a
+\emph{constraint}\index{constraint}\index{expression!constraint}
+(i.e., an expression of type \emph{Success}) as a condition.
+In this case, the constraint is checked for satisfiability
+in order to apply the rule. Thus, the function call reduces
+to the right-hand side only if the constraint is satisfied, otherwise
+it fails. Note that multiple conditions as above are not allowed
+for constraint conditions.
+
+
+\subsection{Non-determinism}
+\label{Non-determinism}
+
+Functions can be \emph{non-deterministic}\index{function!non-deterministic}.
+Non-deterministic functions are not functions in the mathematical sense
+because they can return different values for the same input.
+For example, a hospital's information system defines which
+days a doctor is on-call with a non-deterministic function:
+%
+\begin{prog}
+oncall Joan    = Monday
+oncall Joan    = Wednesday
+oncall Richard = Monday
+oncall Luc     = Tuesday
+...
+\end{prog}
+%
+The value of \ccode{oncall Joan} can be either
+\ccode{Monday} or \ccode{Wednesday}.
+The programmer cannot select which of the two values will be computed.
+Non-deterministic functions support a programming style similar
+to that of logic programs, while preserving some advantages of functional
+programs such as expression nesting and lazy evaluation.
+In particular, some strong properties concerning the evaluation
+of ordinary function
+hold also for non-deterministic functions~\cite{Antoy97ALP}.
+For example, suppose that \ccode{today} holds which day of
+the week is today.
+A predicate, \ccode{available}, telling whether
+its argument, a doctor, is available at the current time is coded as:
+%
+\begin{prog}
+available x | oncall x == today = True
+            | otherwise         = False
+\end{prog}
+%
+Without non-determinism, coding \ccode{oncall}
+would require some data structure, e.g., 
+the list of days in which each doctor is on-call,
+and defining \ccode{available} would become more complicated.
+
+Non-determinism is a powerful feature.
+In programming,
+as in other aspects of life, power must be exercised with some care.
+A non-deterministic program is appropriate 
+only if all its possible outputs are equally desirable.
+If some outputs are more desirable than others,
+the program should be (more) deterministic.
+In this case,
+non-determinism could be conveniently used internally by the program
+to generate plausible results
+which can then be selected according to desirability.
+
+\begin{exercise}
+\label{ex_nondettask}
+In a manufacturing plant two specialized tasks,
+{\codefont cut} and {\codefont polish},
+are executed only by specialized workers,
+{\codefont Alex}, {\codefont Bert} and {\codefont Chuck}.
+Not every worker can execute every task.
+Only {\codefont Alex} and {\codefont Bert} are able to
+{\codefont cut}, whereas only {\codefont Bert} and {\codefont Chuck}
+are able to {\codefont polish}.
+Code a non-deterministic function, {\codefont assign},
+that assigns to a task a worker that can execute it.
+\proghref{ex_nondettask}{Answer}
+\end{exercise}
+
+\section{User-defined Types}
+
+A \emph{type}\index{type} is a set of values.
+Some common types, presented in Section \ref{Predefined Types},
+are built into the language
+and the programmer does not declare them.
+All other types used in a program must be declared by the programmer.
+The classification of some types as builtin vs.~user-defined 
+is only a matter of convenience.
+Builtin and user-defined types are conceptually very similar.
+In fact,
+the declaration of some builtin types could have been left to the programmer.
+For example\index{data declaration}:
+%
+\begin{prog}
+data Boolean = False | True
+\end{prog}
+%
+is exactly how the builtin \ccode{Boolean} type would be declared
+if it were not builtin.
+In this declaration, the identifier \ccode{Boolean}
+is referred to as a \emph{type constructor}%
+\index{data declaration!type constructor}\index{type constructor},
+whereas the identifiers \ccode{False} and \ccode{True}
+are referred to as \emph{data constructors}%
+\index{data declaration!data constructor}\index{data constructor}.
+The following declarations, very similar to the previous one,
+define plausible types \ccode{WeekDay} and \ccode{PrimaryColor}.
+%
+\begin{prog}
+data WeekDay = Monday | Tuesday | Wednesday | Thursday | Friday
+data PrimaryColor = Red | Green | Blue
+\end{prog}
+%
+All these types are finite, i.e., they define a finite set of values,
+and resemble enumerated types in the Pascal or C languages.
+
+The declaration of an infinite type is similar, but as one should expect,
+must be (directly or indirectly) recursive.
+The following declaration defines a binary tree of integers.
+We recall that the typical definition
+of this type says that a \emph{binary tree}\index{binary tree}
+is either a \emph{leaf} or it is a \emph{branch} consisting of
+two binary trees.
+Not surprisingly, this definition is recursive which accounts
+for an infinity of trees.
+The words ``leaf'' and ``branch'' are conventional names used
+to distinguish the two kinds of trees and have no other implicit meaning.
+Often, branches include a \emph{decoration}, a value of
+some other arbitrary type.
+If a tree $T$ is a branch, the two trees in the branch
+are referred to as the left and right children of $T$.
+A declaration defining binary trees where the decoration
+is an integer follows:
+%
+\begin{prog}
+data IntTree = Leaf | Branch Int IntTree IntTree
+\end{prog}
+%
+All the following expressions are values of type \ccode{IntTree}:
+%
+\begin{prog}
+Leaf
+Branch 0 Leaf Leaf
+Branch 7 (Branch 5 Leaf Leaf) (Branch 9 Leaf Leaf)
+\end{prog}
+%
+The first tree is a leaf and therefore it contains no decoration.
+The second tree contains a single decoration, \ccode{0},
+and two children both of which are leaves.
+The third tree contains three decorations.
+Binary trees are interesting because many efficient searching
+and sorting algorithms are based on them.
+
+User-defined types can be parameterized by means
+of other types similar to the builtin type list
+introduced in Section~\ref{Predefined Types}.
+These types are called \emph{polymorphic}\index{type!polymorphic}.
+For example, if the type of the decoration of a binary tree
+is made a parameter of the type of the tree, 
+the result is a polymorphic binary tree.
+This is achieved by the following declaration
+\proghref{BinTree}{Program}:
+%
+\begin{prog}
+data BinTree a = Leaf | Branch a (BinTree a) (BinTree a)
+\end{prog}
+%
+The identifier \ccode{a} is a \emph{type variable}%
+\index{data declaration!type variable}\index{type variable}.
+Observe that the type variable not only defines the type of the
+decoration, but also the type of the subtrees occurring in a branch.
+In other words, the type that parameterizes a tree also
+parameterizes the children of a tree.
+The type variable can be implicitly or explicitly 
+bound to some type, e.g., \ccode{Int}
+or \ccode{WeekDay} defined earlier.
+For example, a function that looks for the string \ccode{Curry}
+in a tree of strings is defined as
+\proghref{BinTree}{Program}:
+%
+\begin{prog}
+findCurry Leaf = False
+findCurry (Branch x l r) = x == "Curry" || findCurry l || findCurry r
+\end{prog}
+%
+The type of the argument of function \ccode{findCurry} is
+\ccode{BinTree String}.
+The binding of type \ccode{String} to the type variable
+of the definition of the polymorphic type \ccode{BinTree}
+is automatically inferred from the definition of function
+\ccode{findCurry}.
+
+A polymorphic type such as \ccode{BinTree} can be specialized
+by binding its variable to a specific type by an explicit declaration
+as follows
+\proghref{BinTree}{Program}:
+%
+\begin{prog}
+type IntTree = BinTree Int
+\end{prog}
+%
+where \ccode{type}\pindex{type} is a reserved word of the language.
+This declaration defines \ccode{IntTree} as a synonym
+of \ccode{BinTree Int}.
+The synonym can be used in \emph{type declarations}\index{type!synonym}
+to improve readability.
+The following example defines a function that tallies
+all the decorations of a tree of integers
+\proghref{BinTree}{Program}:
+%
+\begin{prog}
+total :: IntTree -> Int
+total Leaf = 0
+total (Branch x l r) = x + total l + total r
+\end{prog}
+%
+\begin{exercise}
+\label{ex_userlist}
+Pretend that list is not a builtin type, with
+special syntax, of the language.
+Define your own type list.
+Define two functions on this type,
+one to count how many elements are in a list,
+the other to find whether some element is in a list.
+\proghref{ex_userlist}{Answer}
+\end{exercise}
+
+\section{Lists}
+\label{sec-lists}
+
+The type list is builtin or predefined by the language.
+This type could be easily defined by the programmer,
+see Exercise~\ref{ex_userlist},
+except that the language allows the representation of lists in a special
+notation which is more agile than that that would be
+available to the programmer.
+The following statement defines important concepts of a list:
+%
+\begin{quote}
+A \emph{list}\index{list!definition} is either \emph{nil}\index{list!nil}
+or it is a \emph{cons}\index{list!cons} consisting of an
+element, referred to as the \emph{head}\index{list!head} of the list,
+and another list, referred to as the \emph{tail}\index{list!tail} of the list.
+\end{quote}
+%
+The nil list is denoted by \ccode{[]},
+which is read ``nil''\index{list!notation}.
+A cons list, with head $h$ and tail $t$ is denoted by \ccode{$h$:$t$}.
+The infix operator \ccode{:}, which is read ``cons'',
+is right associative with precedence 5.
+A list can also be denoted by enumerating its
+elements\index{list!enumeration}, e.g.,
+\ccode{[u,v,w]} is a list containing three elements,
+\ccode{u}, \ccode{v} and \ccode{w}, i.e., it is just another
+notation for \ccode{u:v:w:[]}.
+The number of elements is arbitrary.
+The elements are enclosed in brackets and separated by commas.
+
+The following functions concatenate two lists
+and reverse a list, respectively.  
+The \ccode{Prelude} defines the first one as the infix operator \ccode{++}
+and the second one, much more efficiently, as the operation \ccode{reverse}.
+%
+\begin{prog}
+conc []     ys = ys
+conc (x:xs) ys = x : conc xs ys
+\medskip
+rev []     = []
+rev (x:xs) = conc (rev xs) [x]
+\end{prog}
+%
+Several \emph{ad hoc} notations available for lists are 
+described in Sections~\ref{list-ranges} and~\ref{list-comprehensions}.
+
+A key advantage of these special notations for lists is
+a reduction of the number of parentheses needed to represent
+list expressions in a program.
+This claim can be easily verified by comparing the builtin
+notation with the ordinary notation which was the subject of
+Exercise~\ref{ex_userlist}.
+
+
+\section{Strings}
+
+Although \ccode{String} is a predefined type
+(see Section~\ref{Predefined Types}), there are no special
+operations on strings. The reason is that \ccode{String}\pindex{String}
+is just another name for \ccode {[Char]}, i.e., strings
+are considered as lists of characters. In addition, Curry
+provides a handy notation for string constants, i.e.,
+the string constant
+%
+\begin{prog}
+"hello world"
+\end{prog}
+%
+is identical to the character list
+%
+\begin{prog}
+['h','e','l','l','o',' ','w','o','r','l','d']
+\end{prog}
+%
+Thus, any operation applicable to arbitrary lists can also be applied
+to strings. For instance, the prelude defines an infix operator
+\ccode{++}\pindex{++} to concatenate lists and the function
+\ccode{reverse}\pindex{reverse}
+to reverse the order of all lists elements
+(similarly to \code{conc} and \code{rev} in
+Section~\ref{sec-lists}). Thus, we can also use them to operate on
+strings:
+%
+\begin{prog}
+Prelude> \userinput{"Hi"++"Hi"}
+Result: "HiHi" ? 
+Prelude> \userinput{reverse "hello"}
+Result: "olleh" ? 
+\end{prog}
+
+
+\section{Tuple}
+
+The word ``tuple''\index{tuple} is a generic name
+for a family of related types.
+A tuple in a program is similar to
+a tuple in mathematics, i.e., a fixed
+length sequence of values of possibly different types.
+Examples of tuples are pairs and triples.
+They could be defined by the programmer as follows:
+%
+\begin{prog}
+data Pair a b = Pair a b
+data Triple a b c = Triple a b c
+\end{prog}
+%
+These types are polymorphic.  Observe the two occurrences of
+the identifiers \ccode{Pair} and \ccode{Triple} in the above declarations.
+The occurrence to the left names a type constructor,
+whereas the occurrence to the right names a data constructor.
+These symbols are \emph{overloaded}\index{overloading}.
+However, this kind of overloading causes no problems since
+type expressions are clearly separated from value expressions.
+The type variables \ccode{a}, \ccode{b}$\ldots$ can be bound
+to different types.
+
+For example, the information system of a ``Big \& Tall'' shoe store
+declares a function that defines the largest size and width of each model
+\proghref{BigTall}{Program}:
+%
+\begin{prog}
+data Width = C | D | E | EE | EEE | EEEE
+largest "New Balance 495" = Pair 13 EEE
+largest "Adidas Comfort"  = Pair 15 EE
+...
+\end{prog}
+%
+The language predefines tuples and denotes them with a special
+notation similar to the standard mathematical notation.
+Using predefined tuples, the above function is coded as:
+%
+\begin{prog}
+largest "New Balance 495" = (13,EEE)
+largest "Adidas Comfort"  = (15,EE)
+...
+\end{prog}
+%
+Tuples are denoted by a fixed-length sequence of comma-separated
+values between parentheses.
+There is no explicit data constructor identifier.
+The type of a tuple is represented
+as a tuple as well, e.g., the type of \ccode{largest}
+is reported by the interpreter as:
+%
+\begin{prog}
+BigTall> :t largest
+largest :: String -> (Int,Width)
+BigTall> 
+\end{prog}
+%
+
+\section{Higher-Order Computations}
+\label{Higher-Order}
+
+The arguments of a function can be functions themselves.
+This feature is banned or restricted by many programming languages.
+E.g., in C only a \emph{pointer} to a function can be passed
+as a parameter to another function. 
+For the same purpose, {C\hskip -0.1ex\raise 0.5ex\hbox{\tiny ++}}
+uses \emph{templates} and Java uses \emph{interfaces}.
+In Curry, no special construct or concept is necessary.
+
+A function that takes an argument of function type is referred
+to as a \emph{higher-order}\index{function!higher order} function.
+Loosely speaking, a higher-order function is computation parameterized
+by another computation.
+We show the power of this feature with a simple example.
+The function \ccode{sort}, shown below,
+takes a list of numbers and sorts them in ascending order.
+On non-empty arguments, the function \ccode{sort} recursively sorts the tail
+and inserts the head at the right place in the sorted tail.
+This algorithm becomes inefficient as lists grow longer,
+but it is easy to understand
+\proghref{InsertionSort}{Program}:
+%
+\begin{prog}
+\label{InsertSort}
+sort []     = []
+sort (x:xs) = insert x (sort xs)
+\medskip
+insert x [] = [x]
+insert x (y:ys) | x <= y    = x : y : ys
+                | otherwise = y : insert x ys
+\end{prog}
+%
+To sort a list in descending order or to sort a list
+of a different type, a new function must be coded.
+
+An alternative is to code a sort function where the ordering
+criterion is an argument.
+The overall structure of the function is the same.
+The new argument, the first one of each function,
+is denoted by \ccode{f}.
+This argument is a function that takes two arguments
+and returns \ccode{True} if and only if the first argument
+must appear before the second argument in the output list
+\proghref{HOInsertionSort}{Program}:
+%
+\begin{prog}
+\label{HOInsertionSort}
+sort _ []     = []
+sort f (x:xs) = insert f x (sort f xs)
+\medskip
+insert _ x [] = [x]
+insert f x (y:ys) | f x y     = x : y : ys
+                  | otherwise = y : insert f x ys
+\end{prog}
+%
+For example:
+%
+\begin{prog}
+HOInsertionSort> sort (<=) [3,5,1,2,6,8,9,7]
+Result: [1,2,3,5,6,7,8,9] ? 
+HOInsertionSort> sort (>) [3,5,1,2,6,8,9,7]
+Result: [9,8,7,6,5,3,2,1] ? 
+\end{prog}
+%
+In the above expressions, 
+the operators \ccode{<=} and \ccode{>} are the functional arguments.
+The parentheses around them are necessary, since these
+functions are identified by infix operators.
+Without parentheses, the expression \ccode{sort <= [3,5,1,2,6,8,9,7]}
+would test whether the left argument of \ccode{<=}
+is smaller than the right argument, which is meaningless.
+
+Observe that the first version of the \ccode{sort} function constrains
+the elements of the input list to be numbers,
+since these elements are arguments of \ccode{<=}.
+In the second, higher-order version, the type 
+of the elements of the input list is unconstrained.
+Thus, the function can be applied to lists of any type
+as long as a suitable ordering criterion
+for the type of the list elements is provided.
+
+Higher-order computations involve a functional argument.
+Sometimes, the corresponding argument in a call, which is
+a function, is referenced only in the call itself.
+In this case, it is appropriate to use an anonymous
+function\index{function!anonymous}.
+For example, suppose that an elementary school information
+system represents classes with a grade and a section.
+The grade is a number in the range 1 through 5 and the
+section is a letter, \code{a}, \code{b} ...
+The following ordering criterion sorts the classes
+in a  ``natural'' (lexicographic) order
+\proghref{anon}{Program}:
+%
+\begin{prog}
+sortClasses l = sort lex l
+   where lex (x,y) (u,v) = x<u || x==u \&\& ord y <= ord v 
+\end{prog}
+%
+A more compact and informative formulation uses
+an anonymous function as follows
+\proghref{anon}{Program}:
+%
+\begin{prog}
+sortClasses l = sort (\char92(x,y) (u,v) -> x<u || x==u \&\& ord y <= ord v) l
+\end{prog}
+%
+Observe that pattern matching is normally used in the definition
+of the above anonymous function.
+
+% \bigskip\noindent
+% \todo{Exercise to sort lists of some type other than integers}
+
+\section{Lazy Evaluation}
+\label{sec-lazy-evaluation}
+
+The \emph{evaluation}\index{evaluation}
+of an expression $t$ is the process of
+obtaining a value $v$ from $t$.
+%
+\begin{quote}
+A \emph{value}\index{value!definition} is an expression consisting
+only of builtin literals and/or data constructors and/or variables.
+\end{quote}
+%
+The value $v$ is obtained from $t$ by replacing an instance of
+the left-hand side of a rule with the corresponding
+instance of the right-hand side.
+For example, referring to the function \emph{square} defined
+in Section \ref{Basic concepts}:
+%
+\begin{prog}
+square x = x * x
+\end{prog}
+%
+an instance of $\emph{square}\;x$
+is replaced with the corresponding instance of $x * x$.
+For example, $4+\emph{square}\;(2+3)$ is replaced by $4+(2+3)*(2+3)$.
+
+The evaluation of an expression $t$ 
+proceeds replacement after replacement until an expression $v$
+in which no more replacements are possible is obtained.
+If $v$ is not a value, the evaluation fails,
+otherwise $v$ is the result of a computation of $t$.
+For example, the following function \emph{head}
+computes the first element of a (non-null) list:
+%
+\begin{prog}
+head (x:_) = x
+\end{prog}
+%
+An attempt to evaluate \ccode{head []} fails, since
+no replacement is possible and the expression is not a value
+since it contains a function.
+
+Often, an expression may contain several distinct replaceable subexpressions,
+e.g., from $(2+3)*(2+3)$ we can obtain both $5*(2+3)$ and $(2+3)*5$.
+Even a single subexpression may allow several distinct replacements
+when non-deterministic functions are involved.
+The order in which different subexpressions of an expression are
+replaced is not determined by a program.
+The choice is made by an evaluation
+\emph{strategy}\index{evaluation!strategy}\index{strategy}.
+The semantics of the language guarantees that any
+value obtainable from an expression is eventually obtained.
+This property is referred to as the
+\emph{completeness}\index{evaluation!completeness}
+of the evaluation.
+To ensure this completeness, expressions must be evaluated
+lazily\index{evaluation!lazy}\index{laziness}.
+A lazy strategy is a strategy that evaluates a subexpression
+only if its evaluation is unavoidable to obtain a result.
+The following example clarifies this delicate point.
+
+The following function computes the list of
+all the integers beginning with some initial value $n$
+\proghref{lazy}{Program}:
+%
+\begin{prog}
+from n = n : from (n+1)
+\end{prog}
+%
+An attempt to evaluate \ccode{from 1} aborts with a
+memory overflow since the ``result'' would be the infinite term:
+%
+\begin{prog}
+[1,2,3,...
+\end{prog}
+%
+However, the function \ccode{from} is perfectly legal.
+The following function returns the $n$-th element of a list:
+%
+\begin{prog}
+nth n (x:xs) = if n==1 then x else nth (n-1) xs
+\end{prog}
+%
+The expression \ccode{nth 3 (from 1)} evaluates to \code{3}
+despite the fact that \ccode{from 1} has no (finite) value:
+%
+\begin{prog}
+lazy> \userinput{nth 3 (from 1)}
+Result: 3 ? 
+\end{prog}
+%
+The reason is that only the third element of \ccode{from 1} 
+is needed for the result.
+All the other elements, in particular the infinite sequence
+of elements past the third one, do not need to be evaluated.
+
+Infinite data structures\index{data structure!infinite}
+are an asset in the conjunction with lazy evaluation.
+Programs that use infinite structures are often simpler
+than programs for the same problem that use finite structures.
+E.g., a function that computes a (finite) prefix of \ccode{[1,2,3,...}
+is more complicated than \ccode{from}.
+Furthermore, the functions of the program are less interpedendent
+and consequently more reusable.
+E.g., the following function, initially applied to
+\code{0} and \code{1}, computes the (infinite) sequence of
+the Fibonacci numbers:
+%
+\begin{prog}
+fibolist x0 x1 = x0 : fibolist x1 (x0+x1)
+\end{prog}
+%
+The function \ccode{nth} can be reused to compute the $n$-th
+Fibonacci number through the evaluation of the expression
+\ccode{nth $n$ (fibolist 0 1)}, e.g.:
+%
+\begin{prog}
+lazy> \userinput{nth 5 (fibolist 0 1)}
+Result: 3 ? 
+\end{prog}
+%
+The evaluation strategy of the \pakcs{} compiler/interpreter,
+which is used for all our examples, is lazy, but incomplete.
+The strategy evaluates non-deterministic choices sequentially instead
+of concurrently.
+
+All the occurrences of same variables are shared.
+This design decision has implications both on the efficiency
+and the result of a computation.
+For example, consider again the following definition:
+%
+\begin{prog}
+square x = x * x
+\end{prog}
+%
+The evaluation of say \code{square\,$t$} goes through
+\code{$t$\,*\,$t$}.  Without sharing, $t$ would be evaluated
+twice, each evaluation independent of the other.
+If $t$ has only one value, the double evaluation
+would be a waste.
+If $t$ has more then one value, this condition will be
+discussed in Section~\ref{where-clause},
+sharing produces the same value for both occurrences.
+
+\section{Local Definitions}
+
+The syntax of Curry implicitly associates a scope
+to each identifier, whether a function, a type, a variable, etc.
+Roughly speaking the scope of an identifier is where in a program
+the identifier can be used.
+For example, the scope of a variable occurring in the left-hand side
+of a rule is the rule itself, which includes the right-hand side
+and the condition, if any.
+In the following code:
+%
+\begin{prog}
+square x = x * x
+cube   x = x * square x
+\end{prog}
+%
+the variable identified by \ccode{x} in the definition of \ccode{square}
+is completely separated from the variable 
+identified by \ccode{x} as well in the definition of \ccode{cube}.
+Although these variables share the same name, they
+are completely independent of each other.
+
+Curry is \emph{statically scoped}\index{static scoping},
+which means that the scope of an
+identifier is a static property of a program, i.e.,
+the scope depends on the textual layout of a program rather than on
+an execution of the program.
+%
+\begin{quote}
+The \emph{scope}\index{scope} of an identifier is the region of text
+of a program in which the identifier can be referenced.
+\end{quote}
+%
+In most cases, the programmer has no control on the scope of
+an identifier---and this is a good thing.
+The scope rules are designed to make the job of the programmer
+as easy and safe as possible.
+The context in which an identifier occurs determines the
+identifier's scope.
+However, there are a couple of situations where the programmer
+can limit, by mean of syntactical constructs provided by the language,
+the scope of an identifier.
+Limiting the scope of an identifier is convenient in some situations.
+For example, it prevents potential name clashes
+and/or it makes it clearer that a function is
+introduced only to simplify the definition of another function.
+A limited scope,
+which is referred to as a \emph{local scope}\index{scope!local},
+is the subject of this section.
+
+Curry has two syntactic constructs 
+for defining a local scope: the \ccode{where} clause
+and the \ccode{let} clause.
+They are explained next.
+
+\subsection{{\fontfamily{pcr}\fontseries{b}\selectfont Where} Clauses}
+\label{where-clause}
+
+A \ccode{where}\index{where clause}\pindex{where}
+clause creates a scope nested within a rewrite rule.
+The following example defines an infix operator, \ccode{**}, for
+integer exponentiation
+\proghref{power}{Program}:
+%
+\begin{prog}
+infixl 8 **
+a ** b | b >= 0 = accum 1 a b
+   where accum x y z | z == 0    = x
+                     | otherwise = accum aux (y * y) (z `div` 2)
+           where aux = if (z `mod` 2 == 1) then x * y else x
+\end{prog}
+%
+For example, $\code{2\,**\,5}=2^5=32$.
+There are several noteworthy points in the above code fragment.
+The scope of the function \ccode{accum} is limited to
+the rewrite rule of \ccode{**}.
+This is convenient since the purpose of the former
+is only to simplify the definition of the latter.
+There would be no gain in making the function \ccode{accum}
+accessible from other portions of a program.
+The function \ccode{accum} is \emph{nested}\index{function!nested}
+inside the function \ccode{**}, which is \emph{nesting} \ccode{accum}.  
+
+The rewrite rule defining \ccode{accum} is conditional.
+Pattern matching of the arguments and non-determinism
+can occur as well in local scopes.
+Finally, there is yet another local scope nested
+within the rewrite rule of the function \ccode{accum}.
+The identifier \ccode{aux} is defined in this scope
+and can be referenced from either condition or right-hand side
+of the rewrite rule of the function \ccode{accum}.
+
+The right-hand side of the rewrite rule defining \ccode{aux}
+references the variables \ccode{x}, \ccode{y} and \ccode{z}
+that are arguments of \ccode{accum} rather than \ccode{aux} itself.
+This is not surprising since the scope of these variables
+is the rewrite rule of \ccode{accum} and \ccode{aux}
+is defined within this rule.
+
+The identifier \ccode{aux} takes no arguments.
+Because it occurs in a local scope\index{scope!local},
+\ccode{aux} is considered
+a local \emph{variable}\index{variable!local}
+instead of a \emph{nullary function}.
+The language does not make this distiction for non-local
+identifiers, i.e., identifiers defined at the top level.
+The evaluation of local variables differs from that of local functions.
+All the occurrences of a variable,
+whether or not local, share the same value.
+This policy may affect both the efficiency of a program execution
+and the result of computations involving non-deterministic
+functions.  The following example clarifies this subtle point
+\proghref{localvar}{Program}:
+%
+\begin{prog}
+coin = 0
+coin = 1
+\medskip
+g = (x,x) where x = coin
+\medskip
+f = (coin,coin)
+\end{prog}
+%
+The values of \ccode{g} are \code{(0,0)} and \code{(1,1)} only,
+whereas the values of \ccode{f} also include 
+\code{(0,1)} and \code{(1,0)}.
+The reason of this difference
+is that the two occurrences of \ccode{coin} in the rule of \ccode{f}
+are evaluated independently, hence they may have different values,
+whereas the two occurrences of \ccode{x}
+in the rule of \ccode{g} are ``shared,'' hence they have the same value.
+
+There is one final important aspect of local scoping.
+A local scope can declare an identifier already declared
+in a nesting scope---a condition referred to as
+\emph{shadowing}\index{shadowing}\index{scope!shadowing}.
+An example of showing is shown below:
+%
+\begin{prog}
+f x = x where x = 0
+\end{prog}
+%
+The variable \ccode{x} introduced in the \code{where} clause
+\emph{shadows} the variable with the same name introduced in
+the rewrite rule left-hand side.
+The occurrence of \ccode{x} in the right-hand side is
+bound to the former.
+Hence, the value \ccode{f\,1} is \code{0}.
+This situation may be a source of confusion for the beginner.
+The \pakcs{} compiler/interpreter detects this situation and
+warns the programmer as follows
+\proghref{shadow}{Program}:
+%
+\begin{prog}
+Prelude> \userinput{:l shadow}
+Parsing 'shadow.curry'...
+generating shadow.fcy ...
+Warning: "shadow.curry", line 1.15: shadowing symbol "x"
+Warning: "shadow.curry", line 1.3: unreferenced variable "x"
+Compiling './shadow.fcy' into './shadow.pl'...done
+\end{prog}
+%
+The first warning reports that the identifier in line 1,
+column 15, the variable \ccode{x} in the local scope,
+shadows some identifier(s) with the same name.
+The second warning reports that
+the identifier in line 1, column 3,
+the variable \ccode{x} argument of \ccode{f},
+is not used.  This is a consequence of its shadowing and
+gives an important clue that the occurrence of \ccode{x}
+in the right-hand side of the rewrite rule of \ccode{f}
+is bound to the local variable rather than the argument.
+
+\subsection{{\fontfamily{pcr}\fontseries{b}\selectfont Let} Clauses}
+\label{let-clause}
+
+A \ccode{let}\index{let clause}\pindex{let}
+clause creates a scope nested within an expression.
+The concept is very similar to a \ccode{where} clause,
+but the granularity of the scope is finer.
+For example, the program for integer exponentiation
+presented earlier can be coded using \ccode{let} clauses
+as well
+\proghref{power-let}{Program}:
+%
+\begin{prog}
+infixl 8 **
+a ** b | b >= 0 = 
+  let accum x y z | z == 0    = x
+                  | otherwise =
+                       let aux = if (z `mod` 2 == 1) then x * y else x
+                       in  accum aux (y * y) (z `div` 2)
+  in  accum 1 a b
+\end{prog}
+%
+Using a \ccode{let} declaration is more appropriate than a
+\ccode{where} declaration for the definition of operation \ccode{aux}.
+With a \ccode{let} declaration, the scope of the identifier \ccode{aux}
+is the right-hand side of the second conditional rule of
+the function \ccode{accum} instead of the whole rule.
+
+\subsection{Layout}
+\label{sec-layout}
+
+\index{layout}
+By contrast to most languages,
+Curry programs do not use a printable character to separate
+syntactic constructs, e.g., one rewrite rule from the next.
+Similar to Haskell,
+Curry programs use a combination of an end-of-line and
+the indentation of the next line, if any.
+A Curry construct, e.g., a \ccode{data} declaration or a rewrite rule,
+terminates at the end of a line, unless the following line
+is more indented.
+For example, consider the following layout:
+%
+\begin{prog}
+f = g
+ h...
+\end{prog}
+%
+Since \ccode{f} starts in column 1 and \ccode{h} starts in column 2,
+the right-hand side of the rule defining \ccode{f} consists in
+the application of \ccode{g} to \ccode{h} to \ccode{...}\ %
+By contrast, with the following layout:
+%
+\begin{prog}
+f = g
+h...
+\end{prog}
+%
+the right-hand side of the rule defining \ccode{f} consists of
+\ccode{g} only.
+Since \ccode{h} starts in the same column as  \ccode{f},
+this line is intended as a new declaration.
+
+The layout style described above goes under the name
+``off-side rule''\index{off-side rule}.
+The examples of Sections~\ref{where-clause} and~\ref{let-clause}
+shows how the off-side rule applies to \ccode{where} and
+\ccode{let} clauses.
+
+\section{Variables}
+
+Most of the programs discussed so far are functional.
+They declare data and/or define functions.
+An execution of the program is the functional-like
+evaluation of an expression.
+Curry is a \emph{functional logic}\index{functional logic languages}
+programming language.
+It adds two crucial features to the model outlined above:
+non-determinism, which was discussed in Section~\ref{Non-determinism},
+and \emph{logic variables}\index{logic variable},
+which are discussed in this section.
+
+\subsection{Logic Variables}
+\label{Logic variables}
+
+A logic variable differs from the variables introduced by the left-hand
+side of a rewrite rule.
+A variable introduced by the left-hand side of a rewrite rule
+stands for any expression (of an appropriate type).
+For example, the following definition:
+%
+\begin{prog}
+head (x:xs) = x
+\end{prog}
+%
+is read as ``for all expressions $x$ and $xs$ the head of (the list)
+\code{(x:xs)} is \code{x}.''
+Since Curry is strongly typed, the type of \code{xs} must be list,
+otherwise the program would be invalid,
+but no other conditions are imposed on \code{xs}. 
+
+A \emph{logic variable} either is a variable occurring in an expression
+typed by the user at the interpreter prompt or
+it is a variable in the condition and/or right-hand side of
+a rewrite rule which does not occur in the left-hand side.
+We show an example of both.
+The operation \ccode{==},
+called \emph{Boolean equality}\index{Boolean equality},
+is predefined in Curry.
+Hence, one can (attempt to) evaluate:
+%
+\begin{prog}
+Prelude> \userinput{z==2+2  where z free}
+\end{prog}
+%
+Every variable in a query, such as \ccode{z} in the above example,
+is a logic variable that initially is not bound to any value.
+We will discuss shortly why queries with variables
+may be useful and how variables are handled.
+\\[1ex]
+The second kind of logic variable is shown in the following
+example:
+%
+\begin{prog}
+path a z = edge a b \&\& path b z   where b free
+\end{prog}
+%
+The intuition behind the names tells that in a graph there exists a path
+from a node $a$ to a node $z$ if there exists an edge from
+the node $a$ to some node $b$ and a path from the node $b$
+to the node $z$.
+In the definition, both \ccode{a} and \ccode{z} are ordinary (rule)
+variables, whereas \ccode{b} is a logic variable.
+Variables, such as \ccode{b}, which occur in the condition
+and/or right-hand side of a rule, but not in the left-hand side,
+are also called \emph{extra variables}\index{extra variable}.
+Extra variables must be explicitly declared \ccode{free}
+in a \ccode{where} or \ccode{let} clause as shown in the example.
+
+\subsection{Evaluation}
+
+The evaluation of expressions containing logic variables
+is a delicate issue and the single most important feature
+of functional logic languages.
+There are two approaches to deal with the evaluation of
+expressions containing logic variables:
+\emph{residuation}\index{residuation} and
+\emph{narrowing}\index{narrowing}.
+
+Let $e$ be an expression to evaluate and $v$ a variable
+occurring in $e$.
+Suppose that $e$ cannot be evaluated because the value of
+$v$ is not known.
+Residuation suspends the evaluation of $e$.
+If it is possible, we will address this possibility shortly,
+some other expression $f$ is evaluated in hopes that the evaluation
+of $f$ will bind a value to $v$.  If and when this happens,
+the evaluation of $e$ resumes.
+If the expression $f$ does not exists, $e$ is said to
+\emph{flounder}\index{floundering} and the evaluation of $e$
+fails.
+For example, this is what would happen for the query we showed
+earlier:
+%
+\begin{prog}
+Prelude> \userinput{z==2+2  where z free}
+Free variables in goal: z
+*** Goal suspended!
+\end{prog}
+%
+By contrast to residuation, 
+if $e$ cannot be evaluated because the value of $v$ is not known,
+narrowing guesses a value for $v$.
+The guessed value is uninformed except that only values that
+make it possible to continue the computation are chosen.
+
+The operation \ccode{=:=},
+called \emph{constrained equality}\index{constrained equality},
+is predefined in Curry.
+This operation is similar to the Boolean equality
+discussed earlier except for two important differences.
+The first difference is the type returned by the operation.
+The constrained equality returns the type \emph{Success}\index{Success}.
+This type has no visible constructors.
+An expression of type \emph{Success} either succeeds or fail.
+There exists predefined operations, \ccode{success} and
+\ccode{failed}, to encode successes and failures in a
+program.
+The second difference is that operation \ccode{=:=}
+narrows instead of residuating.
+Thus:
+%
+\begin{prog}
+Prelude> \userinput{z=:=2+2  where z free}
+Free variables in goal: z
+Result: success
+Bindings: 
+z=4 ? 
+\end{prog}
+%
+\vspace*{-5ex}
+\subsection{Flexible vs. Rigid Operations}
+
+Operations that residuate are called
+\emph{rigid}\pindex{rigid}\index{function!rigid},
+whereas operations that narrow are called
+\emph{flexible}\pindex{flexible}\index{function!flexible}.
+All defined operations are flexible
+whereas most primitive operations,
+like arithmetic operations, are rigid since guessing is not
+a reasonable option for them.
+For example, the prelude defines a list concatenation
+operation as follows:
+%
+\begin{prog}
+infixr 5 ++
+\ldots
+(++)          :: [a] -> [a] -> [a]
+[]     ++ ys  = ys
+(x:xs) ++ ys  = x : xs ++ ys
+\end{prog}
+%
+Since the operation \ccode{++} is flexible, we can use it to search for
+a list satisfying a particular property:
+%
+\begin{prog}
+Prelude> \userinput{x ++ [3,4] =:= [1,2,3,4]  where x free}
+Free variables in goal: x
+Result: success
+Bindings: 
+x=[1,2] ?
+\end{prog}
+%
+On the other hand, predefined arithmetic operations like the addition \ccode{+}
+are rigid. Thus, a call to \ccode{+} with a logic variable as an argument
+flounders:
+%
+\begin{prog}
+Prelude> \userinput{x + 2 =:= 4  where x free}
+Free variables in goal: x
+*** Goal suspended!
+\end{prog}
+%
+For \emph{ground expressions}\index{ground expression}\index{expression!ground},
+i.e., expressions without logic variables, the flex/rigid status of
+a function make no difference.
+In the context of concurrent/distributed object-oriented programming,
+rigid user-defined functions can be useful.
+For this purpose, there is a primitive operation
+\code{ensureNotFree}\pindex{ensureNotFree}
+that evaluates its argument and suspends if it is a logic variable.
+
+
+\subsection{Programming}
+
+Often, programming with variables leads
+to conceptually simple, terse and elegant code
+at the cost of an acceptable loss of efficiency.
+The logic variables of a program and/or a query
+are not much different from the variables that are typically
+used to solve algebra or geometry problems.
+In both cases, some unknown entities of the problem
+are related to each other by expressions involving functions.
+Narrowing allows us to evaluate these expressions---and
+in the process to find values for the variables.
+The simplest application, and the most familiar for
+those used to solve algebra and geometry problems with variables,
+is when the expression to evaluate is an equation.
+
+In later chapters, we will discuss some problems that
+are conveniently solved if one uses variables in computations.
+Here we want to present a simple, but non-trivial, motivating example.
+The problem is to parse a string that represents an expression.
+To keep the example small, our expressions are functional terms
+whose syntax is defined by:
+%
+\begin{prog}
+term       ::= identifier
+            |  identifier '\code{(}' args '\code{)}'
+args       ::= term
+            |  term '\code{,}' args
+identifier ::= \progit{any non-null string of alphabetic characters}
+\end{prog}
+%
+For example, \code{"f(g(a,b))"} is a term described
+by the above syntax.
+When a term is represented as a string,
+answering questions such as how many arguments \ccode{g} has,
+is more complicated and less efficient than it needs to be.
+A parser converts a term from its string representation into
+a data structure that
+makes easy and efficient answering questions of that kind.
+Thus, the first step to build a parser is to design a suitable type
+to represent a term. Our choice is:
+\proghref{TermParser}{Program}:
+%
+\begin{prog}
+data Term = Term String [Term]
+\end{prog}
+%
+Note that the occurrence of \ccode{Term} to right of the \ccode{=}
+character is a data constructor, whereas the two other occurrences
+are type constructors.  The \ccode{Term} identifier
+is \emph{overloaded}\index{overloading} by the declaration.
+
+Using this data structure, we represent a function identifier with
+a string and the function's arguments with a list of terms.  For
+example, the term \code{"f(g(a,b))"} would be represented as
+\ccode{Term "f" [Term "g" [Term "a" [],Term "b" []]]}.
+The following operation parses a term
+\proghref{TermParser}{Program}:
+%
+\begin{prog}
+parseTerm s | s =:= fun ++ "(" ++ args ++ ")" \&
+              all isAlpha fun =:= True = Term fun (parseArgs args)
+  where fun, args free
+\smallskip
+parseTerm s | all isAlpha s =:= True = Term s []
+\end{prog}
+%
+The elements of the program most relevant to our discussion are
+the variables \ccode{fun} and \ccode{args}.
+The first condition of the operation \ccode{parseTerm}
+instantiates these variables and ensures that \ccode{fun}
+is an alphabetic identifier.
+The operation \ccode{isAlpha}, defined in the library \ccode{Char},
+ensures that its argument, a character, is alphabetic.
+The operation \ccode{all} is defined in the \ccode{Prelude}.
+The combination \ccode{all isAlpha} ensures that all the characters
+of a string are alphabetic.
+
+If a term has arguments, these arguments are parsed by the operation
+\ccode{parseArgs}.
+The overall design of this operation is very similar to that
+of \ccode{parseTerm}.
+In this case, though, a string is decomposed according to
+different criteria
+\proghref{TermParser}{Program}:
+%
+\begin{prog}
+parseArgs s | s =:= term ++ "," ++ terms \&
+              parseTerm term =:= result = result : parseArgs terms
+  where term, terms, result free
+\smallskip
+parseArgs s | parseTerm s =:= result = [result]
+  where result free
+\end{prog}
+%
+One could code more efficient versions of this parser.
+This version is very simple to understand and it is the
+starting point for the design of more efficient versions that will be
+discussed later in this book.
+
+
+\section{Input/Output}
+\label{sec-io}
+
+As we have seen up to now, a Curry program is a set of datatype
+and function declarations. Functions associate result values
+to given input arguments. However, application programs must
+also interact with the ``outside'' world, i.e., they
+must read user input, files etc.
+Traditional programming languages addresses this problem
+by procedures with side effects, e.g., a procedure \code{read}
+that returns a user input when it is evaluated.
+Such procedures are problematic in the context of Curry.
+Firstly, the evaluation time of a function is difficult
+to control due to the lazy evaluation strategy
+(see Section~\ref{sec-lazy-evaluation}). Secondly,
+the meaning of functions with side effects is unclear.
+For instance, if the function \code{readFirstNum} returns
+the first number in a particular file, the evaluation
+of the expression \ccode{2*readFirstNum} yields different values
+at different points of time (if the contents of the file changes).
+
+Curry solves this problem with the ``monadic I/O'' concept
+\index{monadic I/O} much like that seen in the functional language
+Haskell \cite{Wadler97}.
+In the monadic approach to I/O, a program interacting with
+the outside world is considered as a sequence of actions that
+change the state of the outside world. Thus, an interactive program
+computes actions which are applied to a given state of the world
+(this application is finally done by the operating system
+that executes a Curry program).
+As a consequence, the outside world is not directly
+accessible but can be only manipulated through actions that change the world.
+Conceptually, the world is encapsulated in an abstract datatype
+which provides actions to change the world.
+The type of such actions is \ccode{IO t}\pindex{IO}
+which is an abbreviation for
+\begin{prog}
+World -> (t,World)
+\end{prog}
+where \ccode{World} denotes the type of all states of the outside world.
+If an action of type \ccode{IO t} is applied to a particular world,
+it yields a value of type \code{t} and a new (changed) world.
+
+For instance, \code{getChar}\pindex{getChar}
+of type \ccode{IO Char} is an action
+which reads a character from the standard input whenever it is executed,
+i.e., applied to a world. Similarly, \code{putChar}\pindex{putChar}
+of type \ccode{Char -> IO ()} is an action which takes a character
+and returns an action which, when
+applied to a world, puts this character to the standard output
+(and returns nothing, i.e., the unit type).
+The important point is that values of type \code{World} are
+not accessible to the programmer --- she/he can only create
+and compose actions on the world.
+
+Actions can only be sequentially composed, i.e., one can built a new
+action that consists of the sequential evaluation of two
+other actions. The predefined function \pindex{>>}
+\begin{prog}
+(>>) :: IO a -> IO b -> IO b
+\end{prog}
+takes two actions as input and yields an action as the result.
+The resulting action consists of performing the first action followed
+by the second action, where the produced value of the first action is
+ignored. For instance, the value of the expression
+\ccode{putChar 'a' >> putChar 'b'} is an action which prints
+\ccode{ab} whenever it is executed. Using this composition operator,
+we can define a function \code{putStrLn}\pindex{putStrLn}
+(which is actually predefined in the prelude)
+that takes a string and produces an action to print this string:
+\begin{prog}
+putStrLn []     = putChar \verb|'\n'|
+putStrLn (c:cs) = putChar c >> putStrLn cs
+\end{prog}
+If two actions should be composed and the
+value of the first action should be taken into account
+before performing the second action, the actions can be also composed by
+the predefined function\pindex{>>=}
+\begin{prog}
+(>>=) :: IO a -> (a -> IO b) -> IO b
+\end{prog}
+where the second argument is a function taking the value produced
+by the first action as input and performs another action.
+For instance, the action
+\begin{prog}
+getChar >>= putChar
+\end{prog}
+is of type \ccode{IO ()} and copies, when executed, a character
+from standard input to standard output.
+Actually, this composition operator is the only elementary one
+since the operator \ccode{>>} can be defined in terms of \ccode{>>=}:
+\begin{prog}
+a1 >> a2  =  a1 >>= \char92\char95\,->\,a2
+\end{prog}
+There is also a primitive ``empty'' action\pindex{return}
+\begin{prog}
+return :: a -> IO a
+\end{prog}
+that only returns the argument without changing the world.
+The prelude also defines the ``empty'' action\pindex{done}
+which returns nothing (i.e., the unit type):
+\begin{prog}
+done :: IO ()
+done = return ()
+\end{prog}
+%
+Using these primitives, we can define more complex interactive programs.
+For instance, an I/O action thats copies all characters from
+the standard input to the standard output up to the first period
+can be defined as follows
+\proghref{io_examples}{Program}:
+\begin{prog}
+echo = getChar >>= \char92c -> if c=='.' then done else putChar c >> echo
+\end{prog}
+%
+Obviously, such a definition is not well readable.
+Therefore, Curry provides a special syntax extension for
+writing sequences of I/O actions, called the
+\emph{do notation}.\index{do notation}\pindex{do}
+The do notation follows the layout style
+(see Section~\ref{sec-layout}), i.e., a sequence of actions
+is vertically aligned so that
+\begin{prog}
+do putChar 'a'
+   putChar 'b'
+\end{prog}
+is the same as \ccode{putChar 'a' >> putChar 'b'}, and
+\begin{prog}
+do c <- getChar
+   putChar c
+\end{prog}
+is just another notation for \ccode{getChar >>= \char92c\,->\,putChar c}.
+Thus, the do notation allows a more traditional style of writing
+interactive programs. For instance, the function \code{echo}
+defined above can be written in the do notation as follows:
+\begin{prog}
+echo = do c <- getChar
+          if c=='.'
+            then done
+            else do putChar c
+                    echo
+\end{prog}
+As a further example, we show the definition of the I/O action
+\code{getLine} as defined in the prelude.
+\code{getLine} as an action that reads a line from the standard input
+and returns it:\pindex{getLine}
+\begin{prog}
+getLine :: IO String
+getLine = do c <- getChar
+             if c=='\char92n'
+                then return []
+                else do cs <- getLine
+                        return (c:cs)
+\end{prog}
+Curry also provides predefined I/O actions for reading files
+and accessing other parts of the environment.
+For instance, \ccode{readFile f}\pindex{readFile}
+is an action which returns the contents
+of file \code{f} and \ccode{writeFile f s}\pindex{writeFile}
+is an action writing string
+\code{s} into the file \code{f}. This allows us to define a function
+that copies a file with transforming all letters into uppercase ones
+in a very concise way (\code{toUpper}\pindex{toUpper}
+is defined in the standard character library \code{Char} and converts
+lowercase into uppercase letters)
+\proghref{io_examples}{Program}:
+\begin{prog}
+convertFile input output =
+   do s <- readFile input
+      writeFile output (map toUpper s)
+\end{prog}
+% To avoid introducing map in this chapter,
+% consider next version or add function to Char library
+% or explain map informally (as for ``all'' in parser
+% example.
+%
+% convertFile input output =
+%    do s <- readFile input
+%       writeFile output (capitalize s)
+%    where capitalize [] = []
+%          capitalize (c:cs) = toUpper c : capitalize cs
+% 
+The function \code{toUpper}, defined in the library \ccode{Char},
+takes a character. If the character is lower case and alphabetic,
+then it returns it in upper case, otherwise it returns it unchanged.
+The operation \ccode{map} is defined in the \ccode{Prelude}
+and discussed in detail in Section~\ref{ho-list-functions}.
+The combination \ccode{map toUpper} transforms all the characters
+of a string to upper case.
+
+The monadic approach to input/output has the advantage
+that there are no ``hidden'' side effects---any interaction
+with the outside world can be recognized by the \code{IO} type of the
+function. Thus, functions can be evaluated in any order
+and the only way to combine I/O actions is a sequential one, as
+one would expect also in other programming languages.
+However, there is one subtle point. If a function computes
+non-deterministically different I/O actions,
+like in the expression \ccode{putStrLn (show coin)}
+(see Section~\ref{where-clause} for the definition
+of the non-deterministic function \code{coin};
+\code{show}\pindex{show} is a predefined function that
+converts any value into a string),
+then it is not clear which of the alternative actions
+should be applied to the world. Therefore, Curry requires
+that \emph{non-determinism in I/O actions must not occur}.
+For instance, we get a runtime error if we evaluate the
+above expression:
+\begin{prog}
+localvar> \userinput{putStr (show coin)}
+ERROR: non-determinism in I/O actions occurred!
+\end{prog}
+%
+One way to ensure the absence of such errors is the
+encapsulation of all search between I/O operations, e.g.,
+by using the function \code{findall}.
+
+\begin{exercise}
+Define an I/O action \code{filelength} that reads requests the name
+of a file from the user and prints the length of the file,
+i.e., the number of characters contained in this file.
+\proghref{ex_filelength}{Answer}
+\end{exercise}
+
+% Describe in separate chapters:
+% \begin{itemize}
+% \item partial applications, currying, sections
+% \item encapsulated search
+% \item Module System
+% \item Type System
+% \end{itemize}
+
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: "main"
+%%% End: 

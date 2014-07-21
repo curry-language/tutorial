@@ -1,0 +1,672 @@
+\chapter{Programming in Curry}
+
+\section{Overview}
+
+\emph{Lists} and \emph{trees}
+are datatypes frequently used in programming.
+
+\begin{itemize}
+\item{} 
+A \emph{list}\index{list} abstracts a sequence of elements.
+The elements of a list are implicitly ordered by the list structure.
+Therefore, a list is a convenient representation for queues, stacks
+and other linear structures.
+As list can also be used for representing collections, typically
+unordered, such as a set, by ignoring or hiding the implicit
+order of the elements.
+\item{} 
+A \emph{tree}\index{tree} ...
+\end{itemize}
+%
+This section describes in some detail both these datatypes and how
+they help solve some typical problems, e.g., sorting a
+collection of elements or searching for an element in a collection.
+
+\section{Lists}
+
+\subsection{Notation}
+
+A \emph{List}\index{list!definition} is a simple algebraic polymorphic
+datatype defined by two constructors conventionally referred to
+as \emph{Nil}\index{Nil} and \emph{Cons}\index{Cons}.
+Within the Curry language, the datatype ``\emph{List of a}''
+would be declared as:
+%
+\begin{prog}
+data List a = Nil | Cons a (List a)
+\end{prog}
+%
+Because lists are one of the most frequently used types in
+functional, logic and functional logic programs,
+many languages offer several special notations\index{list!notation} for lists.
+In Curry, the type ``\emph{List of a}'',
+where \emph{a} is a type variable that stands for any type,
+is predefined and denoted by \code{[a]}.
+Likewise, \code{[]} denotes the constructor \emph{Nil}, the empty list,
+and \ccode{:}\pindex{:} denotes the constructor \emph{Cons}, which
+takes an element of type \code{a} and a list of \code{a}'s.
+Thus, with a syntax that is \emph{not} legal in Curry, but
+is quite expressive, the above declaration would look like:
+%
+\begin{prog}
+data [a] = [] | a : [a]
+\end{prog}
+%
+The expression \code{(u:v)} denotes the list with the first element \code{u}
+followed by the list \code{v}.
+The infix operator \ccode{:}, which read ``cons'',
+is predefined, right associative and has precedence 5.
+This implies that \code{u:v:w} is parsed as \code{u:(v:w)}.
+
+A list can also be denoted by enumerating its
+elements\index{list!enumeration}, e.g.,
+\ccode{[u,v,w]} is a list containing three elements,
+\ccode{u}, \ccode{v} and \ccode{w}, i.e., it is just another
+notation for \ccode{u:v:w:[]}.
+This notation can be used with any number of elements.
+The elements are enclosed in brackets and separated by commas.
+This notation has several advantages over the standard algebraic
+notation: lists stand out in a program and references to lists
+are textually shorter.  In particular, the number of parentheses
+occurring in the text is reduced.
+This claim can be easily verified by comparing the builtin
+notation with the ordinary notation.
+% which was the subject of Exercise~\ref{ex_userlist}.
+%%% Should the exercise be moved here? 
+
+The type list is polymorphic, which means that
+different lists can have elements of different types.
+However, all the elements of a particular list must have the same type.
+The following annotated examples show this point
+\proghref{lists}{Program}:
+%
+\begin{prog}
+-- list of integers
+digits = [0,1,2,3,4,5,6,7,8,9]
+\vspace*{1.5ex}
+-- list of characters, equivalent to "Pakcs", print with putStr
+string = ['P','a','k','c','s'] 
+\vspace*{1.5ex}
+-- list of list of integers
+matrix = [[1,0,2],[3,7,2],[2,8,1],[3,3,4]]
+\end{prog}
+%
+Other special notations available for lists are described in 
+Sections~\ref{list-ranges} and~\ref{list-comprehensions}.
+
+\subsection{Inductive Definitions}
+
+Many elementary functions on lists are defined by an induction similar
+to that available for the naturals.
+The cases of the induction are conveniently defined by
+different rules using pattern matching.
+For lists, the base case involves defining a function for \code{[]}
+whereas the inductive case involves defining the function for
+a list \code{(u:v)} under the assumption that the value of the
+function for \code{v} is available.
+In a program, this is expressed by a recursive call.
+The function that counts the number of elements of a list
+is emblematic in this respect:
+%
+\begin{prog}
+len []    = 0
+len (u:v) = 1 + len v
+\end{prog}
+%
+For computing the length of a list, the value of \code{u} is irrelevant and
+\code{u} should be replaced by an anonymous variable in the above
+definition.
+%
+\begin{exercise}
+Code an inductively defined function that takes a list of integers and
+returns the sum of all the integers in the list.
+Hint: the function should return \code{0} for an empty list.
+\proghref{sumlist}{Answer}
+\end{exercise}
+%
+The prelude defines many useful functions on lists,
+e.g., \ccode{++} for concatenation, \ccode{!!} for indexing,
+i.e., \code{(l!!i)} is the $i$-th (starting from 0) element of \code{l},
+etc.  We will use some of these functions, after providing a brief
+explanation, in this section.  We might also re-define some functions
+already available in the prelude or other libraries
+when they make good examples.  E.g., the function \code{len}
+discussed above is equivalent to the function \code{length}
+of the prelude.
+In Section~\ref{basic-list-function}, we will present the
+most important list functions available in the prelude.
+
+Functions inductively defined are easy
+to code, understand and evaluate.  Sometimes they may be inefficient.
+Below are two definitions of a function to reverse a list.
+For long lists, the second one is much more efficient.
+%
+\begin{prog}
+slowRev [] = []
+slowRev (u:v) = slowRev v ++ [u] \\[-2ex]
+fastRev l = aux l []
+  where aux [] r = r
+        aux (u:v) r = aux v (u:r)
+\end{prog}
+%
+A function inductively defined performs a ``traversal'' of its argument.
+During this traversal some computation is performed on each
+element of the list---this is referred to \emph{visiting}
+a \emph{cons}---and the result combined with a
+recursive invocation of the function.
+Loosely speaking, the visit
+can be performed either \emph{before} the recursive call,
+or \emph{after}, or \emph{both}.
+The following example shows how to subtract the minimum element of
+a list of integers from all the elements of the list.
+The function performs a single traversal of its argument.
+The minimum of the list is computed (as much as feasible) before
+the recursive call.
+The subtraction is computed after the recursive
+calls (otherwise the minimum could not be known)
+\proghref{submin}{Program}:
+%
+\begin{prog}
+submin [] = []
+submin (x:xs) = fst (aux (x:xs) x)
+  where aux []     m = ([],m)
+        aux (y:ys) m = let (zs,n) = aux ys (min y m)
+                        in (y-n:zs,n)
+\end{prog}
+%%% Would a diagram of the execution help?
+%
+The function \code{fst}, which returns the first element of a pair,
+is defined in the prelude.
+The function \code{min}, which returns the minimum of two
+integers, is defined in the \code{Integer} library.
+
+More complicated computations may lead to more complicated
+inductive definitions. A discussion on the structure
+and the design of inductively defined function is in~\cite{Antoy92ALP}.
+%
+\begin{exercise}
+Code an inductively defined function that transposes a matrix
+represented by a list of lists (all of the same length).
+\proghref{transpose}{Answer}
+\end{exercise}
+%%% Show examples of input and output 
+%
+There are a couple of noteworthy alternatives to directly defining
+inductive functions.  One involves higher-order list functions.
+Some of these functions are presented in Section~\ref{ho-list-functions}.
+The other involves narrowing.
+Lists are a particularly fertile ground for narrowing.
+Below are two definitions of the function that computes the
+last element of a list.  The first definition is inductive,
+whereas the second is narrowing-based. 
+%
+\begin{prog}
+inductLast [x] = x
+inductLast (x:y:z) = inductLast (y:z) \\[-2ex]
+narrowLast x | x =:= y++[e] = e where y,e free
+\end{prog}
+%
+\vspace*{-3ex}
+
+\subsection{Ranges}
+\label{list-ranges}
+
+A special notation is available to define lists containing
+\emph{ranges}\index{list!ranges} of integers.
+The most common of this notation is \ccode{[$e_1$\,..\,$e_2$]}\pindex{[u..v]}
+which denotes the list \ccode{[$e_1,e_1+1,e_1+2,\cdots,e_2$]}.
+For example:
+%
+\begin{prog}
+Prelude> \userinput{[2\,..\,5]}
+Result: [2,3,4,5] ? 
+Prelude> 
+\end{prog}
+%
+Similarly, the expression \ccode{[$e$\,..]}\pindex{[u..]}
+denotes the \emph{infinite}\index{infinite structures}
+list of all the integers starting from $e$.
+This list cannot be printed in its entirety,
+but it can be used in a program
+if only a finite portion of the list is needed,
+because the evaluation strategy is lazy.
+
+The elements in the lists defined by the above expressions
+are consecutive, i.e., the distance between adjacent elements is one.
+The above expressions can be generalized to produce lists
+where the distance between adjacent elements is a constant greater than one.
+This distance is inferred from the first two elements of the expression.
+For example:
+%
+\begin{prog}
+Prelude> \userinput{[2,\,6\,..\,20]}\pindex{[u,v..w]}
+Result: [2,6,10,14,18] ? 
+Prelude> 
+\end{prog}
+%
+Likewise, \ccode{[2,\,6\,..]}\pindex{[u,v..]}
+generates the infinite list \ccode{[2,6,10,14,$\ldots$]}.
+
+Ranges can be defined using ordinary functions.
+The prelude defines four functions whose names start with
+\code{enumFrom}.  These functions define in the ordinary
+syntax the notations for ranges.
+
+\subsection{Comprehensions}
+\label{list-comprehensions}
+
+Another useful notation involving lists goes under the name of
+\emph{list comprehension}\index{list!comprehension}.
+A list comprehension is a notation to construct a list from
+one or more other lists called
+\emph{generators}.
+It goes without saying that ranges are simple generators.
+For example, the infinite sequence of square and triangular
+numbers are obtained as follows
+\proghref{comprehensions}{Program}:
+%
+\begin{prog}
+squares   = [x * x | x <- [0\,..]]
+triangles = [x * (x+1) `div` 2 | x <- [0\,..]]
+\end{prog}
+%
+A \emph{generator}\index{comprehension!generator}
+is an expression of the form
+\emph{var}\code{\,<-\,}\emph{list}.
+Generators can be nested and/or combined with \emph{guards}.
+A \emph{guard}\index{comprehension!guard}
+is a Boolean expression that filters the elements
+produced by the generator.
+For example, if \code{isPrime} is a predicate telling whether
+an integer greater than 2 is a prime number, the following
+comprehension is the sequence of the prime numbers
+\proghref{comprehensions}{Program}:
+%
+\begin{prog}
+primes = [x | x <- [2\,..], isPrime x] 
+\end{prog}
+%
+In this example, the guard is the Boolean expression
+\code{(isPrime x)}. The elements produced by the generator
+are passed to the comprehension if and only if the guard holds.
+
+Generators are considered to be nested from left to right.
+The following example shows how to compute pairs where
+the second component is not greater than the first
+\proghref{comprehensions}{Program}:
+%
+\begin{prog}
+lexPairs = [(x,y) | x <- [0..3], y <- [x .. 3]]
+\end{prog}
+%
+This simple example shows that the second generator
+\code{(y<-[x\,..\,3])} is nested within
+the first one, since it references the generated elements.
+%
+\begin{exercise}
+Compute the Fibonacci sequence using a list comprehension.
+Hint: compute a list of \emph{pairs} of numbers where
+each pair contains two \emph{consecutive} Fibonacci numbers.
+\proghref{fibocompr}{Answer}
+\end{exercise}
+
+\subsection{Basic Functions}
+\label{basic-list-function}
+
+The \pakcs{} compiler/interpreter of Curry is distributed
+with the prelude, a collection of primitive and
+fundamental types and functions, and with several libraries.
+The prelude and some of these libraries contain
+useful list functions.
+In this section, we informally discuss some of these functions.
+The \code{currydoc}\pindex{currydoc}\index{documentation}
+documentation utility, which is
+distributed with \pakcs, should be used for an exhaustive
+up-to-date consultation of the content of these libraries.
+
+\vspace*{2ex}
+
+\begin{tabular}{@{}lll@{}}
+{\bf Name} & {\bf Description} & {\bf Example(s)} \\[1.5ex]
+\code{head} & First element of a list & \code{head\,[1,2]}$\;=\;$\code{1};
+   \code{head\,[]} fails \\
+\code{tail} & All the elements but the first &
+   \code{tail\,[1,2]}$\;=\;$\code{[2]}; \code{tail\,[]} fails \\
+\code{length} & Length & \code{length\,[1,2]}$\;=\;$\code{2} \\
+\code{null} & Tell whether it is nil &
+   \code{null\,[1,2]}$\;=\;$\code{False} \\
+\code{++} & Concatenate two lists & \code{[1,2]++[3]}$\;=\;$\code{[1,2,3]} \\
+\code{!!} & $n$-th element of a list & \code{[1,2]!!1}$\;=\;$\code{[2]};
+   \code{[1,2]!!4} fails \\
+\code{reverse} & Reverse the order of the elements &
+    \code{reverse\,[1,2]}$\;=\;$\code{[2,1]} \\
+\code{concat} & Concatenate all the lists of a list &
+   \code{concat\,[[1,2],[3]]}$\;=\;$\code{[1,2,3]} \\
+\code{take} & List of the first $n$ elements &
+   \code{take\,\,2\,[1,2,3]}$\;=\;$\code{[1,2]} \\
+\code{drop} & All elements but the first $n$ &
+   \code{drop\,\,2\,[1,2,3]}$\;=\;$\code{[3]} \\
+\code{and} & Boolean conjunction &
+   \code{and\,[True,False,True]}$\;=\;$\code{False} \\
+\code{or} & Boolean disjunction &
+   \code{or\,[True,False,True]}$\;=\;$\code{True} \\
+\code{elem} & Whether a value is in a list &
+   \code{elem\,\,2\,[1,3,5]}$\;=\;$\code{False} \\
+\code{nub} & Remove duplicates & \code{nub\,[1,2,2]}$\;=\;$\code{[1,2]} \\
+\code{delete} & Remove the first occurrence of a value&
+   \code{delete\,\,2\,[2,1,2]}$\;=\;$\code{[1,2]}; \\
+   && \code{delete\,\,2\,[1]}$\;=\;$\code{[1]} \\
+\end{tabular}
+
+\vspace*{2ex}
+
+\noindent
+Many more functions that operate on lists are defined
+in the libraries of the \pakcs{} distribution
+(e.g., see the library \code{List} which contains
+the definition of \code{nub} and \code{delete} discussed above).
+The above table is intended to give only a feeling
+of what is available.
+
+\subsection{Higher-order Functions}
+\label{ho-list-functions}
+\index{list!higher-order functions}
+\index{higher-order!on lists}
+
+Lists are commonly used to represent collections of elements.
+Some computations of a list can be expressed by repeatedly
+applying another, somewhat simpler, computation
+to all the elements of the collection.
+This section discusses some frequently occurring situations
+of this kind.
+
+The simplest case is when a list, which we refer to as the
+\emph{result list}, is obtained from another list,
+which we refer to as the \emph{argument list}, by applying
+the same function, say \code{f}, to all the elements of the argument list.
+This is easily accomplished by defining a new function, say
+\code{flist} since its analogy to \code{f}, as follows:
+%
+\begin{prog}
+flist [] = []
+flist (x:xs) = f x : flist xs
+\end{prog}
+%
+Although trivial, the definition of \code{flist} can be
+avoided altogether using the function \code{map},
+provided by the prelude.
+The function \code{map} is higher-order in that it takes
+as an argument the function, in this example \code{f},
+that is applied to all the arguments of the list.
+Thus, the function \code{flist} defined above
+is the same as \code{map\,\,f}.
+\\[1ex]
+The following code, taken from the prelude, shows
+the type and the definition of \code{map}\pindex{map}:
+%
+\begin{prog}
+map          :: (a->b) -> [a] -> [b]
+map _ []     = []
+map f (x:xs) = f x : map f xs
+\end{prog}
+%
+It can be seen that the first argument of \code{map}
+is a function from any type \emph{a} to any type \emph{b}.
+The second argument of \code{map} is a list whose elements
+must have, of course, type \emph{a}.
+The result is a list of type \emph{b}.
+For example, suppose that \code{isEven} is a function
+telling whether an integer is even.
+Then, the expression \code{(map\,isEven\,[0,1,2,3])}
+evaluates to \code{[True,False,True,False]}.
+
+A second frequently used higher-order function on lists is \code{filter}.
+As the name suggests, \code{filter} is used to filter
+the elements of a list that satisfy some criterion
+expressed by a predicate.
+\\[1ex]
+The following code, taken from the prelude, shows
+the type and the definition of \code{filter}\pindex{filter}:
+%
+\begin{prog}
+filter          :: (a -> Bool) -> [a] -> [a]
+filter _ []     = []
+filter p (x:xs) = if p x then x : filter p xs else filter p xs
+\end{prog}
+%
+It can be seen that the first argument of \code{filter}
+is a function from any type \emph{a} to \code{Bool},
+i.e., a predicate.
+The second argument of \code{map} is a list whose elements
+must have, of course, type \emph{a}.
+The result is again a list of type \emph{a}.
+The elements of the result are the elements of the second
+argument that satisfy the predicate.
+For example, as before, suppose that \code{isEven} is a function
+telling whether an integer is even.
+Then, the expression \code{(filter\,\,isEven\,\,[0,1,2,3])}
+evaluates to \code{[0,2]}.
+
+The last higher-order function operating on lists that
+we describe in this section is used to ``combine together''
+all the elements of a list.
+For example, a function that adds all the elements of
+a list of integers can be defined using a higher-order function and
+the ordinary addition on integers.
+Several options should be considered, e.g., whether the
+elements of a list are composed starting with the first or
+the last one, whether the list can be empty and thus
+a default value must be supplied, etc.
+The prelude contains a family of functions, referred to
+as \emph{folds} for this purpose. The names of these
+functions starts with ``\code{fold}''\index{folding functions}.
+\\[1ex]
+The following code, taken from the prelude, shows
+the type and the definition of \code{foldr}\pindex{foldr}:
+%
+\begin{prog}
+foldr            :: (a->b->b) -> b -> [a] -> b
+foldr _ z []     = z
+foldr f z (x:xs) = f x (foldr f z xs)
+\end{prog}
+%
+For example, functions that compute the sum, product and maximum
+of all the elements of a list of integers are easily defined
+through \code{foldr} as follows
+\proghref{fold}{Program}:
+%
+\begin{prog}
+sumList  = foldr (+) 0
+prodList = foldr (*) 1
+maxList  = \char92l -> foldr max (head l) (tail l)
+\end{prog}
+%
+The last function is more complicated than the previous two,
+because it is meaningful only for non-empty lists.
+The function \code{foldr1}, defined in the prelude,
+would simplify our definition of \code{maxList}.
+
+\subsection{\fontfamily{pcr}\fontseries{b}\selectfont findall}
+\label{findall}
+
+There is a predefined function, \code{findall}\pindex{findall},
+that is similar to a list comprehension and generates a list of values
+from an expression that generates a value.
+By contrast to comprehensions, though, the generator
+of \code{findall} is a constraint, i.e., a function returning
+\code{Success}, and the order in which the elements are generated
+is less deterministic.
+The function \code{findall} is often
+used to find all the solutions of a search problem.
+
+For example, consider the problem of computing all the subsets
+of a set.  Let us represent a set with a list.
+This representation requires some care both to avoid
+duplicate elements in a list and to ensure that
+the order of the elements in a list cannot be observed.
+We ignore these conditions since they are irrelevant to our example.
+The following non-deterministic function returns a
+subset of a set
+\proghref{forFindall}{Program}:
+%
+\begin{prog}
+subset []     = []
+subset (x:xs) = x:subset xs
+subset (_:xs) =   subset xs
+\end{prog}
+%
+Now, using \code{findall} we can easily compute the set of
+all subsets of a set
+\proghref{forFindall}{Program}:
+%
+\begin{prog}
+allSubsets set = findall (\char92x -> subset set =:= x)
+\end{prog}
+%
+The intuitive reading of the above fragment is ``Find all
+$x$'s such that $x$ is a subset of \emph{set}.''
+
+In the above example, the constraint may generate more than
+one value because the function \code{subset} is non-deterministic.
+A second situation in which a constraint may generate more
+than one value is when its evaluation involves narrowing
+steps.
+For example, the prerequisites for the undergraduate 
+Computer Science courses at Portland State
+is abstracted by 16 rules as follows
+\proghref{CSIS}{Program}:
+%
+\begin{prog}
+isPrereqOf 162 = 161
+isPrereqOf 163 = 162
+isPrereqOf 200 = 162
+...
+isPrereqOf 303 = 252
+isPrereqOf 303 = 300
+isPrereqOf 350 = 252
+\end{prog}
+%
+The meaning is that, e.g., \code{162} is a direct prerequisite of both
+\code{163} and \code{200} and that, e.g., 
+both \code{252} and \code{300} are direct prerequisites of \code{303}.
+
+The function to compute \emph{all} the direct prerequites
+of a course and the function to compute \emph{all} courses that
+a course gives access to (somewhat the inverse of the former)
+are shown below
+\proghref{CSIS}{Program}:
+%
+\begin{prog}
+allIsPrereqOf     course = findall (\char92p -> isPrereqOf course =:= p)
+allGivesAccessTo  course = findall (\char92c -> isPrereqOf c =:= course)
+\end{prog}
+%
+The evaluation of \code{findall} does not instantiate
+the free variables, if any, in the constraint argument
+unless they are local to the constraint itself,
+i.e., they are declared by a \code{let} block.
+The reason is that this seems to be the most sensible semantics.
+
+
+\subsection{Narrowing}
+
+Narrowing is a convenient programming feature when dealing with lists.
+Lists are frequently used to represent collections of elements.
+Sometimes the problem is to find in a list either elements
+or sublists that satisfy certain relationships.
+The programmer can either code functions to compute these elements
+or express the relationships using variables for these elements
+and let narrowing compute the elements by instantiating the variables.
+Generally, the latter leads to simpler and more declarative programs.
+
+For example, consider a program that plays the game of poker.
+A hand is represented by a list of 5 cards.
+Suppose that the problem is to find whether 4 of the 5 cards
+are all of the same kind, i.e., the hand is a four-of-a-kind.
+A narrowing-based solution removes one card from the hand
+so that the remaining 4 cards are all of the same rank.
+The following function takes a hand.
+If the hand is a four-of-a-kind, the function returns the kind or rank
+of the four cards, otherwise it fails
+\proghref{poker}{Program}:
+%
+\begin{prog}
+fourConstraint hand | hand =:= x++y:z \& map rank (x++z) =:= [r,r,r,r]
+                    = r
+                    where x,y,z,r free
+\end{prog}
+%
+The card removed from the hand is represented by \code{y}.
+This card is non-deterministically selected by solving
+the constraint \ccode{hand =:= x++y:z}.
+The remaining cards are represented by \code{x} and \code{z}.
+They are uniquely determined by the selection of \code{y},
+and vice versa.
+Additionally, the condition of the rule imposes that
+all the cards in \code{x} and \code{z}
+have the same rank, represented by \code{r}.
+The rank, too, is non-deterministically selected by solving
+the constraint \ccode{map rank (x++z) =:= [r,r,r,r]}.
+If the condition succeeds, there is obviously a unique
+value for all these variables.
+
+The advantage of the narrowing-based approach
+over more conventional approaches is that no instructions need to
+be coded both to isolate the card that does not contribute to
+the four-of-a-kind nor to find the kind of the four.
+
+As we said, when a hand is not a four-of-a-kind the above function fails.
+In general, failures are undesirable for normal conditions
+such as not having a four-of-a-kind hand.
+The function \code{findall} described in Section~\ref{findall}
+is used to construct a list
+of all the results produced by
+\code{fourConstraint} when applied to a hand.
+Obviously, this list can contain either zero or one value only.
+The following function prints whether a hand is a four-of-a-kind
+without ever failing
+\proghref{poker}{Program}:
+%
+\begin{prog}
+isFour hand = putStrLn (if sorry then "Sorry" else "Four "++(show rank))
+              where score = findall (\char92r -> fourConstraint hand =:= r)
+                    sorry = score == []
+                    rank  = head score
+\end{prog}
+%
+The above example is typical of situations in which a collection
+contains elements that must satisfy a certain conditions.
+Since lists are implicitly ordered, conditions involving
+the \emph{position} of elements in a collection can also be
+conveniently expressed using narrowing.
+We will see an example of this kind in a program to
+solve the $n$-queens puzzle.
+
+\begin{exercise}
+Similar to the example just discussed, code a function
+that tells whether a hand in a game of poker is a
+\emph{full house}.
+Hint: \proghref{Cards}{\code{Cards.curry}}
+defines suits, ranks, etc.
+\proghref{fullHouse}{Answer}.
+\end{exercise}
+
+\section{Trees}
+
+...
+% \begin{itemize}
+% \item Lists, Trees,
+% \item Sorting, Searching, Solving, Text Processing, Parsing
+% \item Patterns
+% \end{itemize}
+% 
+% Inductive definitions \\
+% Recursion: defining functions by pattern matching \\
+% Map, fold \\
+% Data structures: priority queues, circular queues \\
+% Problem solving: n-queens, missionaries and cannibals, etc. \\
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: "main"
+%%% End: 
