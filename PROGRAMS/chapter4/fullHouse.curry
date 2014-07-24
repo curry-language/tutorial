@@ -1,4 +1,14 @@
-import Cards
+----------------------------------------------------------------------
+--import Cards
+-- imported from Cards:
+data Suit = Club | Spade | Heart | Diamond 
+data Rank = Ace | King | Queen | Jack | Ten | Nine | Eight
+          | Seven | Six | Five | Four | Three | Two 
+data Card = Card Rank Suit
+
+rank (Card r _) = r
+suit (Card _ s) = s
+----------------------------------------------------------------------
 
 fullHouseConstraint hand | hand =:= x++u:y++v:z
                          & map rank (x++y++z) =:= [r,r,r]
@@ -14,4 +24,5 @@ testNo  = [(Card Six Club),(Card Ace Spade),(Card Five Heart),
 -- fullHouseConstraint testNo  => no solution
 -- fullHouseConstraint testYes => (Two,Ace)
 
+main = fullHouseConstraint testYes
 

@@ -16,5 +16,5 @@ matrix = [[1,0,2],[3,7,2],[2,8,1],[3,3,4]]
 -- sample result
 result = [[1,3,2,3],[0,7,8,3],[2,2,1,4]]
 -- simple test
-ok = transpose matrix == result
+main = transpose matrix == result
 

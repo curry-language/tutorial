@@ -2,7 +2,7 @@
 
 # bibliography?  programs?
 main.pdf: main.tex introduction.tex start.tex features.tex programming.tex \
-	  html.tex libraries.tex baseurl.sty
+	  html.tex libraries.tex baseurl.sty browseurl.tex
 	pdflatex main
 	bibtex main
 	pdflatex main

@@ -1,4 +1,5 @@
 import List
+import Findall
 
 -- 2001 catalog
 
@@ -27,4 +28,4 @@ transClosPrereq course = tail (listAll [course])
         listAll l = if (tmp == []) then l else nub (l ++ listAll tmp)
           where tmp = directList l
 
--- transClosPrereq 202 => [163,201,162,200,161]
+main = transClosPrereq 202  -- -> [163,201,162,200,161]

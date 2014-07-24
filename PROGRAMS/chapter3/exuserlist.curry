@@ -13,6 +13,6 @@ count (Cons _ xs) = 1 + count xs
 find x Nil = False
 find x (Cons y ys) = x==y || find x ys
 
--- count (Cons 1 (Cons 2 (Cons 3 Nil))) => 3
--- find 'a' Nil => False
--- find 'a' (Cons 'x' (Cons 'a' (Cons 'y' Nil))) => True
+-- main = count (Cons 1 (Cons 2 (Cons 3 Nil)))  -- -> 3
+-- main = find 'a' Nil  -- -> False
+main = find 'a' (Cons 'x' (Cons 'a' (Cons 'y' Nil)))  -- -> True

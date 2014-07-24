@@ -13,5 +13,5 @@ sample1 = Branch "is" (Branch "Curry" Leaf Leaf) (Branch "good" Leaf Leaf)
 sample2 = Branch 7 (Branch 5 Leaf Leaf) (Branch 9 Leaf Leaf)
 
 -- tests:
--- findCurry sample1
--- total sample2
+-- main = findCurry sample1
+main = total sample2

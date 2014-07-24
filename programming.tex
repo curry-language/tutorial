@@ -489,7 +489,8 @@ would simplify our definition of \code{maxList}.
 \subsection{\fontfamily{pcr}\fontseries{b}\selectfont findall}
 \label{findall}
 
-There is a predefined function, \code{findall}\pindex{findall},
+There is a function, \code{findall}\pindex{findall}
+(predefined in the library \code{Findall})
 that is similar to a list comprehension and generates a list of values
 from an expression that generates a value.
 By contrast to comprehensions, though, the generator
@@ -510,6 +511,8 @@ subset of a set
 \proghref{forFindall}{Program}:
 %
 \begin{prog}
+import Findall
+
 subset []     = []
 subset (x:xs) = x:subset xs
 subset (_:xs) =   subset xs

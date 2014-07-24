@@ -9,3 +9,6 @@ assign polish = Chuck
 team | x /= y = (x,y)
   where x = assign cut 
         y = assign polish
+
+
+main = team

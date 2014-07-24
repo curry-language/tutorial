@@ -140,7 +140,7 @@ integer is a factor of another integer.
 The predicate should work for every input and \code{0}
 should not be a factor of any integer.
 The operator should be non-associative and have precedence 7.
-\proghref{ex_factor}{Answer}
+\proghref{exfactor}{Answer}
 \end{exercise}
 
 A symbol, whether infix or prefix, can only be applied to
@@ -365,7 +365,7 @@ Thus:
 %
 \begin{prog}
 Prelude> \userinput{square (2+3)}
-Result: 25 ?
+25
 \end{prog}
 %
 Functions can be \emph{anonymous}\index{function!anonymous},
@@ -556,7 +556,7 @@ Only {\codefont Alex} and {\codefont Bert} are able to
 are able to {\codefont polish}.
 Code a non-deterministic function, {\codefont assign},
 that assigns to a task a worker that can execute it.
-\proghref{ex_nondettask}{Answer}
+\proghref{exnondettask}{Answer}
 \end{exercise}
 
 \section{User-defined Types}
@@ -704,7 +704,7 @@ Define your own type list.
 Define two functions on this type,
 one to count how many elements are in a list,
 the other to find whether some element is in a list.
-\proghref{ex_userlist}{Answer}
+\proghref{exuserlist}{Answer}
 \end{exercise}
 
 \section{Lists}
@@ -793,9 +793,9 @@ strings:
 %
 \begin{prog}
 Prelude> \userinput{"Hi"++"Hi"}
-Result: "HiHi" ? 
+"HiHi"
 Prelude> \userinput{reverse "hello"}
-Result: "olleh" ? 
+"olleh"
 \end{prog}
 
 
@@ -920,9 +920,9 @@ For example:
 %
 \begin{prog}
 HOInsertionSort> sort (<=) [3,5,1,2,6,8,9,7]
-Result: [1,2,3,5,6,7,8,9] ? 
+[1,2,3,5,6,7,8,9]
 HOInsertionSort> sort (>) [3,5,1,2,6,8,9,7]
-Result: [9,8,7,6,5,3,2,1] ? 
+[9,8,7,6,5,3,2,1]
 \end{prog}
 %
 In the above expressions, 
@@ -1062,7 +1062,7 @@ despite the fact that \ccode{from 1} has no (finite) value:
 %
 \begin{prog}
 lazy> \userinput{nth 3 (from 1)}
-Result: 3 ? 
+3
 \end{prog}
 %
 The reason is that only the third element of \ccode{from 1} 
@@ -1092,7 +1092,7 @@ Fibonacci number through the evaluation of the expression
 %
 \begin{prog}
 lazy> \userinput{nth 5 (fibolist 0 1)}
-Result: 3 ? 
+3
 \end{prog}
 %
 The evaluation strategy of the \pakcs{} compiler/interpreter,
@@ -1273,23 +1273,24 @@ warns the programmer as follows
 %
 \begin{prog}
 Prelude> \userinput{:l shadow}
-Parsing 'shadow.curry'...
-generating shadow.fcy ...
-Warning: "shadow.curry", line 1.15: shadowing symbol "x"
-Warning: "shadow.curry", line 1.3: unreferenced variable "x"
-Compiling './shadow.fcy' into './shadow.pl'...done
+...
+shadow.curry, line 1.3: Warning:
+    Unused declaration of variable `x'
+shadow.curry, line 1.15: Warning:
+    Shadowing symbol `x', bound at: shadow.curry, line 1.3
 \end{prog}
 %
-The first warning reports that the identifier in line 1,
+The second warning reports that the identifier in line 1,
 column 15, the variable \ccode{x} in the local scope,
 shadows some identifier(s) with the same name.
-The second warning reports that
+The first warning reports that
 the identifier in line 1, column 3,
 the variable \ccode{x} argument of \ccode{f},
 is not used.  This is a consequence of its shadowing and
 gives an important clue that the occurrence of \ccode{x}
 in the right-hand side of the rewrite rule of \ccode{f}
 is bound to the local variable rather than the argument.
+
 
 \subsection{{\fontfamily{pcr}\fontseries{b}\selectfont Let} Clauses}
 \label{let-clause}
@@ -1457,8 +1458,7 @@ earlier:
 %
 \begin{prog}
 Prelude> \userinput{z==2+2  where z free}
-Free variables in goal: z
-*** Goal suspended!
+*** Warning: there are suspended constraints (for details: ":set +suspend")
 \end{prog}
 %
 By contrast to residuation, 
@@ -1485,10 +1485,7 @@ Thus:
 %
 \begin{prog}
 Prelude> \userinput{z=:=2+2  where z free}
-Free variables in goal: z
-Result: success
-Bindings: 
-z=4 ? 
+\{z=4\} success
 \end{prog}
 %
 \vspace*{-5ex}
@@ -1518,10 +1515,7 @@ a list satisfying a particular property:
 %
 \begin{prog}
 Prelude> \userinput{x ++ [3,4] =:= [1,2,3,4]  where x free}
-Free variables in goal: x
-Result: success
-Bindings: 
-x=[1,2] ?
+\{x=[1,2]\} success
 \end{prog}
 %
 On the other hand, predefined arithmetic operations like the addition \ccode{+}
@@ -1530,8 +1524,7 @@ flounders:
 %
 \begin{prog}
 Prelude> \userinput{x + 2 =:= 4  where x free}
-Free variables in goal: x
-*** Goal suspended!
+*** Warning: there are suspended constraints (for details: ":set +suspend")
 \end{prog}
 %
 For \emph{ground expressions}\index{ground expression}\index{expression!ground},
@@ -1755,7 +1748,7 @@ Using these primitives, we can define more complex interactive programs.
 For instance, an I/O action thats copies all characters from
 the standard input to the standard output up to the first period
 can be defined as follows
-\proghref{io_examples}{Program}:
+\proghref{IOExamples}{Program}:
 \begin{prog}
 echo = getChar >>= \char92c -> if c=='.' then done else putChar c >> echo
 \end{prog}
@@ -1810,7 +1803,7 @@ that copies a file with transforming all letters into uppercase ones
 in a very concise way (\code{toUpper}\pindex{toUpper}
 is defined in the standard character library \code{Char} and converts
 lowercase into uppercase letters)
-\proghref{io_examples}{Program}:
+\proghref{IOExamples}{Program}:
 \begin{prog}
 convertFile input output =
    do s <- readFile input
@@ -1866,7 +1859,7 @@ by using the function \code{findall}.
 Define an I/O action \code{filelength} that reads requests the name
 of a file from the user and prints the length of the file,
 i.e., the number of characters contained in this file.
-\proghref{ex_filelength}{Answer}
+\proghref{exfilelength}{Answer}
 \end{exercise}
 
 % Describe in separate chapters:

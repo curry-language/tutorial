@@ -20,7 +20,7 @@ main = do
   subdirs <- getSubDirs "."
   let exdirs = filter (\d -> take 7 d == "chapter") subdirs
   fnames <- mapIO getCurryFiles exdirs
-  genMacroFile (concat fnames) "macro.tex"
+  genMacroFile (concat fnames) "../browseurl.tex"
 
 --- Gets all subdirectories of a directory.
 getSubDirs dir = do
@@ -61,7 +61,7 @@ genMacroFile :: [String] -> String -> IO ()
 genMacroFile fnames outfile = do
   s <- mapIO showMacro fnames
   writeFile outfile ("\\newcommand{\\progbrowseurl}[2]\n"++genResultMacro s++"\n")
-  putStrLn $ "Execution results written into file '"++outfile++"'"
+  putStrLn $ "LaTeX macro definition written into file '"++outfile++"'"
  where
   showMacro f = do
     s <- generateProgramURL f

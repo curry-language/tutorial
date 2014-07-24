@@ -5,5 +5,5 @@ a ** b | b >= 0 = accum 1 a b
            where aux = if (z `mod` 2 == 1) then x * y else x
 
 
--- test = map (2**) [0,10,20,30,40]
+main = map (2**) [0,10,20,30,40]
 -- expect: [1,1024,1048576,1073741824,1099511627776]

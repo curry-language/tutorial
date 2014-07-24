@@ -1,6 +1,5 @@
 \documentclass[11pt,fleqn]{report}
 
-%\usepackage{version}
 \usepackage{latexsym}
 \usepackage{makeidx}
 \usepackage{amssymb}
@@ -9,10 +8,9 @@
 \usepackage{color}
 \usepackage{a4}
 \usepackage{graphicx}
-%\usepackage{epsfig}
 \usepackage{ifthen}
 
-\input{PROGRAMS/macro.tex}
+\input{browseurl}
 
 %%% ------------------------------------------------------------------
 
@@ -66,8 +64,9 @@
 % ------------------------------------------------------------------
 
 % ------------------------------------------------------------------
+\newcommand{\curryurl}{http://www.curry-language.org}
 \newcommand{\curry}%
-  {\href{http://www.informatik.uni-kiel.de/~curry}{Curry}}
+  {\href{\curryurl}{Curry}}
 \newcommand{\pakcs}%
   {\href{http://www.informatik.uni-kiel.de/~pakcs}{{\sc PAKCS}}}
 \newcommand{\wwwc}{\href{http://www.w3c.org}{W3C}}
@@ -89,16 +88,14 @@
 {\LARGE\bf A Tutorial Introduction}\\[5ex]
 {\large Draft of \today}\\[8ex]
 \Large
-\href{mailto:antoy@cs.pdx.edu}{Sergio Antoy}\\[1ex]
+\href{http://www.cs.pdx.edu/~antoy/}{Sergio Antoy}\\[1ex]
 \large
 \href{http://www.pdx.edu}{Portland State University}, U.S.A.\\
-Email: \url{antoy@cs.pdx.edu}\\
 Web: \url{http://www.cs.pdx.edu/~antoy/}\\[3ex]
 \Large
-\href{mailto:mh@informatik.uni-kiel.de}{Michael Hanus}\\[1ex]
+\href{http://www.informatik.uni-kiel.de/~mh/}{Michael Hanus}\\[1ex]
 \large
 \href{http://www.uni-kiel.de}{Christian-Albrechts-Universit\"at Kiel}, Germany\\
-Email: \url{mh@informatik.uni-kiel.de}\\
 Web: \url{http://www.informatik.uni-kiel.de/~mh/}\\
 \vspace{20ex}
 \end{center}
@@ -126,7 +123,7 @@ on logical variables).
 
 This book is best used as an introduction to Curry.
 Curry is a rigorously defined programming language.
-The \href{http://www.informatik.uni-kiel.de/~curry/report.html}
+The \href{\curryurl/documentation/report}
 {``Report''} is a still evolving, but fairly stable,
 document that precisely defines the language,
 in particular both its syntax and operational semantics.
@@ -134,12 +131,18 @@ However, the report is not best suited to the beginner,
 rather it may be consulted in conjunction with this
 tutorial for the sake of a completeness that is not sought here.
 
-There are several 
-\href{http://www.informatik.uni-kiel.de/~curry/implementations.html}
-{implementations of Curry}.
-The most usable at the time of the writing (June~2007) is \pakcs.
+There are several
+\href{\curryurl/implementations/overview}{implementations of Curry}.
+%The most usable at the time of the writing (July~2014) is \pakcs.
 The examples and exercises in this book have been developed
-and executed using PAKCS.
+and executed using \pakcs.
+PAKCS is also accessible (in a restricted form) on-line via a
+\href{http://www-ps.informatik.uni-kiel.de/smap/}{web-based system}.
+In this document, you find for many programs a ``Browse'' link
+which directly loads the program into this web-based system so that
+you can run or modify it.
+Alternatively, you can download the example programs
+and execute them on your locally installed Curry system.
 
 % Numerous people have contributed directly and indirectly to Curry.
 % We are grateful to the following people for 

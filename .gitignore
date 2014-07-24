@@ -1,4 +1,16 @@
 CVS
 .curry
 *~
-PROGRAMS/macro.tex
+*.aux
+*.bbl
+*.blg
+*.log
+*.out
+*.pdf
+*.zip
+*.synctex.gz
+*.idx
+*.ilg
+*.ind
+*.toc
+browseurl.tex

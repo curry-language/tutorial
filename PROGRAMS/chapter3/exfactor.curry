@@ -12,3 +12,4 @@ a ./. b = a /= 0 && b `mod` a == 0
 -- 2 ./. 7 => False
 -- 0 ./. 8 => False
 
+main = 3 ./. 15 -- -> True
