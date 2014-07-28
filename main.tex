@@ -22,7 +22,6 @@
 \hypersetup{pdfauthor={S. Antoy and M. Hanus}}
 \hypersetup{pdfstartview=FitH}
 \usepackage{thumbpdf}
-\usepackage{baseurl}
 
 %%% ------------------------------------------------------------------
 
@@ -39,6 +38,8 @@
 \setlength{\figurewidth}{\textwidth}
 \addtolength{\figurewidth}{-0.4cm}
 
+% base URL for downloading programs:
+\def\baseurl{http://www.informatik.uni-kiel.de/~curry/tutorial/}
 % reference to a program in the PROGRAMS directory:
 \newcommand{\globalproghref}[2]{\href{\baseurl PROGRAMS/#1.pdf}{#2}}
 \newcommand{\downloadref}[2]{\href{\baseurl PROGRAMS/chapter\thechapter/#1.curry}{[Download #2]}}
