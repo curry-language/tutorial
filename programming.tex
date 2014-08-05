@@ -15,7 +15,14 @@ As list can also be used for representing collections, typically
 unordered, such as a set, by ignoring or hiding the implicit
 order of the elements.
 \item{} 
-A \emph{tree}\index{tree} ...
+A \emph{tree}\index{tree} is a multibranching
+data structure that abstracts a hierarchy of values or conditions.
+It naturally represents taxonomies or classifications and
+therefore it is useful for problems involving search.
+Trees come in many variants, but all consists of a value
+called \emph{root}\index{root} and some subtrees called
+\emph{children}\index{child}.
+Similar to lists, trees can be used for representing collections.
 \end{itemize}
 %
 This section describes in some detail both these datatypes and how
@@ -69,7 +76,7 @@ This notation has several advantages over the standard algebraic
 notation: lists stand out in a program and references to lists
 are textually shorter.  In particular, the number of parentheses
 occurring in the text is reduced.
-This claim can be easily verified by comparing the builtin
+This claim can be easily verified by comparing the built-in
 notation with the ordinary notation.
 % which was the subject of Exercise~\ref{ex_userlist}.
 %%% Should the exercise be moved here? 
@@ -553,7 +560,7 @@ The meaning is that, e.g., \code{162} is a direct prerequisite of both
 \code{163} and \code{200} and that, e.g., 
 both \code{252} and \code{300} are direct prerequisites of \code{303}.
 
-The function to compute \emph{all} the direct prerequites
+The function to compute \emph{all} the direct prerequisites
 of a course and the function to compute \emph{all} courses that
 a course gives access to (somewhat the inverse of the former)
 are shown below
@@ -656,7 +663,143 @@ defines suits, ranks, etc.
 
 \section{Trees}
 
-...
+We discuss two common variants of trees and show some typical functions
+of each variant.
+
+\subsection{Binary Search Trees}
+
+A \emph{binary tree}\index{binary tree} is either of the
+following: a singleton value called \emph{empty}\index{binary tree!empty}
+(also \emph{null} or \emph{leaf}) or a pair, called a
+\emph{branch}\index{binary tree!branch}, consisting of two
+binary trees called the \emph{left} and the \emph{right child}.
+Most often, a branch is a triple rather than a pair
+which in addition to the children
+also stores a value of some generic set.  This value
+is called the \emph{root}\index{root} or \emph{decoration}
+of the tree.
+
+\medskip\noindent
+A (decorated) binary tree is declared in Curry as:
+%
+\begin{prog}
+data BinTree a = Leaf | Branch a (BinTree a) (BinTree a)
+\end{prog}
+%
+where $a$ is a parameter that stands for the type of the
+decorations.
+
+A popular variant of binary trees is called a
+\emph{binary search tree}\index{binary search tree}.
+The set of decorations is totally ordered and the decoration
+of a non-empty binary search tree is greater than all the decorations
+in the left child and smaller than all the decorations
+in the right child.
+This condition prevents repeated decorations in a binary search tree.
+The following function inserts a value in a binary search tree
+in such a way that the result is again a binary search tree
+\proghref{binsearchtree}{Program}:
+%
+\begin{prog}
+insert x Leaf = Branch x Leaf Leaf
+insert x (Branch d l r)
+  | x < d = Branch d (insert x l) r
+  | x > d = Branch d l (insert x  r)
+  | otherwise = Branch d l r
+\end{prog}
+%
+An in-order traversal\index{tree!traversal} of any binary search tree
+produces the sorted list of the decorations of the tree.
+%
+\begin{prog}
+inorder Leaf = []
+inorder (Branch d l r) = inorder l ++ [d] ++ inorder r
+\end{prog}
+%
+\begin{exercise}
+Sort a list without repeated values by constructing
+a binary search tree from the list and then traversing the
+tree
+\proghref{treesort}{Answer}.
+\end{exercise}
+
+\subsection{Trie Trees}
+
+An \emph{ordered tree}\index{ordered tree} is a pair
+in which the first component is an element of a set,
+called the set of decorations, and the second component
+is a sequence of ordered trees.
+
+\medskip\noindent
+An ordered tree is declared in Curry as:
+%
+\begin{prog}
+data Tree a = Tree a [Tree a]
+\end{prog}
+%
+where $a$ is a parameter that stands for the type of the
+decorations and the identifier ``\emph{Tree}'' is overloaded to
+denote both a type constructor (1st and 3rd occurrences)
+and a data constructor (2nd occurrence).
+
+A \emph{trie} is a tree that stores a mapping from keys,
+typically strings, to values and is characterized by sharing
+key prefixes.  We present a simple variant where only keys
+are stored.  This variant is useful to efficiently
+represent a dictionary and tell whether a string is
+in the dictionary.
+%
+For example, a trie storing the strings ``car'', ``care''
+and ``carton'' stores the letter `c', `a', and `r', only
+once as shown below.  The distinguished symbol `$\bullet$'
+terminates a string.
+
+%\hspace*{2in}
+$$
+\xymatrix@1@C=6pt@R=6pt@M=1pt{
+  & c \ar@{-}[d] \\  
+  & a \ar@{-}[d] \\  
+  & r \ar@{-}[dl]\ar@{-}[d]\ar@{-}[dr] \\  
+  \bullet & e \ar@{-}[d] & t \ar@{-}[d] \\
+  & \bullet & o \ar@{-}[d] \\  
+  & & n \ar@{-}[d] \\  
+  & & \bullet
+}
+$$
+
+\noindent
+We declare the type of a trie as follows:
+%
+\begin{prog}
+type Trie = [Tree Char]
+\end{prog}
+%
+The following function inserts a string in a trie
+sharing whatever prefix of the string might already be present in the trie.
+The distinguished symbol that terminate a string is a period.
+%
+\begin{prog}
+insert :: String -> Trie -> Trie
+insert [] t = (Tree '.' [] : t)
+insert (w:ws) [] = [Tree w (insert ws [])]
+insert (w:ws) (Tree c cs : ts)
+  | ord w < ord c = insert (w:ws) [] ++ (Tree c cs : ts)
+  | ord w > ord c = Tree c cs : insert (w:ws) ts
+  | otherwise = Tree c (insert ws cs) : ts
+\end{prog}
+%
+\begin{exercise}
+Code functions to build a trie from a list of words
+and to print all the words in the trie
+\proghref{testtrie}{Answer}.
+\end{exercise}
+%
+\begin{exercise}
+Code a function that takes a word and a trie and tells
+whether or not the word is in the trie
+\proghref{trie}{Answer}.
+\end{exercise}
+
 % \begin{itemize}
 % \item Lists, Trees,
 % \item Sorting, Searching, Solving, Text Processing, Parsing
