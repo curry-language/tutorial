@@ -8,3 +8,8 @@ insert x (Branch d l r)
 
 inorder Leaf = []
 inorder (Branch d l r) = inorder l ++ [d] ++ inorder r
+
+testTree = Branch 2 (Branch 1 (Branch 0 Leaf Leaf) Leaf)
+                    (Branch 3 Leaf (Branch 4 Leaf Leaf))
+                    
+main = inorder testTree

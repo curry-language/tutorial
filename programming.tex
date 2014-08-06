@@ -776,7 +776,8 @@ type Trie = [Tree Char]
 %
 The following function inserts a string in a trie
 sharing whatever prefix of the string might already be present in the trie.
-The distinguished symbol that terminate a string is a period.
+The distinguished symbol that terminates a string is a period.
+\proghref{TrieInsert}{Program}
 %
 \begin{prog}
 insert :: String -> Trie -> Trie
@@ -791,13 +792,13 @@ insert (w:ws) (Tree c cs : ts)
 \begin{exercise}
 Code functions to build a trie from a list of words
 and to print all the words in the trie
-\proghref{testtrie}{Answer}.
+\proghref{TrieBuild}{Answer}.
 \end{exercise}
 %
 \begin{exercise}
 Code a function that takes a word and a trie and tells
 whether or not the word is in the trie
-\proghref{trie}{Answer}.
+\proghref{TrieSearch}{Answer}.
 \end{exercise}
 
 % \begin{itemize}

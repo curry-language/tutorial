@@ -45,4 +45,5 @@ publish: pdf
 	cd PROGRAMS ; cleancurry -r
 	cp -r PROGRAMS $(WEBDIR)
 	cd $(WEBDIR) && rm -rf PROGRAMS/GenerateHRefs.curry PROGRAMS/.curry PROGRAMS/*/.curry *~ */*~ */*/*~
+	cd $(WEBDIR) && rm -f PROGRAMS.zip && zip -r PROGRAMS.zip PROGRAMS
 	chmod -R go+rX $(WEBDIR)
