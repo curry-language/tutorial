@@ -416,6 +416,7 @@ before applying a function to its arguments.
 This fact is sometimes a source of confusion for the beginner.
 
 \subsection{Pattern Matching}
+\label{Pattern Matching}
 
 The definition of a function can be broken into several
 rules\index{rewrite rule}.
@@ -557,6 +558,58 @@ are able to {\codefont polish}.
 Code a non-deterministic function, {\codefont assign},
 that assigns to a task a worker that can execute it.
 \proghref{exnondettask}{Answer}
+\end{exercise}
+
+\subsection{Functional Patterns}
+\label{Functional Patterns}
+
+Pattern matching, see Sect.~\ref{Pattern Matching}, is a feature that
+provides in a compact and readable form both case distinction
+and (sub)argument selection.
+The arguments in a rule defined by pattern matching are expressions
+consisting of variables and/or data constructor symbols.
+Curry amplifies this feature with functional patterns.
+In a \emph{functional pattern}\index{functional pattern}
+some argument in a rule defining
+a function is an expression containing a function symbol.
+For example, the function computing the last element
+of a non-empty list can be defined as:
+%
+\begin{prog}
+last (_++[e]) = e
+\end{prog}
+%
+where \ccode{++} is an infix operator that concatenates two lists,
+see function \code{conc} in Sect.~\ref{sec-lists}.
+The intuition is that if a list $l$ can be seen as the concatenation
+of some uninteresting list and a list containing the single element $e$,
+then $e$ is the last element of $l$.
+
+The meaning of the above rule is the same as the infinite set of rules:
+%
+\begin{prog}
+last [e] = e
+last [_,e] = e
+last [_,_,e] = e
+$\ldots$%
+\end{prog}
+
+\noindent
+Code employing functional patters should be preferred to
+similar code using conditions (see below)
+because it is more readable and more efficient:
+%
+\begin{prog}
+last xs | xs =:= _++[e] = e~~where e free  %
+\end{prog}
+%
+\begin{exercise}
+Define a function that takes a list $a$ of integers and
+computes a sublist $l$ of $a$ such that the last element of $l$
+is twice the first element.  E.g.,
+given the list $[3,6,2,1,4,5]$ the sublists satisfying the
+required constrain are $[3,6]$ and $[2,1,4]$.
+\proghref{consublist}{Answer}
 \end{exercise}
 
 \section{User-defined Types}
