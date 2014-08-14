@@ -1,0 +1,111 @@
+\chapter{Design Patterns}
+
+\section{Overview}
+
+A \emph{design pattern}\index{design pattern}
+is a proven solution to a recurring
+problem in software design and development.
+A typical pattern is not reusable code, as a library function would be,
+but consists of problems, motivations, and design decisions
+related to the elements of a software artifact.
+Many functional logic design patterns are centered on the characteristic
+features of the paradigm, non-determinism and logic variables.
+
+Patterns originated for object-oriented programming languages
+and became an important disciple in computer
+science after \cite{GammaEtAl94}.
+Design patterns for functional logic programming
+were introduced and further developed in
+\cite{AntoyHanus02FLOPS,AntoyHanus11WFLP}.
+We present a pattern using \emph{tags}\index{pattern!tag},
+typically a one-line description of some key element
+of a problem or its solution.
+In this tutorial, we use only four simple tags:
+\emph{name}\index{pattern!name},
+\emph{intent}\index{pattern!intent},
+\emph{solution}\index{pattern!solution}, and
+\emph{structure}\index{pattern!structure}
+with self-explaining meaning.
+
+\subsection{Deep selection}\label{sec-Deep-selection}
+
+\begin{center}
+\begin{tabular}{@{} | *{2}{@{\hspace{3pt}} l @{\hspace{3pt}} |} @{}}
+\hline
+Name & \emph{Deep selection} \\
+\hline 
+Intent & \multi{pattern matching at arbitrary depth in recursive types} \\
+\hline
+Applicability & select an element with given properties in a structure \\
+\hline
+Structure & \multi{combine a type generator with a functional pattern} \\
+\hline
+\end{tabular}
+\end{center}
+
+\noindent
+Recursively defined
+types, such as lists and trees, have components at arbitrary
+depths that cannot be selected by pattern matching because pattern
+matching selects components only at predetermined positions.  
+For recursively defined types, the
+selection of some element with a given property in a
+data structure typically requires code for the traversal of the
+structure which is intertwined with the code for using the element.  The
+combination of functional patterns with type generators
+allows us to select elements arbitrarily nested in a
+structure in a pattern matching-like fashion without
+explicit traversal of the structure and mingling of
+different functionalities of a problem.
+
+We show the application of this pattern in one example.
+Consider a simple type for representing arithmetic
+expressions:
+%
+\begin{prog}
+data Exp = Lit Int
+         | Var [Char]
+         | Add Exp Exp
+         | Mul Exp Exp
+\end{prog}
+%
+For example, the expression $x+1$ is encoded as 
+$e = \code{Add (Var "x") (Lit 1)}$.
+Suppose that we want to match an expression with 
+some property, e.g., the expression is a variable,
+regardless of whether it occurs.
+First, we define a function, \emph{withSub},
+that takes an expression $t$
+and non-deterministically generates 
+some expression with $t$ as subexpression.
+%
+\begin{prog}
+withSub exp = exp
+            ? op (withSub exp) unknown
+            ? op unknown (withSub exp)
+   where op = Add ? Mul  
+\end{prog}
+%
+For example, if $t = \code{Var "x"}$, then
+\code{withSub $t$} evaluates, among other possibilities,
+to an expression matching the expression $e$ discussed earlier.
+Thus, using functional patterns, Sect.~\ref{Functional Patterns},
+we can pattern match a subexpression $t$ anywhere in an expression $e$.
+
+To see this action, consider the function \emph{varOf} defined below.
+This function takes an expression $e$ and returns  the identifier
+of a variable occurring anywhere in $e$.  With ordinary pattern matching,
+only a variable at a fixed position, e.g., the root or the left
+argument of an expression, can be matched.  With \emph{withSub} we
+match any variable anywhere:
+%
+\begin{prog}
+varOf :: Exp -> String
+varOf (withSub (Var v)) = v  
+\end{prog}
+%
+For example, the set of the identifiers of all the variables of
+occurring in an expression $e$ is simply obtained with the set function
+of \emph{varOf}, i.e., \code{set1 varOf $e$}.
+
+
