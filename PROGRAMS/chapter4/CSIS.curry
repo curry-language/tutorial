@@ -1,7 +1,8 @@
 import List
-import Findall
+import SetFunctions
 
--- 2001 catalog
+-- Prerequisites table, 2001 catalog
+-- This is a directed acyclic graph
 
 isPrereqOf 162 = 161
 isPrereqOf 163 = 162
@@ -20,12 +21,35 @@ isPrereqOf 303 = 252
 isPrereqOf 303 = 300
 isPrereqOf 350 = 252
 
-allIsPrereqOf     course = findall (\p -> isPrereqOf course =:= p)
-allGivesAccessTo  course = findall (\c -> isPrereqOf c =:= course)
+isPrereqOf'set course = set1 isPrereqOf course
 
-transClosPrereq course = tail (listAll [course])
-  where directList l = concat (map (\c -> findall (\p -> isPrereqOf c =:= p)) l)
-        listAll l = if (tmp == []) then l else nub (l ++ listAll tmp)
-          where tmp = directList l
+-- Tree of prereqs.  Local to transClosPrereq only.
+-- The children of a node are the direct prerequisites of the decoration.
+data Tree = Tree Int [Tree]
 
-main = transClosPrereq 202  -- -> [163,201,162,200,161]
+-- Transitive closure of prerequisite of a course c,
+-- i.e., all the courses you have to take before taking c.
+transClosPrereq course = (nub . tail . collect . grow) (Tree course [])
+  where
+      -- Grow the prerequisites tree.
+      -- It terminates because the graph is acyclic
+      grow (Tree course []) = Tree course children
+          where direct = (sortValues . isPrereqOf'set) course
+                children = map (grow . makeleaf) direct
+                makeleaf x = Tree x []
+
+      -- Collect all the prerequisites of the root.
+      -- Some prereqs may occur repeatedly.
+      collect (Tree course children) = course : concatMap collect children
+
+main = transClosPrereq 202  -- -> [163,162,161,201,200]
+
+------------------------------------------------------------------
+
+-- isPrereqOf is a many-to-many relation.
+-- The inverse of isPrereqOf is meaningfull in its own right
+
+giveAccessTo (isPrereqOf x) = x
+
+test1 = giveAccessTo 162
+test2 = set1 giveAccessTo 162

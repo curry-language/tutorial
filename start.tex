@@ -363,7 +363,9 @@ these instantiations in a goal-oriented manner).
 However, we might not be interested to see
 all possible evaluations but only those that lead to a required
 result. For instance, we might be only interested to compute
-instantiations in a Boolean formula so that the formula becomes true.
+instantiations in a Boolean formula so that the formula becomes true,
+e.g., as in solving an equation.
+
 For this purpose, Curry offers \emph{constraints}\index{constraint},
 i.e., formulas that are intended to be solved (instead of computing
 an overall value). One of the basic constraints supported by Curry
@@ -380,13 +382,12 @@ to a Boolean expression by solving a constraint containing \code{True}
 on one side:
 \begin{prog}
 Prelude> \userinput{(x \&\& (y || (not x))) =:= True  where x,y free}
-\{x=True, y=True\} success
+\{x=True, y=True\} True
 \end{prog}
-Note that \ccode{success}\pindex{success}
-denotes the trivial, always satisfiable
-constraint, i.e., a result like \ccode{success} indicates that
-the constraint is satisfied with respect to the computed instantiations.
-
+% Note that \ccode{success}\pindex{success}
+% denotes the trivial, always satisfiable
+% constraint, i.e., a result like \ccode{success} indicates that
+% the constraint is satisfied with respect to the computed instantiations.
 Curry allows the definition of functions by several rules
 and is able to search for several solutions. We can combine
 both features to define functions that yield more than one
@@ -421,7 +422,7 @@ this constraint ($c_1\,\code{\&}\,c_2$ denotes the conjunction
 of the two constraints $c_1$ and $c_2$):
 \begin{prog}
 choose> \userinput{x=:=one23 \& x+x=:=x*x  where x free}
-\{x=2\} success
+\{x=2\} True
 \end{prog}
 Set-valued functions are often a reasonable alternative
 to flexible functions in order to search for solutions.

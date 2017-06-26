@@ -210,10 +210,13 @@ whereas the second is narrowing-based.
 \begin{prog}
 inductLast [x] = x
 inductLast (x:y:z) = inductLast (y:z) \\[-2ex]
-narrowLast x | x =:= y++[e] = e where y,e free
+narrowLast (_++[e]) = e
 \end{prog}
 %
-\vspace*{-3ex}
+Observe that \code{narrowLast} computes the result by solving the
+equation \ccode{l == \_++[e]} in which \ccode{l} is the argument of
+the call.
+%
 
 \subsection{Ranges}
 \label{list-ranges}
@@ -273,7 +276,7 @@ numbers are obtained as follows
 \proghref{comprehensions}{Program}:
 %
 \begin{prog}
-squares   = [x * x | x <- [0\,..]]
+squares   = [x * x | x <- [0\,..]]anagrafe.sanfrancisco@esteri.it
 triangles = [x * (x+1) `div` 2 | x <- [0\,..]]
 \end{prog}
 %
@@ -493,57 +496,78 @@ because it is meaningful only for non-empty lists.
 The function \code{foldr1}, defined in the prelude,
 would simplify our definition of \code{maxList}.
 
-\subsection{\fontfamily{pcr}\fontseries{b}\selectfont findall}
-\label{findall}
+\newcommand{\funset}[1]{#1\ensuremath{_{\cal S}}}
+\subsection{Set Functions}
+\label{Set Functions}
 
-There is a function, \code{findall}\pindex{findall}
-(predefined in the library \code{Findall})
-that is similar to a list comprehension and generates a list of values
-from an expression that generates a value.
-By contrast to comprehensions, though, the generator
-of \code{findall} is a constraint, i.e., a function returning
-\code{Success}, and the order in which the elements are generated
-is less deterministic.
-The function \code{findall} is often
-used to find all the solutions of a search problem.
-
-For example, consider the problem of computing all the subsets
-of a set.  Let us represent a set with a list.
-This representation requires some care both to avoid
-duplicate elements in a list and to ensure that
-the order of the elements in a list cannot be observed.
-We ignore these conditions since they are irrelevant to our example.
-The following non-deterministic function returns a
-subset of a set
-\proghref{forFindall}{Program}:
+A non-deterministic function $f$ may return different results for
+some combination of arguments.  The programmer has no control over
+which of these results an invocation of $f$ returns.
+Any result returned by $f$ is completely unrelated to any other result.
+For some problems, it may be convenient to consider \emph{all}
+the results returned by $f$ as a whole.
+The device that returns \emph{all} the results returned by $f$
+for some combination of arguments is called the \emph{set function} of $f$
+and is typically denoted $\funset f$.\index{set function}
+For example, given:
 %
 \begin{prog}
-import Findall
+  f x = x ? x+1
+\end{prog}
+%
+the value of \code{\funset{f} x} is the set \code{\{x,x+1\}}
+where the details of the representation of this set are irrelevant to our
+discussion.
 
+The definition of the set function of a function $f$
+separates the non-determinism of $f$ from any non-determinism
+of the arguments to which $\funset{f}$ is applied \cite{AntoyHanus09PPDP}.
+In particular, $\funset{f}$ is deterministic for any $f$.
+Referring to the example above, \code{\funset{f} (2\,?\,4)} evaluates
+to \code{\{2,3\}} and \code{\{4,5\}} in which the non-determinism
+originates entirely from the argument.
+
+\pakcs{} provides a library\index{set function!library}, \code{SetFunctions},
+that eases the definition of set functions.
+This library defines both a suitable abstraction of a type \emph{set}
+to represent the results of a set function application, and
+a family of functions \code{set0}, \code{set1}, $\ldots$~
+Gives a function $f$ of arity $n$,
+the set function of $f$ is provided by the expression \code{set$n$ $f$}.
+The first argument of \code{set$n$} must be the \emph{identifier}
+of a function of arity $n$.
+
+%%% This is a problematic example.
+%%% There are two potential sources of confusion:
+%%% 1. A set function that takes a set as argument
+%%% 2. Representing some set abstractly and some set with a list
+For example, consider the problem of computing all the subsets
+of a set $S$.  This is called the powerset\index{powerset} of $S$. 
+Let us represent a set with a list.
+This representation requires some care to ensure that
+duplicate elements in a list and
+the order of the elements in a list are not observable.
+We ignore these issues since they are irrelevant to our discussion.
+The following non-deterministic function returns a
+subset of its argument, a set represented as a list:
+\proghref{AllSubsets}{Program}:
+%
+\begin{prog}
 subset []     = []
 subset (x:xs) = x:subset xs
 subset (_:xs) =   subset xs
 \end{prog}
 %
-Now, using \code{findall} we can easily compute the set of
-all subsets of a set
-\proghref{forFindall}{Program}:
+In \pakcs{}, with the help of the \code{SetFunctions} library,
+we define the power set of a set as follows:
 %
 \begin{prog}
-allSubsets set = findall (\char92x -> subset set =:= x)
+powerset s = set1 subset s  -- poweset is the set function of subset
 \end{prog}
 %
-The intuitive reading of the above fragment is ``Find all
-$x$'s such that $x$ is a subset of \emph{set}.''
-
-In the above example, the constraint may generate more than
-one value because the function \code{subset} is non-deterministic.
-A second situation in which a constraint may generate more
-than one value is when its evaluation involves narrowing
-steps.
 For example, the prerequisites for the undergraduate 
 Computer Science courses at Portland State
-is abstracted by 16 rules as follows
+are abstracted by 16 rules as follows
 \proghref{CSIS}{Program}:
 %
 \begin{prog}
@@ -559,23 +583,16 @@ isPrereqOf 350 = 252
 The meaning is that, e.g., \code{162} is a direct prerequisite of both
 \code{163} and \code{200} and that, e.g., 
 both \code{252} and \code{300} are direct prerequisites of \code{303}.
+Observe that \code{IsPrereqOf} is a many-to-many relation.
 
 The function to compute \emph{all} the direct prerequisites
-of a course and the function to compute \emph{all} courses that
-a course gives access to (somewhat the inverse of the former)
-are shown below
+of a course is shown below
 \proghref{CSIS}{Program}:
 %
 \begin{prog}
-allIsPrereqOf     course = findall (\char92p -> isPrereqOf course =:= p)
-allGivesAccessTo  course = findall (\char92c -> isPrereqOf c =:= course)
+\funset{IsPrereqOf} course = set1 IsPrereqOf course
 \end{prog}
 %
-The evaluation of \code{findall} does not instantiate
-the free variables, if any, in the constraint argument
-unless they are local to the constraint itself,
-i.e., they are declared by a \code{let} block.
-The reason is that this seems to be the most sensible semantics.
 
 
 \subsection{Narrowing}
@@ -591,66 +608,48 @@ Generally, the latter leads to simpler and more declarative programs.
 
 For example, consider a program that plays the game of poker.
 A hand is represented by a list of 5 cards.
-Suppose that the problem is to find whether 4 of the 5 cards
-are all of the same kind, i.e., the hand is a four-of-a-kind.
+Suppose that the problem is to find whether 4 out of the 5 cards
+have the same rank, i.e., the hand is a four-of-a-kind.
 A narrowing-based solution removes one card from the hand
-so that the remaining 4 cards are all of the same rank.
-The following function takes a hand.
-If the hand is a four-of-a-kind, the function returns the kind or rank
-of the four cards, otherwise it fails
+so that the remaining 4 cards have the same rank.
+The following function takes a hand and returns a Maybe type.
+If the hand is a four-of-a-kind, the function returns \emph{just}
+the rank of the four cards, otherwise it returns \emph{nothing}.
 \proghref{poker}{Program}:
 %
 \begin{prog}
-fourConstraint hand | hand =:= x++y:z \& map rank (x++z) =:= [r,r,r,r]
-                    = r
-                    where x,y,z,r free
+isFour (x++[_]++z) | map rank (x++z) == [r,r,r,r] = Just r where r free
+isFour'default _ = Nothing
 \end{prog}
 %
-The card removed from the hand is represented by \code{y}.
-This card is non-deterministically selected by solving
-the constraint \ccode{hand =:= x++y:z}.
+The card removed from the hand is represented by the anonymous
+variable in the functional pattern.
+This card is non-deterministically selected.
 The remaining cards are represented by \code{x} and \code{z}.
-They are uniquely determined by the selection of \code{y},
-and vice versa.
-Additionally, the condition of the rule imposes that
+Additionally, the condition of the first rule imposes that
 all the cards in \code{x} and \code{z}
-have the same rank, represented by \code{r}.
+have the same rank, \code{r}.
 The rank, too, is non-deterministically selected by solving
-the constraint \ccode{map rank (x++z) =:= [r,r,r,r]}.
+the equation \ccode{map rank (x++z) == [r,r,r,r]}.
 If the condition succeeds, there is obviously a unique
 value for all these variables.
+If the first rule cannot be applied, it must be that
+there are no four cards of the same rank in the hand.
+The default rule reports this condition
 
 The advantage of the narrowing-based approach
 over more conventional approaches is that no instructions need to
 be coded both to isolate the card that does not contribute to
-the four-of-a-kind nor to find the kind of the four.
+the four-of-a-kind nor to find the rank of the four-of-a-kind
+when it exists.
 
-As we said, when a hand is not a four-of-a-kind the above function fails.
-In general, failures are undesirable for normal conditions
-such as not having a four-of-a-kind hand.
-The function \code{findall} described in Section~\ref{findall}
-is used to construct a list
-of all the results produced by
-\code{fourConstraint} when applied to a hand.
-Obviously, this list can contain either zero or one value only.
-The following function prints whether a hand is a four-of-a-kind
-without ever failing
-\proghref{poker}{Program}:
-%
-\begin{prog}
-isFour hand = putStrLn (if sorry then "Sorry" else "Four "++(show rank))
-              where score = findall (\char92r -> fourConstraint hand =:= r)
-                    sorry = score == []
-                    rank  = head score
-\end{prog}
-%
 The above example is typical of situations in which a collection
 contains elements that must satisfy a certain conditions.
 Since lists are implicitly ordered, conditions involving
 the \emph{position} of elements in a collection can also be
 conveniently expressed using narrowing.
-We will see an example of this kind in a program to
-solve the $n$-queens puzzle.
+% We will see an example of this kind in a program to
+% solve the $n$-queens puzzle.
 
 \begin{exercise}
 Similar to the example just discussed, code a function

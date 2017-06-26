@@ -205,14 +205,12 @@ String & \code{String} & \code{"hello", "world"} \\
 \hline
 List of $\tau$ & \code{[$\tau$]} & \code{[], [0,1,2], 0:1:2:[]} \\
 \hline
-Success & \code{Success} & \code{success} \\
-\hline
 Unit & \code{()} & \code{()} \\
 \hline \hline
 \end{tabular}
 \end{center}
 \pindex{Int}\pindex{Bool}\pindex{Char}%
-\pindex{String}\index{List}\pindex{Success}\index{unit type}\pindex{()}
+\pindex{String}\index{List}\index{unit type}\pindex{()}
 %
 The details of these types are found in the {\pakcs} User Manual.
 Below, we only outline a few crucial characteristics of the builtin types.
@@ -229,13 +227,6 @@ The last two examples in the \emph{List} row of the table
 denote a list of integers,
 their type denoted by \ccode{[Int]}.
 The notation of lists will be further discussed later.
-The type \emph{Success}\pindex{Success} has no visible literal values
-and is intended to denote the result of successfully solved constraints.
-Hence, expressions of type \emph{Success} are also called
-\emph{constraints}\index{constraint}.
-Usually, they occur in conditions and are checked for satisfiability.
-The symbol \emph{success}\pindex{success} is a predefined
-function that denotes an always satisfiable constraint.
 The symbol \ccode{()}\pindex{()} denotes the unit type as well as the only
 element of this type. The unit type is useful in situations
 where the return value of a function is not important.
@@ -261,15 +252,15 @@ Some of these functions and operators are shown in the following table.
 \hline \hline
 Boolean equality & {\tt ==} & & 4 & {\tt a -> a -> Bool} \\
 \hline
-Constrained equality & {\tt =:=} & & 4 & {\tt a -> a -> Success} \\
+Constrained equality & {\tt =:=} & & 4 & {\tt a -> a -> Bool} \\
 \hline
 Boolean conjunction & {\tt \&\&} & R & 3 & {\tt Bool -> Bool -> Bool} \\
 \hline
 Boolean disjunction & {\tt ||} & R & 2 & {\tt Bool -> Bool -> Bool} \\
 \hline
-Parallel conjunction & {\tt \&} & R & 0 & {\tt Success -> Success -> Success} \\
+Parallel conjunction & {\tt \&} & R & 0 & {\tt Bool -> Bool -> Bool} \\
 \hline
-Constrained expression & {\tt \&>} & R & 0 & {\tt Success -> a -> a} \\
+Constrained expression & {\tt \&>} & R & 0 & {\tt Bool -> a -> a} \\
 \hline
 \hline
 \end{tabular}
@@ -278,20 +269,25 @@ Constrained expression & {\tt \&>} & R & 0 & {\tt Success -> a -> a} \\
 
 \vspace{3ex}
 \noindent
+Because of non-determinism and free variables, in the following discussion,
+different evaluations of the same expression may produce different values.
+\\[1ex]
 The \emph{Boolean equality}\index{Boolean equality}\index{equality!Boolean}
 applied to expressions $u$ and $v$, i.e.,
 $u\;\mbox{\tt ==}\;v$, returns \ccode{True}
-if and only if $u$ and $v$ can be evaluated to the
-same \emph{value}---a precise definition will be given later. 
+when $u$ and $v$ evaluate to the
+same \emph{value} and \ccode{False} when they
+evaluate to different \emph{values}---a
+more precise definition will be given later. 
 If the evaluation of $u$ and/or $v$ ends in an expression that
 still contains functions, e.g., \code{1 `div` 0} the computation
-\emph{fails} and neither \ccode{True} nor \ccode{False} is returned.
+\emph{fails} and no value is returned.
 \\[1ex]
 The \emph{constrained equality}\index{constrained equality}%
 \index{equality!constrained}
 applied to expressions $u$ and $v$, i.e.,
-$u\;\mbox{\tt =:=}\;v$, succeeds
-if and only if $u$ and $v$ can be evaluated to the
+$u\;\mbox{\tt =:=}\;v$ returns \ccode{True}
+when $u$ and $v$ evaluate to the
 same \emph{value}---a precise definition will be given later. 
 Otherwise, the computation \emph{fails} and no value is returned.
 A key difference between the Boolean and the constrained equalities
@@ -302,13 +298,13 @@ The \emph{Boolean conjunction}\index{Boolean conjunction}%
 \index{conjunction!Boolean}
 applied to expressions $u$ and $v$, i.e.,
 $u\;\mbox{\tt \&\&}\;v$, returns \ccode{True}
-if and only if $u$ and $v$ can be evaluated to \ccode{True}.
+when $u$ and $v$ evaluate to \ccode{True}.
 \\[1ex]
 The \emph{Boolean disjunction}\index{Boolean disjunction}%
 \index{disjunction!Boolean}
 applied to expressions $u$ and $v$, i.e.,
 $u\;\mbox{\tt ||}\;v$, returns \ccode{True}
-if and only if $u$ or $v$ can be evaluated to \ccode{True}.
+when $u$ or $v$ evaluate to \ccode{True}.
 \\[1ex]
 The \emph{parallel conjunction}\index{parallel conjunction}%
 \index{conjunction!parallel}
@@ -320,8 +316,8 @@ otherwise it fails.
 The \emph{constrained expression}\index{constrained expression}%
 \index{expression!constrained}
 applied to a constraint $c$ and an expression $e$, i.e.,
-$c\;\mbox{\tt \&>}\;e$, evaluates first $c$ and, if this evaluation
-succeeds, then $e$, otherwise it fails.
+$c\;\mbox{\tt \&>}\;e$, evaluates first $c$ and, if $c$ evaluates
+to \ccode{True}, then the result is the value of $e$, otherwise it fails.
 
 Curry predefines many more functions and operations, e.g.,
 the standard arithmetic and relational operators on numbers.
@@ -611,6 +607,55 @@ given the list $[3,6,2,1,4,5]$ the sublists satisfying the
 required constraint are $[3,6]$ and $[2,1,4]$.
 \proghref{consublist}{Answer}
 \end{exercise}
+
+\subsection{Default Rule}
+\label{Default Rule}
+
+The Curry language specifies that the textual order of the rules
+defining a function is irrelevant in the sense that every rule that is
+applicable to an expression should be applied.
+In practice, the situation is more delicate.
+For example, in \pakcs{} when multiple rules are applicable
+some rule is going to be applied before some other
+and if the application of the first rule
+does not terminate the second rule is never applied.
+
+When defining a function,
+Curry allows the programmer to define a rule, called
+a \emph{default} rule\index{rule!default}\index{default rule} 
+that is applied only if all the other rules,
+that in this context we call \emph{standard}, cannot be applied.
+We recall that a standard rule $r$ is applicable to an expression
+$e$ iff $e$ and the left-hand side of $r$ unify and the condition
+of $r$, if any exists, is satisfied by the instantiation of $e$.
+For example, the operation \code{zip}
+is defined with a default rule as follows:
+%
+\begin{prog}
+zip (x:xs) (y:ys) = (x,y) : zip xs ys
+zip'default _ _ = []
+\end{prog}
+%
+Since the standard rule is applicable to \code{zip\,[1]\,[2]}, the
+default rule is ignored so that this expression is solely reduced to
+\code{(1,2):zip\,[]\,[]}. Since the standard rule is not applicable to
+\code{zip\,[]\,[]}, the default rule is applied and yields the value \code{[]}.
+Altogether, the only value of \code{zip\,[1]\,[2]} is \code{[(1,2)]}.
+However, if
+some argument has more than one value, we use the evaluation principle
+above for each combination.  Thus, the call \code{zip\,([1]\,?\,[])\,[2]} yields
+the two values \code{[(1,2)]} and \code{[]}.
+
+Default rules are useful to regain control after a failed search.  For
+example, consider looking up the value of a key in a key-value pair list.
+%
+\begin{prog}
+  lookup (key, \_++[(key,value)]++\_) = Just value
+  lookup'default _ = Nothing
+\end{prog}
+%
+If the key of a search is not in a list $l$, the call
+\code{lookup} $l$, returns \code{Nothing} instead of failing.
 
 \section{User-defined Types}
 
@@ -919,9 +964,9 @@ The arguments of a function can be functions themselves.
 This feature is banned or restricted by many programming languages.
 E.g., in C only a \emph{pointer} to a function can be passed
 as a parameter to another function. 
-For the same purpose, {C\hskip -0.1ex\raise 0.5ex\hbox{\tiny ++}}
-uses \emph{templates} and Java uses \emph{interfaces}.
-In Curry, no special construct or concept is necessary.
+% For the same purpose, {C\hskip -0.1ex\raise 0.5ex\hbox{\tiny ++}}
+% uses \emph{templates} and Java uses \emph{interfaces}.
+% In Curry, no special construct or concept is necessary.
 
 A function that takes an argument of function type is referred
 to as a \emph{higher-order}\index{function!higher order} function.
@@ -1481,8 +1526,9 @@ variables, whereas \ccode{b} is a logic variable.
 Variables, such as \ccode{b}, which occur in the condition
 and/or right-hand side of a rule, but not in the left-hand side,
 are also called \emph{extra variables}\index{extra variable}.
-Extra variables must be explicitly declared \ccode{free}
-in a \ccode{where} or \ccode{let} clause as shown in the example.
+Extra variables are explicitly declared \ccode{free}
+in a \ccode{where} or \ccode{let} clause as shown in the example,
+or are anonymous.
 
 \subsection{Evaluation}
 
@@ -1650,16 +1696,16 @@ The following operation parses a term
 \proghref{TermParser}{Program}:
 %
 \begin{prog}
-parseTerm s | s =:= fun ++ "(" ++ args ++ ")" \&
-              all isAlpha fun =:= True = Term fun (parseArgs args)
-  where fun, args free
-\smallskip
-parseTerm s | all isAlpha s =:= True = Term s []
+parseTerm (fun++"("++args++")") | all isAlpha fun = Term fun (parseArgs args)
+parseTerm s | all isAlpha s = Term s []
 \end{prog}
 %
-The elements of the program most relevant to our discussion are
+The elements of the program relevant to our discussion are
 the variables \ccode{fun} and \ccode{args}.
-The first condition of the operation \ccode{parseTerm}
+The functional pattern in the first rule acts similarly to solving the
+equation \ccode{s =:= fun++"("++args++")"} in which \ccode{s}
+is the argument of \ccode{parseTerm}.
+The first condition of the first rule of the operation \ccode{parseTerm}
 instantiates these variables and ensures that \ccode{fun}
 is an alphabetic identifier.
 The operation \ccode{isAlpha}, defined in the library \ccode{Char},
@@ -1677,12 +1723,8 @@ different criteria
 \proghref{TermParser}{Program}:
 %
 \begin{prog}
-parseArgs s | s =:= term ++ "," ++ terms \&
-              parseTerm term =:= result = result : parseArgs terms
-  where term, terms, result free
-\smallskip
-parseArgs s | parseTerm s =:= result = [result]
-  where result free
+parseArgs (term++","++terms) = parseTerm term : parseArgs terms
+parseArgs s = [parseTerm s]
 \end{prog}
 %
 One could code more efficient versions of this parser.
@@ -1798,7 +1840,7 @@ done = return ()
 \end{prog}
 %
 Using these primitives, we can define more complex interactive programs.
-For instance, an I/O action thats copies all characters from
+For instance, an I/O action that copies all characters from
 the standard input to the standard output up to the first period
 can be defined as follows
 \proghref{IOExamples}{Program}:
@@ -1906,7 +1948,7 @@ ERROR: non-determinism in I/O actions occurred!
 %
 One way to ensure the absence of such errors is the
 encapsulation of all search between I/O operations, e.g.,
-by using the function \code{findall}.
+by using set functions.
 
 \begin{exercise}
 Define an I/O action \code{filelength} that reads requests the name
