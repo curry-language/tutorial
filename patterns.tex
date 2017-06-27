@@ -106,6 +106,93 @@ varOf (withSub (Var v)) = v
 %
 For example, the set of the identifiers of all the variables of
 occurring in an expression $e$ is simply obtained with the set function
-of \emph{varOf}, i.e., \code{set1 varOf $e$}.
+of \code{varOf}, i.e., \code{\funset{varOf} $e$}.
 
 
+\subsection{Constrained Constructor}\label{sec-constrained-constructor}
+
+\begin{center}
+\begin{tabular}{@{} | *{2}{@{\hspace{3pt}} l @{\hspace{3pt}} |} @{}}
+\hline
+Name & \emph{Constrained Constructor} \\
+\hline 
+Intent & prevent invoking a constructor that might create invalid data \\
+\hline
+Applicability & a type is too general for a problem \\
+\hline
+Structure & define a function that either invokes a constructor or fails \\
+\hline
+\end{tabular}
+\end{center}
+%
+The signature of a functional logic program is partitioned into
+\emph{defined operations} and \emph{data constructors}.
+They differ in that operations manipulate data by means of rewrite rules,
+whereas constructors create data and have no associated rewrite rules.
+Therefore, a constructor symbol cannot perform any checks on the
+arguments to which it is applied.  If a constructor is invoked
+with arguments of the correct types, but inappropriate values,
+conceptually invalid data is created.
+We use an example to clarify this point.
+
+The \emph{Missionaries and Cannibals} puzzle is stated as follows.
+Three missionaries and three cannibals want to cross a river
+with a boat that holds up to two people.
+Furthermore, the missionaries, if any, on either bank of the river
+cannot be outnumbered by the cannibals
+(otherwise, as the intuition hints, they would be eaten by the cannibals).
+
+A state of this puzzle is represented by the number of
+missionaries and cannibals and the presence of the boat on an
+arbitrarily chosen bank of the river, by convention the \emph{initial} one:
+%
+\begin{prog}
+data State = State Int Int Bool
+\end{prog}
+%
+For example, with suitable conventions,
+\code{(State 3 3 True)} represents the initial state.
+The simplicity of this representation has the drawback
+that invalid states, e.g., those with more than 6 people,
+can be created as well.
+Unless complex and possibly inefficient types for the state are
+defined, it is not possible to avoid the creation of invalid states
+using constructors alone.
+
+The \emph{Constrained Constructor} pattern avoids
+the creation of invalid states.
+The programmer invokes the constructor indirectly
+through the following function:
+%
+\begin{prog}
+makeState m c b | valid \boolAnd safe = State m c b
+   where valid = 0<=m \boolAnd m<=3 \boolAnd 0<=c \boolAnd c<=3
+         safe  = m==3 || m==0 || m==c
+\end{prog}
+%
+Function \code{makeState} invokes the constructor only
+after checking that only states
+that are consistent with the physical conditions of the
+puzzle and are safe for the missionaries will be created.
+For example, 
+\code{(State 2 1 \panon)} is not safe since on one bank of the river
+the cannibals outnumber the missionaries
+and therefore should not be created.
+In fact, the call \code{makeState\,2\,1\,\_} fails because
+the rule's condition is not satisfied.
+In a suitable non-deterministic program, this failure can be
+simply and silently ignored.
+
+Operation \code{makeState} eases the definition of an operation,
+say \code{move}, to move people and boat across the river:
+%
+\begin{prog}
+move (State m c True)
+   = makeState (m-2) c False      \lineComment move 2 missionaries
+   ? makeState (m-1) c False      \lineComment move 1 missionary
+   ? makeState m (c-2) False      \lineComment move 2 cannibals
+   ? ...
+\end{prog}
+%
+since ``undesirable'' states are never produced
+\proghref{missionaries}{Program}.

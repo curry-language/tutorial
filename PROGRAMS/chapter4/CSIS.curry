@@ -29,14 +29,13 @@ data Tree = Tree Int [Tree]
 
 -- Transitive closure of prerequisite of a course c,
 -- i.e., all the courses you have to take before taking c.
-transClosPrereq course = (nub . tail . collect . grow) (Tree course [])
+transClosPrereq course = (nub . tail . collect . grow) course
   where
       -- Grow the prerequisites tree.
       -- It terminates because the graph is acyclic
-      grow (Tree course []) = Tree course children
-          where direct = (sortValues . isPrereqOf'set) course
-                children = map (grow . makeleaf) direct
-                makeleaf x = Tree x []
+      grow course = Tree course children
+          where roots = (sortValues . isPrereqOf'set) course
+                children = map grow roots
 
       -- Collect all the prerequisites of the root.
       -- Some prereqs may occur repeatedly.
