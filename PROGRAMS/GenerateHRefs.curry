@@ -16,6 +16,7 @@ import FileGoodies
 import Distribution(installDir,curryCompiler)
 import HTML(string2urlencoded)
 
+main :: IO ()
 main = do
   subdirs <- getSubDirs "."
   let exdirs = filter (\d -> take 7 d == "chapter") subdirs
@@ -23,6 +24,7 @@ main = do
   genMacroFile (concat fnames) "../browseurl.tex"
 
 --- Gets all subdirectories of a directory.
+getSubDirs :: String -> Prelude.IO [String]
 getSubDirs dir = do
   names <- getDirectoryContents dir
   dirs <- mapIO (\d -> doesDirectoryExist d >>= \b ->
@@ -30,6 +32,7 @@ getSubDirs dir = do
   return (concat dirs)
 
 --- Gets all Curry files in a directory
+getCurryFiles :: String -> Prelude.IO [String]
 getCurryFiles dir = do
   names <- getDirectoryContents dir
   fs <- mapIO (\f -> doesFileExist (dir++'/':f) >>= \b -> return
@@ -38,10 +41,12 @@ getCurryFiles dir = do
   return (concat fs)
 
 -- The base url of Smap:
+smapBaseUrl :: String
 smapBaseUrl = "http://www-ps.informatik.uni-kiel.de/smap/smap.cgi"
 --smapBaseUrl = "http://localhost/mh/smap/smap.cgi"
 
 -- The default programming language for uploaded programs:
+uploadLanguage :: String
 uploadLanguage = "curry"
 
 -- Generate Smap URL for a given program.
@@ -71,6 +76,7 @@ genMacroFile fnames outfile = do
   genResultMacro (t:ts) = "{"++t++"{"++genResultMacro ts++"}}"
 
 -- Escape latex special characters:
+escapeLaTeX :: String -> String
 escapeLaTeX [] = []
 escapeLaTeX (c:cs) | c=='%' = '\\' : '%' : escapeLaTeX cs
                    | otherwise = c : escapeLaTeX cs

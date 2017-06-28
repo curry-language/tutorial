@@ -276,7 +276,7 @@ numbers are obtained as follows
 \proghref{comprehensions}{Program}:
 %
 \begin{prog}
-squares   = [x * x | x <- [0\,..]]anagrafe.sanfrancisco@esteri.it
+squares   = [x * x | x <- [0\,..]]
 triangles = [x * (x+1) `div` 2 | x <- [0\,..]]
 \end{prog}
 %
@@ -549,7 +549,7 @@ duplicate elements in a list and
 the order of the elements in a list are not observable.
 We ignore these issues since they are irrelevant to our discussion.
 The following non-deterministic function returns a
-subset of its argument, a set represented as a list:
+subset of its argument, a set represented as a list
 \proghref{AllSubsets}{Program}:
 %
 \begin{prog}
@@ -562,7 +562,7 @@ In \pakcs{}, with the help of the \code{SetFunctions} library,
 we define the power set of a set as follows:
 %
 \begin{prog}
-powerset s = set1 subset s  -- poweset is the set function of subset
+powerset s = set1 subset s  -- powerset is the set function of subset
 \end{prog}
 %
 For example, the prerequisites for the undergraduate 
@@ -590,7 +590,7 @@ of a course is shown below
 \proghref{CSIS}{Program}:
 %
 \begin{prog}
-\funset{IsPrereqOf} course = set1 IsPrereqOf course
+\funset{isPrereqOf} course = set1 IsPrereqOf course
 \end{prog}
 %
 
