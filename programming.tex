@@ -685,9 +685,10 @@ A (decorated) binary tree is declared in Curry as:
 data BinTree a = Leaf | Branch a (BinTree a) (BinTree a)
 \end{prog}
 %
-where $a$ is a parameter that stands for the type of the
+where \code{BinTree} is a \emph{type constructor}
+\index{data declaration!type constructor}\index{type constructor}
+and $a$ is its parameter and stands for the type of the
 decorations.
-
 A popular variant of binary trees is called a
 \emph{binary search tree}\index{binary search tree}.
 The set of decorations is totally ordered and the decoration

@@ -625,6 +625,15 @@ Curry allows the programmer to define a rule, called
 a \emph{default} rule\index{rule!default}\index{default rule} 
 that is applied only if all the other rules,
 that in this context we call \emph{standard}, cannot be applied.
+Default rules are compiled by the Curry preprocessor
+%%% some reference ???
+which is enabled by placing the following
+line at the beginning of the source program.
+%
+\begin{prog}
+\{-\# OPTIONS_CYMAKE -F --pgmF=currypp --optF=defaultrules \#-\}  
+\end{prog}
+%
 We recall that a standard rule $r$ is applicable to an expression
 $e$ iff $e$ and the left-hand side of $r$ unify and the condition
 of $r$, if any exists, is satisfied by the instantiation of $e$.
@@ -679,7 +688,7 @@ is exactly how the builtin \ccode{Boolean} type would be declared
 if it were not builtin.
 In this declaration, the identifier \ccode{Boolean}
 is referred to as a \emph{type constructor}%
-\index{data declaration!type constructor}\index{type constructor},
+\index{data declaration!type}\index{type},
 whereas the identifiers \ccode{False} and \ccode{True}
 are referred to as \emph{data constructors}%
 \index{data declaration!data constructor}\index{data constructor}.
@@ -956,6 +965,64 @@ largest :: String -> (Int,Width)
 BigTall> 
 \end{prog}
 %
+
+\section{Type classes}
+\label{Type classes}
+
+
+A type class defines a generic interface abstracting
+some common feature over a variety of types.
+For example, many numeric structures, such as integer,
+vectors and matrices, allow the addition of elements in the structure.
+We capture the property of ``being \emph{addable}'' as follows:
+%
+\begin{prog}
+class Addable a where
+  (+) :: a ->  a  -> a
+\end{prog}
+%
+The variable \code{a} is a type parameter.
+The identifier \ccode{+} is chosen because we are generalizing
+addition, but it is not the usual addition of integers.
+Any symbols would acceptable:
+
+To say that some structure is \emph{addable} we use an \emph{instance}
+declaration.  For example, the following declaration
+states that the integers are addable
+and the addition operation is the addition function defined in the Prelude.
+%
+\begin{prog}
+instance Addable Int where
+  x + y = x Prelude.+ y
+\end{prog}
+%
+Next, we represent vectors (without an explicit data declaration)
+as lists of \emph{addables} and we define the addition of vectors
+as the component-wise addition of their elements:
+%
+\begin{prog}
+instance Addable a => Addable [a] where
+  xs + ys = zipWith (+) xs ys
+\end{prog}
+%
+The symbol \ccode{+} refers to the same symbol defined in the
+\code{Addable} type class and it is applied to the vectors' elements.
+With these definition we can add two vectors as follows:
+%
+\begin{prog}
+testv :: [Int]
+testv = [1,2,3] + [4,5,6]
+\end{prog}
+%
+\begin{exercise}
+  % \label{instance}
+  Define a matrix as follows:
+  \\[2ex]
+  {\tt  \phantom{WWW} data Matrix a = Matrix [[a]]}
+  \\[2ex]
+  and make it \emph{addable} using an instance declaration.
+  \proghref{xinstance}{Program}
+\end{exercise}
 
 \section{Higher-Order Computations}
 \label{Higher-Order}

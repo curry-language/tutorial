@@ -13,7 +13,7 @@ what:
 .PHONY: pdf
 pdf: programs
 	$(MAKE) main.pdf
-	thumbpdf main
+        # thumbpdf main
 	pdflatex main
 	rm -f thumb* main.out
 	@echo acroread main.pdf \&
@@ -29,7 +29,8 @@ main.pdf: main.tex introduction.tex start.tex features.tex programming.tex \
 # Generate URLs for all example programs:
 .PHONY: programs
 programs:
-	cd PROGRAMS && $(CURRYSYSTEM) :load GenerateHRefs :eval main :q
+        # The following needs to be fixed according to packages.
+        # cd PROGRAMS && $(CURRYSYSTEM) :load GenerateHRefs :eval main :q
 
 .PHONY: clean
 clean:
