@@ -1,7 +1,7 @@
 # To format the Curry tutorial
 
-# Curry system used to generate program URLs:
-CURRYSYSTEM=pakcs
+# The executable of the Curry package manager (used to generate program URLs):
+CPM=cypm
 
 .PHONY: all
 all:	programs pdf
@@ -26,11 +26,10 @@ main.pdf: main.tex introduction.tex start.tex features.tex programming.tex \
 	makeindex main.idx
 	pdflatex main
 
-# Generate URLs for all example programs:
+# Generate URLs for all example programs and write them into `browseurl.tex`
 .PHONY: programs
 programs:
-        # The following needs to be fixed according to packages.
-        # cd PROGRAMS && $(CURRYSYSTEM) :load GenerateHRefs :eval main :q
+	cd helper-programs && $(CPM) install && $(CPM) curry :load GenerateHRefs :cd ../PROGRAMS :eval main :q
 
 .PHONY: clean
 clean:
