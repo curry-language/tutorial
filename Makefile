@@ -4,14 +4,14 @@
 CPM=cypm
 
 .PHONY: all
-all:	programs pdf
+all: pdf
 
 .PHONY: what
 what:
-	@echo programs pdf publish
+	@echo pdf programs clean publish
 
 .PHONY: pdf
-pdf: programs
+pdf:
 	$(MAKE) main.pdf
         # thumbpdf main
 	pdflatex main
@@ -29,6 +29,9 @@ main.pdf: main.tex introduction.tex start.tex features.tex programming.tex \
 # Generate URLs for all example programs and write them into `browseurl.tex`
 .PHONY: programs
 programs:
+	$(MAKE) browseurl.tex
+
+browseurl.tex: PROGRAMS/*/*.curry
 	cd helper-programs && $(CPM) install && $(CPM) curry :load GenerateHRefs :cd ../PROGRAMS :eval main :q
 
 .PHONY: clean
@@ -40,9 +43,9 @@ clean:
 
 # put the current version of the PDF and all programs into my web pages:
 WEBDIR=$(HOME)/public_html/curry/tutorial
-publish: pdf
+publish: main.pdf
 	cp main.pdf $(WEBDIR)/tutorial.pdf
-	cd PROGRAMS ; cleancurry -r
+	cd PROGRAMS && cleancurry -r
 	cp -r PROGRAMS $(WEBDIR)
 	cd $(WEBDIR) && rm -rf PROGRAMS/GenerateHRefs.curry PROGRAMS/.curry PROGRAMS/*/.curry *~ */*~ */*/*~
 	cd $(WEBDIR) && rm -f PROGRAMS.zip && zip -r PROGRAMS.zip PROGRAMS
