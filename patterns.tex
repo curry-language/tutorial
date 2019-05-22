@@ -106,8 +106,8 @@ varOf (withSub (Var v)) = v
 %
 For example, the set of the identifiers of all the variables of
 occurring in an expression $e$ is simply obtained with the set function
-of \code{varOf}, i.e., \code{\funset{varOf} $e$}.
-
+of \code{varOf}, i.e., \code{\funset{varOf} $e$}
+\proghref{expr}{Program}.
 
 \subsection{Constrained Constructor}\label{sec-constrained-constructor}
 
@@ -196,3 +196,20 @@ move (State m c True)
 %
 since ``undesirable'' states are never produced
 \proghref{missionaries}{Program}.
+
+% \subsection{Call by reference}\label{sec-call-by-reference}
+% 
+% \begin{center}
+% \begin{tabular}{@{} | *{2}{@{\hspace{3pt}} l @{\hspace{3pt}} |} @{}}
+% \hline
+% Name & \emph{Call-by-reference} \\
+% \hline 
+% Intent & return multiple values from a function
+%   without a containing structure \\
+% \hline
+% Applicability & a function must return more than one value \\
+% \hline
+% Structure & an argument passed to a function is an unbound variable \\
+% \hline
+% \end{tabular}
+% \end{center}
