@@ -1,9 +1,12 @@
+-- Package `setfunctions` required, i.e., install this dependency by
+--     > cypm add setfunctions
 import List
-import SetFunctions
+import Control.SetFunctions
 
 -- Prerequisites table, 2001 catalog
 -- This is a directed acyclic graph
 
+isPrereqOf :: Int -> Int
 isPrereqOf 162 = 161
 isPrereqOf 163 = 162
 isPrereqOf 200 = 162
@@ -21,6 +24,7 @@ isPrereqOf 303 = 252
 isPrereqOf 303 = 300
 isPrereqOf 350 = 252
 
+isPrereqOf'set :: Int -> Values Int
 isPrereqOf'set course = set1 isPrereqOf course
 
 -- Tree of prereqs.  Local to transClosPrereq only.
@@ -29,6 +33,7 @@ data Tree = Tree Int [Tree]
 
 -- Transitive closure of prerequisite of a course c,
 -- i.e., all the courses you have to take before taking c.
+transClosPrereq :: Int -> [Int]
 transClosPrereq course = (nub . tail . collect . grow) course
   where
       -- Grow the prerequisites tree.
@@ -48,6 +53,7 @@ main = transClosPrereq 202  -- -> [163,162,161,201,200]
 -- isPrereqOf is a many-to-many relation.
 -- The inverse of isPrereqOf is meaningfull in its own right
 
+giveAccessTo :: Int -> Int
 giveAccessTo (isPrereqOf x) = x
 
 test1 = giveAccessTo 162

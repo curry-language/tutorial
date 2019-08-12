@@ -7,10 +7,10 @@
 
 data UserList a = Nil | Cons a (UserList a)
 
-count Nil = 0
+count Nil         = 0
 count (Cons _ xs) = 1 + count xs
 
-find x Nil = False
+find x Nil         = False
 find x (Cons y ys) = x==y || find x ys
 
 -- main = count (Cons 1 (Cons 2 (Cons 3 Nil)))  -- -> 3

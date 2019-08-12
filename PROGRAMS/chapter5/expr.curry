@@ -1,4 +1,6 @@
-import SetFunctions
+-- Package `setfunctions` required, i.e., install this dependency by
+--     > cypm add setfunctions
+import Control.SetFunctions
 
 -- the type of simple symbolic arithmetic expressions
 data Exp = Lit Int
@@ -22,5 +24,5 @@ sample :: Exp
 sample = Add (Var "x") (Mul (Lit 1) (Var "y"))
 
 -- get the set of the idenfiers occurring in the argument
-main :: SetFunctions.Values String
-main = set1 varOf sample
+main :: [String]
+main = sortValues (set1 varOf sample)

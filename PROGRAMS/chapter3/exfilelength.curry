@@ -2,11 +2,12 @@
 -- of a file from the user and prints the length of the file,
 -- i.e., the number of characters contained in this file.
 
-filelength =
- do putStrLn "Name of the input file?"
-    filename <- getLine
-    filecontents <- readFile filename
-    putStrLn ("Length of the file: " ++ show (len filecontents) ++ " bytes")
+fileLength :: IO ()
+fileLength = do
+  putStrLn "Name of the input file?"
+  filename <- getLine
+  filecontents <- readFile filename
+  putStrLn ("Length of the file: " ++ show (len filecontents) ++ " bytes")
 
 
 -- Length of a list (also defined in the prelude as "length")

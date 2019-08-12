@@ -14,6 +14,7 @@
 -- and the presence of the boat on the initial bank of the river
 
 data State = State Int Int Bool
+ deriving Eq
 
 -- Constrained Constructor on State
 -- the number of missionaries and cannibals must be valid, i.e.
@@ -22,17 +23,22 @@ data State = State Int Int Bool
 -- on each bank he missionaries, if any, on either bank of the river
 -- cannot be outnumbered by the cannibals
 
+makeState :: Int -> Int -> Bool -> State
 makeState m c l | valid && safe = State m c l
    where valid = 0 <= m && m <= 3 && 0 <= c && c <= 3
          safe  = m == 3 || m == 0 || m == c
 
 -- start and end states of the puzzle
 
+start :: State
 start = makeState 3 3 True
-end   = makeState 0 0 False
+
+end :: State
+end = makeState 0 0 False
 
 -- make a move: either 1 or 2 people and the boat move to the other bank
 
+move :: State -> State
 move (State m c True)  
   = makeState (m-1) c False
   ? makeState (m-2) c False
@@ -56,6 +62,7 @@ type Path = [State]
 -- obtained from the preceeding state by means of a move
 -- and cycles are not allowed.
 
+makePath :: State -> [State] -> [State]
 makePath s p | valid && noCycle = s:p
    where valid   = s =:= move (head p)
          noCycle = all (s /=) p
@@ -63,10 +70,12 @@ makePath s p | valid && noCycle = s:p
 -- extend the path argument to the end state
 -- see the Incremental Solution pattern
 
+extend :: [State] -> [State]
 extend p = if (head p == end) then p
            else extend (makePath unknown p)
 
 -- solve the puzzle
 -- produce a sequence of states to the goal
 
+main :: [State]
 main = reverse (extend [start])

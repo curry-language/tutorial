@@ -1,7 +1,10 @@
+from :: Int -> [Int]
 from n = n : from (n+1)
 
+nth :: Int -> [a] -> a
 nth n (x:xs) = if n==1 then x else nth (n-1) xs
 
+fibolist :: Int -> Int -> [Int]
 fibolist x0 x1 = x0 : fibolist x1 (x0+x1)
 
 -- should return 3

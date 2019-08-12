@@ -1,4 +1,6 @@
 infixl 8 **
+
+(**) :: Int -> Int -> Int
 a ** b | b >= 0 = 
   let accum x y z | z == 0    = x
                   | otherwise =
@@ -9,5 +11,6 @@ a ** b | b >= 0 =
   in  accum 1 a b
 
 
+main :: [Int]
 main = map (2**) [0,10,20,30,40]
 -- expect: [1,1024,1048576,1073741824,1099511627776]

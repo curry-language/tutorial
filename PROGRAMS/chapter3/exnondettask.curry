@@ -1,14 +1,19 @@
-data task = cut | polish
-data worker =  Alex | Bert | Chuck
+data Task = Cut | Polish
 
-assign cut = Alex
-assign cut = Bert
-assign polish = Bert
-assign polish = Chuck
+data Worker =  Alex | Bert | Chuck
+ deriving Eq -- to compare workers
 
+assign :: Task -> Worker
+assign Cut    = Alex
+assign Cut    = Bert
+assign Polish = Bert
+assign Polish = Chuck
+
+team :: (Worker, Worker)
 team | x /= y = (x,y)
-  where x = assign cut 
-        y = assign polish
+  where x = assign Cut 
+        y = assign Polish
 
 
+main :: (Worker, Worker)
 main = team

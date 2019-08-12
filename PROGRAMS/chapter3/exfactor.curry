@@ -6,10 +6,13 @@
 -- should not be a factor of any integer.
 
 infix 7 ./.
+
+(./.) :: Int -> Int -> Bool
 a ./. b = a /= 0 && b `mod` a == 0
 
 -- 1 ./. 6 => True
 -- 2 ./. 7 => False
 -- 0 ./. 8 => False
 
+main :: Bool
 main = 3 ./. 15 -- -> True

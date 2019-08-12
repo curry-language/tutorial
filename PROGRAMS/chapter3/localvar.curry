@@ -1,3 +1,4 @@
+coin :: Int
 coin = 0
 coin = 1
 

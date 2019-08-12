@@ -7,7 +7,7 @@ The major elements declared in program are
 
 \begin{itemize}
 \item{} 
-A \emph{function}\index{function} defines
+A \define{function} or \define{operation} defines
 a computation similar to an expression.
 However, the expression computed by a function
 has a name and is often parameterized.
@@ -20,7 +20,7 @@ Rather than coding a computation by means of a possibly
 complicated expression, you can factor out portions of this computation
 and abstract them by their names.
 \item{} 
-A \emph{data structure}\index{data structure} is a way to organize data.
+A \define{data structure} is a way to organize data.
 For example, you can record the movements of your bank account
 in a column in which deposits are positive numbers and withdrawals
 are negative numbers.  Or you can record the same movements in
@@ -50,7 +50,7 @@ Most expressions are built from simpler subexpressions,
 a situation that calls for a recursive, or inductive, definition.
 %
 \begin{quote}
-An \emph{expression}\index{expression!definition}
+An \definei{expression}{expression!definition}
 is either a symbol or literal value or
 is the application of an expression to another expression.
 \end{quote}
@@ -280,7 +280,7 @@ same \emph{value} and \ccode{False} when they
 evaluate to different \emph{values}---a
 more precise definition will be given later. 
 If the evaluation of $u$ and/or $v$ ends in an expression that
-still contains functions, e.g., \code{1 `div` 0} the computation
+still contains functions, e.g., \code{1 `div` 0}, the computation
 \emph{fails} and no value is returned.
 \\[1ex]
 The \emph{constrained equality}\index{constrained equality}%
@@ -382,7 +382,7 @@ to \code{(2+3)}, its argument.
 An anonymous function definition has the following structure:
 %
 \begin{prog}
-\char92\progit{args} -> \progit{left-hand side}
+\char92\progit{args} -> \progit{right-hand side}
 \end{prog}
 %
 % The arguments are provided as in any rewrite rule,
@@ -463,7 +463,7 @@ the arguments of a call to the corresponding arguments
 in the left-hand side of the rule.
 The function is applied to the arguments only if the condition holds.
 %
-Each condition $cond_i$ is an expression of type \emph{Boolean}.
+Each condition $cond_i$ is an expression of type \code{Bool}.
 The conditions are tested in their textual order.
 Thus, the first right-hand side with a condition evaluable to \code{True}
 is taken. Furthermore, the last condition can be
@@ -478,21 +478,23 @@ max x y | x < y     = y
         | otherwise = x
 \end{prog}
 %
-A rule can also have a
-\emph{constraint}\index{constraint}\index{expression!constraint}
-(i.e., an expression of type \emph{Success}) as a condition.
-In this case, the constraint is checked for satisfiability
-in order to apply the rule. Thus, the function call reduces
-to the right-hand side only if the constraint is satisfied, otherwise
-it fails. Note that multiple conditions as above are not allowed
-for constraint conditions.
+% A rule can also have a
+% \emph{constraint}\index{constraint}\index{expression!constraint}
+% (i.e., an expression of type \emph{Success}) as a condition.
+% In this case, the constraint is checked for satisfiability
+% in order to apply the rule. Thus, the function call reduces
+% to the right-hand side only if the constraint is satisfied, otherwise
+% it fails. Note that multiple conditions as above are not allowed
+% for constraint conditions.
 
 
 \subsection{Non-determinism}
 \label{Non-determinism}
 
-Functions can be \emph{non-deterministic}\index{function!non-deterministic}.
-Non-deterministic functions are not functions in the mathematical sense
+Operations can be
+\emph{non-deterministic}\index{operation!non-deterministic}%
+\index{non-deterministic operation}.
+Non-deterministic operations are not functions in the mathematical sense
 because they can return different values for the same input.
 For example, a hospital's information system defines which
 days a doctor is on-call with a non-deterministic function:
@@ -508,12 +510,12 @@ oncall Luc     = Tuesday
 The value of \ccode{oncall Joan} can be either
 \ccode{Monday} or \ccode{Wednesday}.
 The programmer cannot select which of the two values will be computed.
-Non-deterministic functions support a programming style similar
+Non-deterministic operations support a programming style similar
 to that of logic programs, while preserving some advantages of functional
 programs such as expression nesting and lazy evaluation.
 In particular, some strong properties concerning the evaluation
-of ordinary function
-hold also for non-deterministic functions~\cite{Antoy97ALP}.
+of ordinary functions
+hold also for non-deterministic operations~\cite{Antoy97ALP}.
 For example, suppose that \ccode{today} holds which day of
 the week is today.
 A predicate, \ccode{available}, telling whether
@@ -544,14 +546,14 @@ which can then be selected according to desirability.
 \begin{exercise}
 \label{ex_nondettask}
 In a manufacturing plant two specialized tasks,
-{\codefont cut} and {\codefont polish},
+\code{cut} and \code{polish},
 are executed only by specialized workers,
-{\codefont Alex}, {\codefont Bert} and {\codefont Chuck}.
+\code{Alex}, \code{Bert} and \code{Chuck}.
 Not every worker can execute every task.
-Only {\codefont Alex} and {\codefont Bert} are able to
-{\codefont cut}, whereas only {\codefont Bert} and {\codefont Chuck}
-are able to {\codefont polish}.
-Code a non-deterministic function, {\codefont assign},
+Only \code{Alex} and \code{Bert} are able to
+\code{Cut}, whereas only \code{Bert} and \code{Chuck}
+are able to \code{Polish}.
+Code a non-deterministic operation, \code{assign},
 that assigns to a task a worker that can execute it.
 \proghref{exnondettask}{Answer}
 \end{exercise}
@@ -622,12 +624,24 @@ does not terminate the second rule is never applied.
 
 When defining a function,
 Curry allows the programmer to define a rule, called
-a \emph{default} rule\index{rule!default}\index{default rule} 
+a \emph{default} rule\index{rule!default}\index{default rule}
+\cite{AntoyHanus17TPLP}
 that is applied only if all the other rules,
 that in this context we call \emph{standard}, cannot be applied.
-Default rules are compiled by the Curry preprocessor
-%%% some reference ???
-which is enabled by placing the following
+The processing of default rules require the Curry preprocessor.
+It is not part of \pakcs{} but the preprocessor can easily be installed
+by the Curry package manager with the following commands:
+%
+\begin{prog}
+> cypm update
+> cypm install currypp
+\end{prog}
+%
+After the installation of the Curry preprocessor,\footnote{%
+The executable \code{currypp} of the preprocessor is stored in
+\code{\$HOME/.cpm/bin} so that one should have this directory
+in the load path.}
+one can use default rules in a program by placing the following
 line at the beginning of the source program.
 %
 \begin{prog}
@@ -659,7 +673,7 @@ Default rules are useful to regain control after a failed search.  For
 example, consider looking up the value of a key in a key-value pair list.
 %
 \begin{prog}
-  lookup (key, \_++[(key,value)]++\_) = Just value
+  lookup (key, \_ ++ [(key,value)] ++ \_) = Just value
   lookup'default _ = Nothing
 \end{prog}
 %
@@ -697,6 +711,7 @@ define plausible types \ccode{WeekDay} and \ccode{PrimaryColor}.
 %
 \begin{prog}
 data WeekDay = Monday | Tuesday | Wednesday | Thursday | Friday
+\medskip
 data PrimaryColor = Red | Green | Blue
 \end{prog}
 %
@@ -768,7 +783,7 @@ in a tree of strings is defined as
 \proghref{BinTree}{Program}:
 %
 \begin{prog}
-findCurry Leaf = False
+findCurry Leaf           = False
 findCurry (Branch x l r) = x == "Curry" || findCurry l || findCurry r
 \end{prog}
 %
@@ -799,7 +814,7 @@ all the decorations of a tree of integers
 %
 \begin{prog}
 total :: IntTree -> Int
-total Leaf = 0
+total Leaf           = 0
 total (Branch x l r) = x + total l + total r
 \end{prog}
 %
@@ -918,6 +933,7 @@ They could be defined by the programmer as follows:
 %
 \begin{prog}
 data Pair a b = Pair a b
+\medskip
 data Triple a b c = Triple a b c
 \end{prog}
 %
@@ -957,12 +973,10 @@ values between parentheses.
 There is no explicit data constructor identifier.
 The type of a tuple is represented
 as a tuple as well, e.g., the type of \ccode{largest}
-is reported by the interpreter as:
+can be defined as:
 %
 \begin{prog}
-BigTall> :t largest
 largest :: String -> (Int,Width)
-BigTall> 
 \end{prog}
 %
 
@@ -1121,7 +1135,7 @@ in a  ``natural'' (lexicographic) order
 \proghref{anon}{Program}:
 %
 \begin{prog}
-sortClasses l = sort lex l
+sortClasses xs = sort lex xs
    where lex (x,y) (u,v) = x<u || x==u \&\& ord y <= ord v 
 \end{prog}
 %
@@ -1130,7 +1144,7 @@ an anonymous function as follows
 \proghref{anon}{Program}:
 %
 \begin{prog}
-sortClasses l = sort (\char92(x,y) (u,v) -> x<u || x==u \&\& ord y <= ord v) l
+sortClasses xs = sort (\char92(x,y) (u,v) -> x<u || x==u \&\& ord y <= ord v) xs
 \end{prog}
 %
 Observe that pattern matching is normally used in the definition
@@ -1296,6 +1310,7 @@ In the following code:
 %
 \begin{prog}
 square x = x * x
+\medskip
 cube   x = x * square x
 \end{prog}
 %
@@ -1349,6 +1364,7 @@ integer exponentiation
 %
 \begin{prog}
 infixl 8 **
+\medskip
 a ** b | b >= 0 = accum 1 a b
    where accum x y z | z == 0    = x
                      | otherwise = accum aux (y * y) (z `div` 2)
@@ -1467,7 +1483,7 @@ but the granularity of the scope is finer.
 For example, the program for integer exponentiation
 presented earlier can be coded using \ccode{let} clauses
 as well
-\proghref{power-let}{Program}:
+\proghref{PowerLet}{Program}:
 %
 \begin{prog}
 infixl 8 **
@@ -1544,7 +1560,8 @@ which are discussed in this section.
 
 A logic variable differs from the variables introduced by the left-hand
 side of a rewrite rule.
-A variable introduced by the left-hand side of a rewrite rule
+A variable introduced by the left-hand side of a rewrite rule,
+also called \define{pattern variable},
 stands for any expression (of an appropriate type).
 For example, the following definition:
 %
@@ -1623,7 +1640,7 @@ For example, this is what would happen for the query we showed
 earlier:
 %
 \begin{prog}
-Prelude> \userinput{z==2+2  where z free}
+Prelude> \userinput{z == 2+2  where z free}
 *** Warning: there are suspended constraints (for details: ":set +suspend")
 \end{prog}
 %
@@ -1637,24 +1654,23 @@ The operation \ccode{=:=},
 called \emph{constrained equality}\index{constrained equality},
 is predefined in Curry.
 This operation is similar to the Boolean equality
-discussed earlier except for two important differences.
-The first difference is the type returned by the operation.
-The constrained equality returns the type \emph{Success}\index{Success}.
-This type has no visible constructors.
-An expression of type \emph{Success} either succeeds or fail.
-There exists predefined operations, \ccode{success} and
-\ccode{failed}, to encode successes and failures in a
-program.
-The second difference is that operation \ccode{=:=}
-narrows instead of residuating.
+discussed earlier except that it returns only \code{True}
+(if the equality can be satisfied) or it fails,
+i.e., it does not return \code{False} if both sides are not evaluable
+to identical values.
+Since this operation succeeds only if both sides have identical values,
+it also binds logic variables if this is necessary to make the sides
+identical.
 Thus:
 %
 \begin{prog}
-Prelude> \userinput{z=:=2+2  where z free}
-\{z=4\} success
+Prelude> \userinput{z =:= 2+2  where z free}
+\{z=4\} True
 \end{prog}
 %
-\vspace*{-5ex}
+Therefore, this operation can be used to express an
+equational constraint that must be satisfied to compute some result.
+
 \subsection{Flexible vs. Rigid Operations}
 
 Operations that residuate are called
@@ -1680,8 +1696,8 @@ Since the operation \ccode{++} is flexible, we can use it to search for
 a list satisfying a particular property:
 %
 \begin{prog}
-Prelude> \userinput{x ++ [3,4] =:= [1,2,3,4]  where x free}
-\{x=[1,2]\} success
+Prelude> \userinput{xs ++ [3,4] =:= [1,2,3,4]  where xs free}
+\{xs=[1,2]\} True
 \end{prog}
 %
 On the other hand, predefined arithmetic operations like the addition \ccode{+}
@@ -1695,7 +1711,7 @@ Prelude> \userinput{x + 2 =:= 4  where x free}
 %
 For \emph{ground expressions}\index{ground expression}\index{expression!ground},
 i.e., expressions without logic variables, the flex/rigid status of
-a function make no difference.
+a function makes no difference.
 In the context of concurrent/distributed object-oriented programming,
 rigid user-defined functions can be useful.
 For this purpose, there is a primitive operation
@@ -1967,9 +1983,9 @@ is defined in the standard character library \code{Char} and converts
 lowercase into uppercase letters)
 \proghref{IOExamples}{Program}:
 \begin{prog}
-convertFile input output =
-   do s <- readFile input
-      writeFile output (map toUpper s)
+convertFile input output = do
+  s <- readFile input
+  writeFile output (map toUpper s)
 \end{prog}
 % To avoid introducing map in this chapter,
 % consider next version or add function to Char library
@@ -2006,7 +2022,7 @@ converts any value into a string),
 then it is not clear which of the alternative actions
 should be applied to the world. Therefore, Curry requires
 that \emph{non-determinism in I/O actions must not occur}.
-For instance, we get a runtime error if we evaluate the
+For instance, we get a run-time error if we evaluate the
 above expression:
 \begin{prog}
 localvar> \userinput{putStr (show coin)}
@@ -2018,7 +2034,7 @@ encapsulation of all search between I/O operations, e.g.,
 by using set functions.
 
 \begin{exercise}
-Define an I/O action \code{filelength} that reads requests the name
+Define an I/O action \code{fileLength} that reads the name
 of a file from the user and prints the length of the file,
 i.e., the number of characters contained in this file.
 \proghref{exfilelength}{Answer}

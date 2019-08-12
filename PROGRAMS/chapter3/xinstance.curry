@@ -1,7 +1,5 @@
 -- Example of class and instance definition
 
-module xinstance where
-
 class Addable a where
   (+) :: a ->  a  -> a
 
@@ -21,6 +19,6 @@ data Matrix a = Matrix [[a]]
 instance Addable a => Addable (Matrix a) where
   (Matrix xs) + (Matrix ys) = Matrix (zipWith (zipWith (+)) xs ys)
 
-testm :: Matrix Int
-testm = Matrix [[1,2],[3,4]] + Matrix [[5,6],[7,8]]
+main :: Matrix Int
+main = Matrix [[1,2],[3,4]] + Matrix [[5,6],[7,8]]
 

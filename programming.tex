@@ -527,8 +527,13 @@ Referring to the example above, \code{\funset{f} (2\,?\,4)} evaluates
 to \code{\{2,3\}} and \code{\{4,5\}} in which the non-determinism
 originates entirely from the argument.
 
-\pakcs{} provides a library\index{set function!library}, \code{SetFunctions},
-that eases the definition of set functions.
+To ease the definition of set functions,
+there is a library\index{set function!library}
+\code{Control.SetFunctions}.\footnote{Since this library is
+part of the package \code{setfunctions},
+this package must be installed as a dependency
+with the Curry package manager, e.g., by the command
+\ccode{cypm add setfunctions}.}
 This library defines both a suitable abstraction of a type \emph{set}
 to represent the results of a set function application, and
 a family of functions \code{set0}, \code{set1}, $\ldots$~

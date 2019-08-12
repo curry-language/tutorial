@@ -2,9 +2,11 @@ import Char
 
 data Term = Term String [Term]
 
+parseTerm :: String -> Term
 parseTerm (fun++"("++args++")") | all isAlpha fun = Term fun (parseArgs args)
 parseTerm s | all isAlpha s = Term s []
 
+parseArgs :: String -> [Term]
 parseArgs (term++","++terms) = parseTerm term : parseArgs terms
 parseArgs s = [parseTerm s]
 
