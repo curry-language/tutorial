@@ -1,0 +1,262 @@
+\chapter{Managing Curry Packages}
+
+There are many libraries and tools for Curry
+that are not distributed with an available Curry system
+but can be accessed via the Curry package system.
+Currently, more than one hundred packages are
+available.
+Some of them contain small libraries, others
+contain quite complex tools, like the Curry preprocessor.
+The Curry Package Manager (\cpm),\index{CPM}
+which is part of the Curry systems \pakcs and \kics,
+eases the access and use of these packages.
+In the following, the basic use of \cpm is explained.
+A detailed description of all features of \cpm
+can be found in its
+\href{http://curry-language.org/tools/cpm}{user manual}.
+
+The executable of the Curry Package Manager is named \code{cypm}\pindex{cypm}
+and located in the \code{bin} directory of \pakcs or \kics.
+When you use \cpm for the first time, execute
+%
+\begin{prog}
+> cypm update
+\end{prog}
+%
+to download a local copy of the index of all available packages.
+A list of all packages in this index can be shown by
+the \code{list} command:
+%
+\begin{prog}
+> cypm list
+Name               Synopsis                                           Version   
+----               --------                                           -------   
+abstract-curry     Libraries to deal with AbstractCurry programs      2.0.0     
+abstract-haskell   Libraries to represent Haskell programs in Curry   2.0.0     
+addtypes           A tool to add missing type signatures in a Curry   2.0.0     
+                   program                                           
+base               Base libraries for Curry systems                   1.0.0     
+$\ldots$
+\end{prog}
+%
+The command
+%
+\begin{prog}
+> cypm info PACKAGE
+\end{prog}
+%
+can be used to show more information about the package with name
+\code{PACKAGE}.
+
+\section{Importing Existing Packages}
+\label{sec:importing-packages}
+
+To implement a larger application with Curry,
+one probably needs many libraries
+from other packages.
+In this case, one should write the application as a Curry package
+so that all required dependencies can be specified
+so that \cpm can manage them.
+This is explained in more detail in Section~\ref{sec:writing-packages}.
+If one wants to execute a smaller Curry program
+which uses a library from some Curry package,
+then one can use \cpm's \code{add} command
+to add this package as a global dependency and
+download and install it globally (i.e., in your user-home environment).
+For instance, the package \code{pflp} supports
+probabilistic functional logic programming
+\cite{ChristiansenDylusTeegen18}.
+It can be installed as a global dependency by the command
+%
+\begin{prog}
+> cypm add pflp
+\end{prog}
+%
+The command
+%
+\begin{prog}
+> cypm info pflp --all
+\end{prog}
+%
+shows all information about this package.
+In particular, one can see that the module \code{PFLP}
+is exported by this package.
+Thus, one can use this module in a program
+using probabilistic functional logic programming by adding the line
+%
+\begin{prog}
+import PFLP
+\end{prog}
+%
+in the header of the program.
+When this program is loaded with \pakcs,
+the load path is set in such a way so that
+the module \code{PFLP} from package \code{pflp}
+can be imported.
+
+Note that this method to use packages should be used only
+for small programs or to try some package,
+since a specific appropriate version of the package is globally installed.
+Actually, each version of each Curry system
+has its own global package cache.\footnote{%
+Use the command \code{cypm config} and look at \code{HOME_PACKAGE_PATH}
+to see the directory of this global cache.
+If it is no longer needed or should be initialized,
+one can simple delete this directory.}
+For larger applications, one should install the required packages
+locally (which is described in Section~\ref{sec:writing-packages} below).
+
+
+\section{Installing Tools}
+\label{sec:installing-tools}
+
+Many tools for Curry are available as packages.
+Actually, more than thirty tools are available as packages,
+e.g., to analyze, test, or verify Curry programs,
+generate documentation, web frameworks, etc.
+Such packages provide an ``executable'' (its name is shown
+by \cpm's \code{info} command).
+In order to install a tool provided by \code{PACKAGE},
+one can use the command
+%
+\begin{prog}
+> cypm install PACKAGE
+\end{prog}
+%
+This command downloads the package into some internal directory
+(\code{\$HOME/.cpm/apps_\ldots}), compiles the tool,
+and installs the binary of the tool provided by the package
+in \code{\$HOME/.cpm/bin}.
+Hence it is recommended to add this directory to your path.
+
+For instance, the most recent version of \cpm
+can be installed by the commands
+%
+\begin{prog}
+> cypm update
+$\ldots$
+> cypm install cpm
+$\ldots$ Package 'cpm-xxx' checked out $\ldots$
+$\ldots$
+INFO  Installing executable 'cypm' into '/home/joe/.cpm/bin'
+\end{prog}
+%
+Now, the binary \code{cypm} of the most recent \cpm version can be used
+if \code{\$HOME/.cpm/bin} is in your path
+(before the \code{bin} directory of the Curry system!).
+
+
+\section{Developing Applications and Packages}
+\label{sec:writing-packages}
+
+If one wants to implement an application in Curry which uses
+other Curry packages, one should create a \define{package} for
+this application in order to specify all dependencies
+so that they can be managed by \cpm.
+The easiest way to create a new package is to use
+\cpm's \code{new} command with the name of the new package:
+%
+\begin{prog}
+> cypm new myproject
+\end{prog}
+%
+This creates a new directory \code{myproject} in which
+the application can be developed.
+The generated file structure is as follows:
+%
+\begin{verbatim}
+   myproject
+   |-- LICENSE
+   |-- package.json
+   |-- README.md
+   |-- src
+       |-- Main.curry
+\end{verbatim}
+%
+This represents the minimal structure of a reasonable package
+(so that it could later be published).
+The file \code{README.md} should contain a description
+of the package in plain text or markdown syntax.
+The LICENSE file is BSD-3 but could be changed.
+The source code of the package must be stored
+in directory \code{src} and might of consist of an arbitrary
+number of modules.
+
+The file \code{package.json} is the most important one
+for managing packages. It is a \href{http://json.org}{JSON} file
+containing the metadata of the package,
+like its name, version, author, synopsis, etc.
+The detailed description of all possible metadata fields
+can be found in
+\href{http://curry-language.org/tools/cpm}{CPM's user manual}.
+One has to modify this file according to the requirements
+of the new application.
+In particular, one has to specify dependencies on other packages
+by modifying the field \code{dependencies} in the
+\code{package.json} file,\footnote{One could also use the command
+\ccode{cypm add -d PACKAGE} to add new dependencies in this file.}
+e.g.:
+%
+\begin{verbatim}
+   {
+     ...,
+     "dependencies": {
+       "base": ">= 1.0.0, < 2.0.0",
+       "json": "~> 1.1.0"
+     }
+   }
+\end{verbatim}
+%
+After modifying the metadata, one can run
+%
+\begin{prog}
+> cypm install
+\end{prog}
+%
+(inside the package directory \code{myproject})
+to resolve, download, and install all dependencies of the current package.
+Then one can invoke \pakcs and use the modules of all specified
+packages.
+
+When the development of the application is completed,
+one can specify the name of the main module and the executable
+to be generated in the file \code{package.json}
+as field \code{executable}:
+%
+\begin{verbatim}
+   {
+     ...,
+     "executable": {
+       "name": "myexec",
+       "main": "Start"
+      }
+   }
+\end{verbatim}
+%
+The name of the executable must be defined (with key \code{name})
+whereas the name of the main module (key \code{main}) is optional
+(if it is missing, the name \code{Main} is taken).
+The main module must export a function
+%
+\begin{prog}
+main :: IO ()
+\end{prog}
+%
+which starts the application.
+If a package contains an \code{executable} specification,
+the command
+%
+\begin{prog}
+> cypm install
+\end{prog}
+%
+also compiles the main module and installs the executable
+in the default directory
+\code{\$HOME/.cpm/bin} (see Section~\ref{sec:installing-tools}).
+
+
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "main"
+%%% End:

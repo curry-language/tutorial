@@ -19,7 +19,7 @@ pdf:
 	@echo acroread main.pdf \&
 
 main.pdf: main.tex introduction.tex start.tex features.tex programming.tex \
-	  html.tex libraries.tex browseurl.tex
+	  packages.tex patterns.tex html.tex libraries.tex browseurl.tex
 	pdflatex main
 	bibtex main
 	pdflatex main
@@ -46,6 +46,7 @@ WEBDIR=$(HOME)/public_html/curry/tutorial
 publish: main.pdf
 	cp main.pdf $(WEBDIR)/tutorial.pdf
 	cd PROGRAMS && cleancurry -r
+	/bin/rm -rf $(WEBDIR)/PROGRAMS
 	cp -r PROGRAMS $(WEBDIR)
 	cd $(WEBDIR) && rm -rf PROGRAMS/GenerateHRefs.curry PROGRAMS/.curry PROGRAMS/*/.curry *~ */*~ */*/*~
 	cd $(WEBDIR) && rm -f PROGRAMS.zip && zip -r PROGRAMS.zip PROGRAMS

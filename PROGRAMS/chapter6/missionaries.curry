@@ -1,7 +1,7 @@
 -- Missionaries and cannibals with the Constrained Constructor pattern
 -- Sergio Antoy
 -- Fri Jan 17 13:32:43 PST 2003
--- revised Tue Jan 15 09:29:18 PST 2013
+-- revised Tue Aug 13 17:40:45 CEST 2019
 
 -- Three missionaries and three cannibals want to cross a river
 -- with a boat that can hold up to two people.
