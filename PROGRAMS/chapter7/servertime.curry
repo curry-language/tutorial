@@ -1,6 +1,6 @@
--- CGI program to show the current date and time of the server
+-- Web script to show the current date and time of the server
 
-import HTML
+import HTML.Base
 import Time
 
 -- A form that generates the HTML document on demand:
@@ -10,5 +10,5 @@ main = do
   return $ form "Current Server Time"
             [h1 [htxt $ "Current date and time: " ++ calendarTimeToString time]]
 
--- Install the CGI program by:
--- makecurrycgi servertime
+-- Install the script by:
+-- curry-makecgi -o servertime.cgi servertime

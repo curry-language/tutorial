@@ -6,12 +6,14 @@
 -- Michael Hanus
 ------------------------------------------------------------------------------
 
-import HTML
+import HTML.Base
 
+loginForm :: IO HtmlForm
 loginForm = return $ cookieForm "Login" [("SETCOOKIE","")]
-      [htxt "Enter your name: ", textfield tref "", hrule,
-       button "Login" handler
-      ]
+  [htxt "Enter your name: ", textfield tref "",
+   hrule,
+   button "Login" handler
+  ]
  where
    tref free
 
@@ -20,8 +22,9 @@ loginForm = return $ cookieForm "Login" [("SETCOOKIE","")]
      return $
        if lookup "SETCOOKIE" cookies == Nothing
        then form "No cookies" [h2 [htxt "Sorry, can't set cookies."]]
-       else cookieForm "Logged In" [("LOGINNAME",env tref)]
+       else cookieForm "Logged In"
+                       [("LOGINNAME",env tref)]
                        [h2 [htxt $ env tref ++ ": thank you for visiting us"]]
 
 -- Install the script by:
--- makecurrycgi -m loginForm checkcookie
+-- curry-makecgi -o login.cgi -m loginForm checkcookie

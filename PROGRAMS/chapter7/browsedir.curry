@@ -7,14 +7,15 @@
 -- Michael Hanus
 ------------------------------------------------------------------------------
 
-import HTML
-import Directory
+import Directory ( doesDirectoryExist, getDirectoryContents )
+import HTML.Base
 
+showDirForm :: IO HtmlForm
 showDirForm = do
   param <- getUrlParameter
   let dir = if param=="" then "." else urlencoded2string param
   entries <- getDirectoryContents dir
-  hexps <- mapIO (entry2html dir) entries
+  hexps <- mapM (entry2html dir) entries
   return $ form "Browse Directory"
                 [h1 [htxt $ "Directory: " ++ dir], ulist hexps]
 
@@ -22,14 +23,14 @@ showDirForm = do
 -- a directory) or a text:
 entry2html :: String -> String -> IO [HtmlExp]
 entry2html dir e = do
-  direx <- doesDirectoryExist (dir++"/"++e)
+  direx <- doesDirectoryExist (dir ++ "/" ++ e)
   if direx
-   then return [href ("browsedir.cgi?" ++ string2urlencoded (dir++"/"++e))
+   then return [href ("browsedir.cgi?" ++ string2urlencoded (dir ++ "/" ++ e))
                      [htxt e]]
    else return [htxt e]
 
 
 -- Install with:
--- makecurrycgi -m showDirForm browsedir
+-- curry-makecgi -o browsedir.cgi -m showDirForm browsedir
 --
 -- Call with: http://.../browsedir.cgi?<directory (urlencoded)>

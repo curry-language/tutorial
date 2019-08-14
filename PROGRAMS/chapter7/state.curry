@@ -4,7 +4,7 @@
 -- demonstrating the handling of intermediate states
 ------------------------------------------------------------------------------
 
-import HTML
+import HTML.Base
 
 main = return $ form "First Name Form"
   [htxt "Enter your first name: ", textfield firstref "",
@@ -14,14 +14,14 @@ main = return $ form "First Name Form"
    firstref free
 
    fhandler _ = return $ form "Last Name Form"
-                 [htxt "Enter your last name: ", textfield lastref "",
-                  button "Continue" lhandler]
+                  [htxt "Enter your last name: ", textfield lastref "",
+                   button "Continue" lhandler]
 
      where
        lastref free
 
        lhandler env = return $ form "Answer"
-                       [htxt $ "Hi, " ++ env firstref ++ " " ++ env lastref]
+                        [htxt $ "Hi, " ++ env firstref ++ " " ++ env lastref]
 
 -- Install the CGI program by:
--- makecurrycgi state
+-- curry-makecgi -o state.cgi state

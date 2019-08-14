@@ -117,6 +117,7 @@ attributes, i.e., name/value pairs.
 
 For instance, our first HTML document above is represented with this
 datatype as the following list of HTML expressions:
+%
 \begin{prog}
 [HtmlText "This is the ",
  HtmlStruct "i" [] [HtmlText "italic"],
@@ -124,7 +125,9 @@ datatype as the following list of HTML expressions:
  HtmlStruct "b" [] [HtmlText "bold"],
  HtmlText " font."]
 \end{prog}
+%
 Similarly, the image tag above is represented as follows:
+%
 \begin{prog}
 HtmlStruct "img" [("src","picture.jpg"),("alt","Picture")] []
 \end{prog}
@@ -133,6 +136,7 @@ Obviously, we can specify any HTML document in this form
 but this becomes very tedious for a programmer.
 To avoid this, we define several functions as useful abbreviations
 of common HTML tags:
+%
 \begin{prog}
 h1     hexps  = HtmlStruct "h1" [] hexps                      -- header 1
 h2     hexps  = HtmlStruct "h2" [] hexps                      -- header 2
@@ -144,6 +148,7 @@ breakline     = HtmlStruct "br" [] []                         -- line break
 image src alt = HtmlStruct "img" [("src",src),("alt",alt)] [] -- image
 \ldots
 \end{prog}
+%
 \pindex{h1}\pindex{bold}\pindex{italic}\pindex{hrule}\pindex{breakline}%
 \pindex{image}%
 Characters that have a special meaning in HTML,
@@ -167,29 +172,45 @@ htmlQuote (c:cs) | c=='<' = "\&lt;"   ++ htmlQuote cs
 \end{prog}
 \pindex{htxt}\pindex{htmlQuote}%
 Now we can represent our first HTML document above as follows:
+%
 \begin{prog}
 [htxt "This is the ", italic [htxt "italic"],
  htxt " and the ", bold [htxt "bold"], htxt " font."]
 \end{prog}
+%
 All the definitions we have introduced so far are contained
-in the library \ccode{HTML}\index{library!HTML}
-of the \pakcs{} distribution. Thus, to define abstract
-HTML documents in a program, one has to write the import declaration
+in the library \ccode{HTML.Base}\index{library!HTML.Base}
+of the Curry package \code{html}.
+In order to use this library, one has to add it as a dependency
+by the \cpm command (see Section~\ref{sec:importing-packages})
+\index{package!html}
+%
 \begin{prog}
-import HTML
+> cypm add html
+\end{prog}
+%
+and add the import declaration
+\begin{prog}
+import HTML.Base
 \end{prog}
 in the header of the Curry program.
-The \code{HTML} library defines also a wrapper function
+The library \code{HTML.Base} also defines a wrapper function
 \code{showHtmlExps}\pindex{showHtmlExps} to generate the concrete textual
 representation of an abstract HTML expression. For instance, the value of
+%
 \begin{prog}
 showHtmlExps [h1 [htxt "Hello World"], italic [htxt "Hello"], htxt " world!"]
 \end{prog}
+%
 is the string
+%
 \begin{prog}
-<h1>Hello World</h1>
+<h1>
+  Hello World
+</h1>
 <i>Hello</i> world!
 \end{prog}
+%
 In order to generate a complete HTML page with header information,
 the \code{HTML} library contains the following definition of HTML pages:
 \begin{prog}
@@ -214,24 +235,32 @@ showHtmlPage :: HtmlPage -> String\pindex{showHtmlPage}
 to generate the concrete textual
 representation of a complete HTML page with head and body parts.
 For instance, the value of
+%
 \begin{prog}
 showHtmlPage (page "Hello" [h1 [htxt "Hello World"],
                             italic [htxt "Hello"], htxt " world!"])
 \end{prog}
+%
 is the string
+%
 \begin{prog}
-<?xml version="1.0" encoding="iso-8859-1"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
-<head>
-<title>Hello</title>
-</head>
-<body bgcolor="\#ffffff">
-<h1>Hello World</h1>
-<i>Hello</i> world!
-</body>
+<html lang="en">
+  <head>
+    <title>
+      Hello
+    </title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+  </head>
+  
+  <body>
+    <h1>
+      Hello World
+    </h1>
+    <i>Hello</i>
+    world!
+  </body>
 </html>
 \end{prog}
 %
@@ -249,6 +278,7 @@ multiplications = [ (x,y,x*y) | x <- [1..10], y <- [1..x] ]
 \end{prog}
 Each triple is translated into a list of HTML expressions specifying the
 layout of a line:
+%
 \begin{prog}
 mult2html :: (Int,Int,Int) -> [HtmlExp]
 mult2html (x,y,z) =
@@ -256,6 +286,7 @@ mult2html (x,y,z) =
   htxt " and ", bold [htxt (show y)],
   htxt " is ", bold [htxt (show z)], breakline]
 \end{prog}
+%
 Now can use these definitions to define the complete
 HTML document
 (the prelude function \code{concatMap}\pindex{concatMap}
@@ -309,7 +340,8 @@ on its standard output. The CGI program can also take user input
 in an HTML form into account; this is described in
 Section~\ref{sec-html-forms}.
 
-To support the creation of dynamic HTML documents, the \code{HTML} library
+To support the creation of dynamic HTML documents,
+the library \code{HTML.Base}
 has a definition for HTML \emph{forms}\index{form!HTML}\index{HTML!form}
 as follows:
 \begin{prog}
@@ -372,36 +404,57 @@ in the following section.
 \section{Installing Web Programs}
 \label{sec-cgi-install}
 
-Although the installation of CGI programs highly depends on the web server, in this section we will provide some hints so that you can
+Although the installation of CGI programs highly depends on the web server,
+in this section we will provide some hints so that you can
 execute the programs described in this chapter on your web server.
 Clearly, your web server must be configured to enable the execution of
-CGI programs. Fortunately, most web servers support CGI programs, though they will likely require special configuring by the system administrator.
+CGI programs. Fortunately, most web servers support CGI programs, though
+they will likely require special configuring by the system administrator.
 A web server can be configured to interpret any file ending
 with \ccode{.cgi} and execute it when requested, or it
 can be also configured to execute only CGI programs stored
 in a particular directory, e.g., \ccode{cgi-bin}.
-Ask your system administrator for the instructions on CGI execution that are specific to your system.
+Ask your system administrator for the instructions
+on CGI execution that are specific to your system.
 
-If you have installed \pakcs{} on your system (i.e., the web server),
-the installation of a CGI program is quite simple.
+In order to execute any web program written with the
+library \code{HTML.Base}, the helper programs
+\code{curry-cpnsd}\pindex{curry-cpnsd} (the Curry Port Name Server Demon),
+\code{curry-cgi}\pindex{curry-cgi} (managing and invoking CGI scripts
+written with \code{HTML.Base}), and
+\code{curry-makecgi}\pindex{curry-makecgi}
+(compiling and installing a web program)
+are required. They can easily be installed by executing
+the following CPM commands (see also Section~\ref{sec:installing-tools})
+on the web server (where \pakcs should be already installed):
+%
+\begin{verbatim}
+   > cypm install cpns
+   > cypm install html-cgi
+   > cypm install html
+\end{verbatim}
+%
+Now the installation of a CGI program is quite simple.
 Assume you have written a Curry program \ccode{myscript.curry}
 containing a definition of a form function \ccode{main}
 of type \ccode{IO HtmlForm} (see previous section).
 Then you can compile it into an executable CGI program
-by the shell command
-\begin{prog}
-makecurrycgi myscript
-\end{prog}
-(\code{makecurrycgi}\pindex{makecurrycgi} is a shell script
-stored in the \ccode{bin} directory of \pakcs).
+by the command
+%
+\begin{verbatim}
+   > curry-makecgi myscript
+\end{verbatim}
+%
 This creates (after successful compilation) an executable program
 \ccode{myscript.cgi}.
 If your main form function has a name different from the default \code{main},
 you can provide it with option \ccode{-m}. For instance,
 the command
-\begin{prog}
-makecurrycgi -m myForm myscript
-\end{prog}
+%
+\begin{verbatim}
+   > curry-makecgi -m myForm myscript
+\end{verbatim}
+%
 creates a CGI program with form function \ccode{myForm}.
 In general, the parameter following \ccode{-m} can be any Curry expression
 of type \ccode{IO HtmlForm}.\footnote{%
@@ -411,9 +464,11 @@ Curry program.}
 
 Similarly, the option \ccode{-o} can be used to install the CGI program
 under a different name. For instance, the command
-\begin{prog}
-makecurrycgi -o \char126/cgi-bin/myscript.cgi myscript
-\end{prog}
+%
+\begin{verbatim}
+   > curry-makecgi -o ~/cgi-bin/myscript.cgi -m myForm myscript
+\end{verbatim}
+%
 installs the executable CGI program
 in the file \ccode{\char126/cgi-bin/myscript.cgi}.
 Depending on the configuration of your web server,
@@ -432,20 +487,26 @@ provided by the client (i.e., the user contacting the server
 via its browser). In principle, this is possible since
 HTML includes also elements for user input (text fields, buttons, etc)
 which is sent to the web server when requesting a document.
-How can we access the user input in to a CGI program running on
-the server? The whole purpose of the Common Gateway Interface is to create a way to send information to the server and from the browswer, hence the name Common Gateway.  Fortunately, it is not necessary to know all the details of
-CGI since the \code{HTML} library defines an abstraction layer
+How can we access the user input in a CGI program running on
+the server?
+The whole purpose of the Common Gateway Interface is
+to create a way to send information to the server and from the browswer,
+hence the name Common Gateway.
+Fortunately, it is not necessary to know all the details of
+CGI since the library \code{HTML.Base} defines an abstraction layer
 to provide a comfortable access to user inputs.
 This abstraction layer exploits the functional and logic features
 of Curry and will be explained in this section.
 
-The \code{HTML} library contains definitions of various input
+The library \code{HTML.Base} contains definitions of various input
 elements for HTML forms.
 For instance, the element \ccode{textfield} defines
 an HTML input element where the user can type a line of text:
+%
 \begin{prog}
 textfield :: CgiRef -> String -> HtmlExp
 \end{prog}
+%
 The second argument is the initial contents and the first argument
 is the reference to this element (\emph{CGI reference}).\index{CGI!reference}
 The reference is used in the
@@ -459,11 +520,13 @@ It is sufficient to use a logic variable when using a text field
 in an HTML form.
 For instance, we can define a form containing a string
 and an input field as follows:
+%
 \begin{prog}
 rdForm = return \$ form "Question"
           [htxt "Enter a string: ", textfield tref ""]
  where tref free
 \end{prog}
+%
 A \code{CgiRef} variable serves as a reference to the corresponding
 input field to access the user's input. Raw CGI requires concrete
 strings as references (attribute \ccode{name} of \ccode{input} tags)
@@ -472,27 +535,34 @@ run-time errors).
 However, the concrete strings are not important, and so the
 logic variables are sufficient. It is only important
 to use them when computing the answer to the client.
-For this purpose, the \code{HTML} library defines
+For this purpose, the library \code{HTML.Base} defines
 a \emph{CGI environment}\index{CGI!environment} as a mapping
 from CGI references to strings:
+%
 \begin{prog}
 type CgiEnv = CgiRef -> String
 \end{prog}
+%
 A CGI environment is used to collect the input of the user
 when computing the response. The computation of the response is done
 by an \emph{event handler}\index{event handler}\index{CGI!event handler}
 that is attached to each button for submitting a form to the web server.
-For this purpose, the \code{HTML} library defines the type of event handlers as
+For this purpose, the library \code{HTML.Base}
+defines the type of event handlers as
+%
 \begin{prog}
 type HtmlHandler = CgiEnv -> IO HtmlForm
 \end{prog}
+%
 i.e., an event handler is called with the current CGI environment and
 yields an I/O action that returns a form to be sent back to the client.
-Thus, the \code{HTML} library contains the following type definition
+Thus, the library \code{HTML.Base} contains the following type definition
 for a button to submit forms:
+%
 \begin{prog}
 button :: String -> HtmlHandler -> HtmlExp
 \end{prog}
+%
 The first argument is the text shown on the button
 and the second argument is the event handler called when the user
 clicks this submit button.
@@ -590,6 +660,7 @@ contains a recursive call to the initial form
 which implements the interaction loop.
 The entire implementation of this number guessing game
 is as follows \proghref{guess}{Program}:
+%
 \begin{prog}
 guessForm :: IO HtmlForm
 guessForm = return \$ form "Number Guessing" (guessInput 1)
@@ -601,14 +672,17 @@ guessInput n =
 ~
 guessHandler :: Int -> CgiRef -> (CgiRef -> String) -> IO HtmlForm
 guessHandler n nref env =
-  let nr = readInt (env nref) in
-  return \$ form "Answer"
-            (if nr==42
-             then [h1 [htxt \$ "Right! You needed "++show n++" guesses!"]]
-             else [h1 [htxt \$ if nr<42 then "Too small!"
-                                       else "Too large!"],
-                   hrule] ++ guessInput (n+1))
+  return \$ form "Answer" \$
+    case reads (env nref) of
+      [(nr,"")] ->
+            if nr==42
+              then [h1 [htxt \$ "Right! You needed "++show n++" guesses!"]]
+              else [h1 [htxt \$ if nr<42 then "Too small!"
+                                        else "Too large!"],
+                    hrule] ++ guessInput (n+1)
+      _ -> [h1 [htxt "Illegal input, try again!"]] ++ guessInput n
 \end{prog}
+%
 \ccode{guessInput n} is an HTML expression corresponding to
 the initial form which contains an
 input field for entering the client's guess.
@@ -617,8 +691,8 @@ number of guesses and the
 CGI reference to the input field are the first and the second argument
 of the handler, respectively.
 It checks the number entered by the client
-(\code{readInt}\pindex{readInt} is defined in the standard library
-\code{Read} and converts a string into a number)
+(\code{reads}\pindex{reads} is defined in the standard prelude
+and used to parse a string into a value)
 and returns the different answers depending on the client's guess.
 If the guess is not right, the \code{guessInput} is appended
 to the answer which implements the recursive call.
@@ -661,6 +735,7 @@ his first name in the first form and his last name in the second form.
 The complete name is returned in the third form.
 This example can be implemented as follows
 \proghref{state}{Program}:
+%
 \begin{prog}
 nameForm = return \$ form "First Name Form"
   [htxt "Enter your first name: ", textfield firstref "",
@@ -669,14 +744,15 @@ nameForm = return \$ form "First Name Form"
    firstref free
 ~
    fhandler _ = return \$ form "Last Name Form"
-                 [htxt "Enter your last name: ", textfield lastref "",
-                  button "Continue" lhandler]
+                  [htxt "Enter your last name: ", textfield lastref "",
+                   button "Continue" lhandler]
      where
        lastref free
 ~
        lhandler env = return \$ form "Answer"
-                      [htxt \$ "Hi, " ++ env firstref ++ " " ++ env lastref]
+                        [htxt \$ "Hi, " ++ env firstref ++ " " ++ env lastref]
 \end{prog}
+%
 Due to lexical scoping, the variable \ccode{firstref}
 is visible in the event handler \ccode{lhandler} without explicitly
 passing it as an argument.
@@ -702,34 +778,45 @@ For this purpose, we define an I/O action \ccode{incVisitNumber}
 that reads the number stored in this file, increments it,
 stores the incremented number
 in the file, and returns the incremented number
-(\code{doesFileExist}\pindex{doesFileExist} is an action defined
-in the library \code{Directory} that checks the existence of a file):
+(\code{doesFileExist}\pindex{doesFileExist},
+\code{removeFile}\pindex{removeFile}, and
+\code{renameFile}\pindex{renameFile} are
+I/O operations defined in the library \code{Directory}
+to check the existence of a file, delete a file, and
+rename a file, respectively):
+%
 \begin{prog}
 incVisitNumber :: IO Int
 incVisitNumber = do
  existnumfile <- doesFileExist visitFile
  if existnumfile
    then do vfcont <- readFile visitFile
-           writeVisitFile (readInt vfcont +1)
-   else writeVisitFile 1
+           overwriteVisitFile (read vfcont + 1)
+   else do writeFile visitFile "1"
+           return 1
 ~
-writeVisitFile n =\label{sec-writeVisitFile}
- do writeFile (visitFile++".new") (show n)
-    system ("mv "++visitFile++".new "++visitFile)
-    return n
+overwriteVisitFile :: Int -> IO Int\label{sec-overwriteVisitFile}
+overwriteVisitFile n = do
+  writeFile (visitFile++".new") (show n)
+  removeFile visitFile
+  renameFile (visitFile ++ ".new") visitFile
+  return n
 ~
+visitFile :: String
 visitFile = "numvisit"  -- file to store the current visitor number
 \end{prog}
-Note the definition of \code{writeVisitFile}:
+%
+Note the definition of \code{overwriteVisitFile}:
 it does not directly write the incremented number
 into the \code{visitFile} but it writes it into another file that is
-subsequently moved to the \code{visitFile}.
+subsequently renamed to the \code{visitFile}.
 This is necessary to avoid the overlapping of reading and writing actions
 on the same file due to the lazy evaluation of \code{readFile}.
 
 Now the visitor form is simply obtained by calling \code{incVisitNumber}
 before generating the form
 \proghref{visitor}{Program}:
+%
 \begin{prog}
 visitorForm = do
   visitnum <- incVisitNumber
@@ -773,21 +860,24 @@ Using \code{lockfile}, we can implement a generic function
 and exclusively executes an I/O action (the second parameter),
 i.e., it ensures that two processes using the same lock file
 do not execute the action at the same time:
+%
 \begin{prog}
 exclusiveIO :: String -> IO a -> IO a
-exclusiveIO lockfile action =
-  do system ("lockfile "++lockfile)
-     actionResult <- action
-     system ("rm -f "++lockfile)
-     return actionResult
+exclusiveIO lockfile action = do
+  system ("lockfile " ++ lockfile)
+  actionResult <- action
+  system ("rm -f " ++ lockfile)
+  return actionResult
 \end{prog}
+%
 Now it is straightforward to extend our visitor form
 in order to ensure the exclusive update of the visitor counter.
 This is done by replacing the expression \code{incVisitNumber}
 in the definition of \code{visitorForm} by the following
 expression \proghref{exclusive}{Program}:
+%
 \begin{prog}
-exclusiveIO (visitFile++".lock") incVisitNumber
+exclusiveIO (visitFile ++ ".lock") incVisitNumber
 \end{prog}
 
 
@@ -823,15 +913,17 @@ to other questionnaires:
 \begin{prog}
 question = "Who is your favorite actress?"
 ~
-choices = ["Doris Day","Jodie Foster","Marilyn Monroe",
-           "Julia Roberts","Sharon Stone","Meryl Streep"]
+choices = ["Doris Day", "Jodie Foster", "Marilyn Monroe",
+           "Julia Roberts", "Sharon Stone", "Meryl Streep"]
 \end{prog}
 %
 The current votes are stored in a file on the web server.
 We define the name of this file as a constant in our program:
+%
 \begin{prog}
 voteFile = "votes.data"
 \end{prog}
+%
 For the sake of simplicity, this file is a simple text file.
 If there are $n$ choices for voting, the file has $n$ lines
 where each line contains the textual representation of the
@@ -840,35 +932,44 @@ Thus, the following function defines an action that reads
 the vote file and returns the list of numbers in this file
 (the prelude function \code{lines}\pindex{lines} breaks
 a string into a list of lines where lines are separated by newline
-characters; \code{readNat}\pindex{readNat} is defined in the
-standard library \code{Read} and interprets a string as a natural number):
+characters):
+%
 \begin{prog}
 readVoteFile :: IO [Int]
 readVoteFile = do
   vfcont <- readFile voteFile
-  return (map readNat (lines vfcont))
+  return (map read (lines vfcont))
 \end{prog}
-Similarly, \code{writeVoteFile} is an action that write a list of
-numbers into the vote file. Similarly to the definition of
-\code{writeVisitFile} in Section~\ref{sec-writeVisitFile},
-the numbers are written into a new file that is moved to the vote file
-in order to avoid an overlapping between reading and writing the same file.
-\begin{prog}
-writeVoteFile :: [Int] -> IO ()
-writeVoteFile nums = do
-  writeFile (voteFile++".new") (concatMap (\char92n->show n++"\char92n") nums)
-  system ("mv "++voteFile++".new "++voteFile)
-  done
-\end{prog}
-Using \code{writeVoteFile}, we define an action \code{initVoteFile}
-that initializes the vote file with \code{n} zeros if it does not exist:
+%
+To initialize the vote file, we define an action \code{initVoteFile}
+that initializes the vote file with \code{n} zeros if it does not exist.
+The prelude function \code{unlines}\pindex{unlines}
+is the opposite of \code{lines} and concatenates a list of strings
+into one string by inserting newline characters.
+%
 \begin{prog}
 initVoteFile :: Int -> IO ()
 initVoteFile n = do
   existnumfile <- doesFileExist voteFile
-  if existnumfile then done
-                  else writeVoteFile (take n (repeat 0))
+  unless existnumfile \$
+    writeFile voteFile (unlines (map show (take n (repeat 0))))
 \end{prog}
+%
+To update the vote file, we define \code{overwriteVoteFile}
+that writes a list of
+numbers into the vote file. Similarly to the definition of
+\code{overwriteVisitFile} in Section~\ref{sec-overwriteVisitFile},
+the numbers are written into a new file that is moved to the vote file
+in order to avoid an overlapping between reading and writing the same file.
+%
+\begin{prog}
+overwriteVoteFile :: [Int] -> IO ()
+overwriteVoteFile nums = do
+  writeFile (voteFile ++ ".new") (unlines (map show nums))
+  removeFile voteFile
+  renameFile (voteFile ++ ".new") voteFile
+\end{prog}
+%
 When a client submits a vote, we have to increment to corresponding
 number in the vote file. This can be easily done by a sequence of
 actions that initialize the vote file (if necessary), read the current
@@ -879,15 +980,16 @@ incNumberInFile :: Int -> IO ()
 incNumberInFile n = do
   initVoteFile (length choices)
   nums <- readVoteFile
-  writeVoteFile (incNth nums n)
+  overwriteVoteFile (incNth nums n)
 ~
 incNth :: [Int] -> Int -> [Int]
 incNth []     _ = []
-incNth (x:xs) n = if n==0 then (x+1):xs else x:incNth xs (n-1)
+incNth (x:xs) n | n==0      = (x+1) : xs
+                | otherwise = x : incNth xs (n-1)
 \end{prog}
 %
 Now we have all auxiliary definitions that are necessary to define
-the web scripts. First, we show the definition of
+the web script. First, we show the definition of
 the HTML form \ccode{evalForm} that shows the current votes
 (which produces the result shown in Figure~\ref{fig-quest-answer}).
 Note that we ensure the exclusive access to the vote file
@@ -898,12 +1000,13 @@ into one list of pairs of corresponding elements):
 \begin{prog}
 evalForm :: IO HtmlForm
 evalForm = do
-  votes <- exclusiveIO (voteFile++".lock") readVoteFile
+  votes <- exclusiveIO (voteFile ++ ".lock") readVoteFile
   return \$ form "Evaluation"
    [h1 [htxt "Current votes:"],
-    table (map (\char92(s,v)->[[htxt s],[htxt \$ show v]])
+    table (map (\char92(s,v) -> [[htxt s], [htxt \$ show v]])
                (zip choices votes))]
 \end{prog}
+%
 Now we can define our main form that allows the user to submit a
 vote (see Figure~\ref{fig-quest}).
 It uses radio buttons as input elements.
@@ -922,17 +1025,17 @@ increments he appropriate vote number and returns the current votes
 with the form \code{evalForm}
 \proghref{questionnaire}{Program}:
 \begin{prog}
-questForm = return \$ form "Vote Form"
-  ([h1 [htxt question],
-    radio_main vref "0", htxt (' ':head choices), breakline] ++
-   concatMap (\char92(i,s)->[radio_other vref (show i), htxt (' ':s), breakline])
-             (zip [1..] (tail choices)) ++
-   [hrule, button "submit" questHandler])
+questForm = return \$ form "Vote Form" \$
+  [h1 [htxt question],
+   radio_main vref "0", htxt (' ':head choices), breakline] ++
+  concatMap (\char92(i,s) -> [radio_other vref (show i), htxt (' ':s), breakline])
+            (zip [1..] (tail choices)) ++
+  [hrule, button "submit" questHandler]
  where
    vref free
 ~
    questHandler env = do
-     exclusiveIO (voteFile++".lock") (incNumberInFile (readNat (env vref)))
+     exclusiveIO (voteFile ++ ".lock") (incNumberInFile (read (env vref)))
      evalForm
 \end{prog}
 
@@ -943,29 +1046,38 @@ Since debugging of CGI programs can be quite tedious,
 here are some hints on how to debug CGI programs.
 
 If the execution of the CGI program produces some run-time error
-(e.g., access to a non-existing files), the error messages
-are shown in the error log file of the web browser (ask your system
-administrator for the actual location of this file).
-Each execution of a Curry CGI program is also logged in this file.
-If you want to suppress the writing in the error log,
-you can generate the CGI program with \ccode{makecurrycgi}\pindex{makecurrycgi}
-with the option \ccode{-noerror}.
+(e.g., access to a non-existing files), the error message
+should be shown in the web page.
+Furthermore, messages written to standard error output
+are collected in the log file of the web script.
+For instance, if the web script is stored at location
+\code{cgi-bin/myscript.cgi},
+the log file is \code{cgi-bin/myscript.cgi.log}.
+Hence, if you want to put some debug output in your web script,
+you should write it to standard error, e.g.,
+%
+\begin{prog}
+hPutStrLn stderr "A log message"
+\end{prog}
+%
+(where \code{hPutStrLn} and \code{stderr} are defined
+in the standard library \code{IO}).
 
-If the execution of the CGI program does not produce a run-time error
-but simply fails (e.g., because of an incompletely defined function
-are a unification failure), you will probably see the message
-\ccode{No more solutions} in the web browser instead of the
-expected HTML document. For the purpose of debugging,
-it is often useful to see the subexpressions where a
-reduction was not possible but failed. In this case,
-you can  generate the CGI program by \ccode{makecurrycgi}\pindex{makecurrycgi}
-with the option \ccode{-debug}.
-This has the effect that some debugging code is inserted in the CGI
-program so that you can see the trace of all failed subexpressions
-in the browser (not formatted with HTML so that you should better
-view the source with your browser). Note that the debug option
-produces less efficient CGI programs so that it is better to
-use this option only when necessary.
+% If the execution of the CGI program does not produce a run-time error
+% but simply fails (e.g., because of an incompletely defined function
+% are a unification failure), you will probably see the message
+% \ccode{No more solutions} in the web browser instead of the
+% expected HTML document. For the purpose of debugging,
+% it is often useful to see the subexpressions where a
+% reduction was not possible but failed. In this case,
+% you can  generate the CGI program by \ccode{makecurrycgi}\pindex{makecurrycgi}
+% with the option \ccode{-debug}.
+% This has the effect that some debugging code is inserted in the CGI
+% program so that you can see the trace of all failed subexpressions
+% in the browser (not formatted with HTML so that you should better
+% view the source with your browser). Note that the debug option
+% produces less efficient CGI programs so that it is better to
+% use this option only when necessary.
 
 The use of logic variables as references to input elements
 in HTML forms ensures that typos in the name of references
@@ -978,16 +1090,11 @@ input elements, this is not detected by the compiler
 (which is not worse than traditional approaches where this
 is also not detected) but results in a run-time error
 that is not easy to understand due to the implementation
-of the \code{HTML} library in Curry.
-If the web script fails, i.e., the execution produces the message
-\ccode{No more solutions}, compile it again with
-the option \ccode{-debug} as described above.
-If the new execution shows a failure of an expression
-like \ccode{'1'=:='2'} resulting in the subsequent failure of an
-equational constraint like \code{("FIELD_1" =:= $\ldots$)},
-then you have probably used the same logic variable
-as references to two different input elements.
-Thus, you should check your source program for these possible errors.
+of the library \code{HTML.Base} in Curry.
+In this case, the web script might fail with a message like
+\ccode{No value found}.
+Thus, you should check your source program for these possible errors
+or add some debug output, as described above, to your script.
 
 
 \section{Advanced Web Programming}
@@ -1030,26 +1137,30 @@ Both parameters are of type string.
 Cookies can also have additional parameters to control their
 lifetime, validity for different web servers or regions
 on a web server etc (see definition of datatype
-\ccode{CookieParam} in the \code{HTML} library) which we will not describe
+\ccode{CookieParam} in the library \code{HTML.Base}) which we will not describe
 here. As the default, a cookie is a valid during the client's
 browser session for all documents in the same directory or
 a subdirectory in which the cookie was set.
 
-The \code{HTML} library provides two functions to set
+The library \code{HTML.Base} provides two functions to set
 and retrieve cookies.
 As described above, a cookie is set by sending it with some
 web document. For doing so, there is the function
+%
 \begin{prog}
 cookieForm :: String -> [(String,String)] -> [HtmlExp] -> HtmlForm\pindex{cookieForm}
 \end{prog}
+%
 which behaves similarly to the function \ccode{form} but
 takes an additional parameter: a list of cookies, i.e.,
 name/value pairs. These cookies are submitted with the form
 to the client's browser. To retrieve cookies (that are previously sent
 with a \ccode{cookieForm}), there is an I/O action
+%
 \begin{prog}
 getCookies :: IO [(String,String)]\pindex{getCookies}
 \end{prog}
+%
 that returns the list of all cookies (i.e., name/value pairs)
 sent from the browser for the current CGI script.
 
@@ -1062,15 +1173,17 @@ We implement a ``login form'' that sets this cookie as follows
 \proghref{logincookie}{Program}:
 \begin{prog}
 loginForm = return \$ form "Login"
-      [htxt "Enter your name: ", textfield tref "", hrule,
-       button "Login" handler
-      ]
+  [htxt "Enter your name: ", textfield tref "",
+   hrule,
+   button "Login" handler
+  ]
  where
    tref free
 ~
-   handler env =
-     return \$ cookieForm "Logged In" [("LOGINNAME",env tref)]
-                       [h2 [htxt \$ env tref ++ ": thank you for visiting us"]]
+   handler env = return \$
+     cookieForm "Logged In"
+                [("LOGINNAME",env tref)]
+                [h2 [htxt \$ env tref ++ ": thank you for visiting us"]]
 \end{prog}
 The first form asks the user for his name.
 The cookie is set together with the acknowledgment form
@@ -1089,12 +1202,12 @@ has the associated value \code{v}; the prelude function
 \code{maybe}\pindex{maybe} processes these two cases)
 \proghref{logincookie}{Program}:
 \begin{prog}
-getNameForm =
-   do cookies <- getCookies
-      return \$ form "Hello" \$
-       maybe [h1 [htxt "Not yet logged in"]]
-             (\char92n->[h1 [htxt \$ "Hello, " ++ n]])
-             (lookup "LOGINNAME" cookies)
+getNameForm = do
+  cookies <- getCookies
+  return \$ form "Hello" \$
+   maybe [h1 [htxt "Not yet logged in"]]
+         (\char92n->[h1 [htxt \$ "Hello, " ++ n]])
+         (lookup "LOGINNAME" cookies)
 \end{prog}
 %
 As mentioned above, cookies need special support on the client's
@@ -1112,9 +1225,10 @@ acknowledgment form which sets the cookie \ccode{LOGINNAME}
 \proghref{checkcookie}{Program}:
 \begin{prog}
 loginForm = return \$ cookieForm "Login" [("SETCOOKIE","")]
-      [htxt "Enter your name: ", textfield tref "", hrule,
-       button "Login" handler
-      ]
+  [htxt "Enter your name: ", textfield tref "",
+   hrule,
+   button "Login" handler
+  ]
  where
    tref free
 ~
@@ -1123,7 +1237,8 @@ loginForm = return \$ cookieForm "Login" [("SETCOOKIE","")]
      return \$
        if lookup "SETCOOKIE" cookies == Nothing
        then form "No cookies" [h2 [htxt "Sorry, can't set cookies."]]
-       else cookieForm "Logged In" [("LOGINNAME",env tref)]
+       else cookieForm "Logged In"
+                       [("LOGINNAME", env tref)]
                        [h2 [htxt \$ env tref ++ ": thank you for visiting us"]]
 \end{prog}
 
@@ -1146,14 +1261,16 @@ to the script.
 A \emph{URL parameter}\index{URL!parameter}\index{parameter!URL}
 can be retrieved inside a script
 by the I/O action
+%
 \begin{prog}
 getUrlParameter :: IO String \pindex{getUrlParameter}
 \end{prog}
+%
 which returns the part of the URL following the character \ccode{?}.
 Note that an URL parameter should be ``URL encoded'' to avoid
 the appearance of characters with a special meaning.
-The \code{HTML} library provides the functions
-\ccode{urlencoded2string} and \ccode{string2urlencoded}
+The library \code{HTML.Base} provides the functions
+\code{urlencoded2string} and \code{string2urlencoded}
 to decode and encode such parameters, respectively.
 
 As a simple example, we want to write a web script to navigate
@@ -1161,46 +1278,42 @@ through a directory structure. The current directory
 is the URL parameter for this script. The script
 extracts this parameter by the use of \code{getUrlParameter}
 and shows all entries as a HTML list
-\proghref{browsedir}{Program}:
+\proghref{browsedir}{Program}
+(the prelude function \code{mapM}\pindex{mapM} applies
+a mapping from elements into actions to all elements of a list
+and collect all results in a list):
+%
 \begin{prog}
 showDirForm = do
   param <- getUrlParameter
   let dir = if param=="" then "." else urlencoded2string param
   entries <- getDirectoryContents dir
-  hexps <- mapIO (entry2html dir) entries
+  hexps <- mapM (entry2html dir) entries
   return \$ form "Browse Directory"
                 [h1 [htxt \$ "Directory: " ++ dir], ulist hexps]
 \end{prog}
-The I/O action \ccode{getDirectoryContents}\pindex{getDirectoryContents}
+%
+The I/O action \code{getDirectoryContents}\pindex{getDirectoryContents}
 is defined in the system library \code{Directory}
 and returns the list of all entries in a directory.
-The function \ccode{entry2html} checks for an entry whether it
+The function \code{entry2html} checks for an entry whether it
 is a directory. If this is the case, it returns a link to
 the same web script but with an extended parameter, otherwise
 it simply returns the entry name as an HTML text
-(\ccode{doesDirectoryExist}\pindex{doesDirectoryExist}
+(\code{doesDirectoryExist}\pindex{doesDirectoryExist}
 is defined in the library \code{Directory} and returns \code{True}
 if the argument is the name of a directory):
+%
 \begin{prog}
 entry2html :: String -> String -> IO [HtmlExp]
 entry2html dir e = do
-  direx <- doesDirectoryExist (dir++"/"++e)
+  direx <- doesDirectoryExist (dir ++ "/" ++ e)
   if direx
-   then return [href ("browsedir.cgi?" ++ string2urlencoded (dir++"/"++e))
+   then return [href ("browsedir.cgi?" ++ string2urlencoded (dir ++ "/" ++ e))
                      [htxt e]]
    else return [htxt e]
 \end{prog}
-Finally, the prelude function \ccode{mapIO}\pindex{mapIO} applies
-a mapping from elements into I/O actions to all elements of a list
-and collect all results in a list:
-\begin{prog}
-mapIO :: (a -> IO b) -> [a] -> IO [b]
-mapIO _ []     = return []
-mapIO f (x:xs) = do
-  y  <- f x
-  ys <- mapIO f xs
-  return (y:ys)
-\end{prog}
+%
 
 
 \subsection{Style Sheets}

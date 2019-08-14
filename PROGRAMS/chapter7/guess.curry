@@ -4,8 +4,7 @@
 -- which also counts the number of guesses
 ------------------------------------------------------------------------------
 
-import HTML
-import Read
+import HTML.Base
 
 guessForm :: IO HtmlForm
 guessForm = return $ form "Number Guessing" (guessInput 1)
@@ -17,13 +16,15 @@ guessInput n =
 
 guessHandler :: Int -> CgiRef -> (CgiRef -> String) -> IO HtmlForm
 guessHandler n nref env =
-  let nr = readInt (env nref) in
-  return $ form "Answer"
-            (if nr==42
-             then [h1 [htxt $ "Right! You needed "++show n++" guesses!"]]
-             else [h1 [htxt $ if nr<42 then "Too small!"
-                                       else "Too large!"],
-                   hrule] ++ guessInput (n+1))
+  return $ form "Answer" $
+    case reads (env nref) of
+      [(nr,"")] ->
+         if nr==42
+           then [h1 [htxt $ "Right! You needed "++show n++" guesses!"]]
+           else [h1 [htxt $ if nr<42 then "Too small!"
+                                     else "Too large!"],
+                 hrule] ++ guessInput (n+1)
+      _ -> [h1 [htxt "Illegal input, try again!"]] ++ guessInput n
 
 -- Install the CGI program by:
--- makecurrycgi -m guessForm guess
+-- curry-makecgi -o guess.cgi -m guessForm guess

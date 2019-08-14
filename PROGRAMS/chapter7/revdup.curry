@@ -3,7 +3,7 @@
 -- a form with a text input field and two event handlers
 ------------------------------------------------------------------------------
 
-import HTML
+import HTML.Base
 
 main :: IO HtmlForm
 main = return $ form "Question"
@@ -21,4 +21,4 @@ main = return $ form "Question"
           [h1 [htxt $ "Duplicated input: " ++ env tref ++ env tref]]
 
 -- Install the CGI program by:
--- makecurrycgi revdup
+-- curry-makecgi -o revdup.cgi revdup

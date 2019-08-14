@@ -1,6 +1,6 @@
 -- Generate HMTL document containing a list of all multiplications of digits
 
-import HTML
+import HTML.Base
 
 -- Generate list of digit multiplications:
 multiplications :: [(Int,Int,Int)]
@@ -32,4 +32,4 @@ multForm :: IO HtmlForm
 multForm = return $ form "Multiplication of Digits" htmlMultiplications
 
 -- Install the CGI program by:
--- makecurrycgi -m multForm multdigits
+-- curry-makecgi -o multdigits.cgi -m multForm multdigits

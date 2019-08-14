@@ -5,12 +5,11 @@
 -- The update is forced to be an exclusive operation.
 ------------------------------------------------------------------------------
 
-import HTML
-import System
-import Directory
-import IOExts(exclusiveIO)
-import Read
+import Directory ( doesFileExist, removeFile, renameFile )
+import HTML.Base
+import IOExts    ( exclusiveIO )
 
+visitorForm :: IO HtmlForm
 visitorForm = do
   visitnum <- exclusiveIO (visitFile++".lock") incVisitNumber
   return $ form "Access Count Form"
@@ -22,17 +21,21 @@ incVisitNumber = do
  existnumfile <- doesFileExist visitFile
  if existnumfile
    then do vfcont <- readFile visitFile
-           writeVisitFile (readNat vfcont +1)
-   else writeVisitFile 1
+           overwriteVisitFile (read vfcont + 1)
+   else do writeFile visitFile "1"
+           return 1
 
-writeVisitFile n =
- do writeFile (visitFile++".new") (show n)
-    system ("mv "++visitFile++".new "++visitFile)
-    return n
+overwriteVisitFile :: Int -> IO Int
+overwriteVisitFile n = do
+  writeFile (visitFile++".new") (show n)
+  removeFile visitFile
+  renameFile (visitFile ++ ".new") visitFile
+  return n
 
 -- the file where the current visitor number is stored:
+visitFile :: String
 visitFile = "numvisit"
 
 
 -- Install the CGI program by:
--- makecurrycgi -m visitorForm exclusive
+-- curry-makecgi -o visitor.cgi -m visitorForm exclusive

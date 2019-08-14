@@ -1,9 +1,10 @@
 -- Translate a text file into HMTL document where lines are set
 -- in bold and italic:
 
-import HTML
+import HTML.Base
 
 -- Generate bold/italic lines from a list of text lines:
+boldItalicLines :: [String] -> [HtmlExp]
 boldItalicLines [] = []
 boldItalicLines [line] = [bold [htxt line], breakline]
 boldItalicLines (line1:line2:lines) =
@@ -11,6 +12,7 @@ boldItalicLines (line1:line2:lines) =
   boldItalicLines lines
 
 -- Translate a text file into a HTML file:
+boldItalic :: String -> String -> IO ()
 boldItalic textfile htmlfile = do
   text <- readFile textfile
   writeFile htmlfile
