@@ -1,7 +1,10 @@
 # To format the Curry tutorial
 
+# The PAKCS executable (currently: Version 2)
+PAKCS=/opt/pakcs/pakcs2/bin/pakcs
+
 # The executable of the Curry package manager (used to generate program URLs):
-CPM=cypm
+CPM=cypm -d CURRYBIN=$(PAKCS)
 
 .PHONY: all
 all: pdf
@@ -48,6 +51,6 @@ publish: main.pdf
 	cd PROGRAMS && cleancurry -r
 	/bin/rm -rf $(WEBDIR)/PROGRAMS
 	cp -r PROGRAMS $(WEBDIR)
-	cd $(WEBDIR) && rm -rf PROGRAMS/GenerateHRefs.curry PROGRAMS/.curry PROGRAMS/*/.curry *~ */*~ */*/*~
+	cd $(WEBDIR) && rm -rf PROGRAMS/.curry PROGRAMS/*/.curry *~ */*~ */*/*~
 	cd $(WEBDIR) && rm -f PROGRAMS.zip && zip -r PROGRAMS.zip PROGRAMS
 	chmod -R go+rX $(WEBDIR)

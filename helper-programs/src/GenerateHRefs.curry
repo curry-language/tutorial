@@ -3,7 +3,7 @@
 --- into a LaTeX macro.
 ---
 --- @author Michael Hanus
---- @version March 2019
+--- @version February 2021
 ----------------------------------------------------------------
 
 import Directory
@@ -36,10 +36,10 @@ getCurryFiles dir =
     return $ if b && ".curry" `isSuffixOf` f then [dir ++ '/' : f]
                                              else []
 
--- The base url of Smap:
-smapBaseUrl :: String
-smapBaseUrl = "http://www-ps.informatik.uni-kiel.de/smap/smap.cgi"
---smapBaseUrl = "http://localhost/mh/smap/smap.cgi"
+-- The base URL of Smap:
+smapBaseURL :: String
+smapBaseURL = "https://smap.informatik.uni-kiel.de/smap.cgi"
+--smapBaseURL = "http://localhost/mh/smap/smap.cgi"
 
 -- The default programming language for uploaded programs:
 uploadLanguage :: String
@@ -48,7 +48,7 @@ uploadLanguage = "curry"
 -- Generate Smap URL for a given program.
 generateURL :: String -> String
 generateURL program =
-  smapBaseUrl ++ "?upload?lang=" ++ uploadLanguage
+  smapBaseURL ++ "?upload?lang=" ++ uploadLanguage
               ++ "&program=" ++ string2urlencoded program
 
 --- Generates Smap URL for a given file name.
