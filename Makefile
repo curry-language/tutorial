@@ -1,7 +1,11 @@
 # To format the Curry tutorial
 
 # The PAKCS executable (currently: Version 2)
+ifneq ("$(wildcard $(/opt/pakcs/pakcs2/bin/pakcs))","")
 PAKCS=/opt/pakcs/pakcs2/bin/pakcs
+else
+PAKCS=$(shell which pakcs)
+endif
 
 # The executable of the Curry package manager (used to generate program URLs):
 CPM=cypm -d CURRYBIN=$(PAKCS)
@@ -12,6 +16,11 @@ all: pdf
 .PHONY: what
 what:
 	@echo pdf programs clean publish
+
+.PHONY: html
+html: main.pdf
+	latexml --includestyles --dest=main.xml main.tex
+	latexmlpost --format=html5 --dest=main.html main.xml
 
 .PHONY: pdf
 pdf:

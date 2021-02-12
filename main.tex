@@ -23,7 +23,7 @@
 \hypersetup{pdftitle={Curry: A Tutorial Introduction}}
 \hypersetup{pdfauthor={S. Antoy and M. Hanus}}
 \hypersetup{pdfstartview=FitH}
-\usepackage{thumbpdf}
+%\usepackage{thumbpdf}
 
 %%% ------------------------------------------------------------------
 
@@ -82,6 +82,10 @@
 
 % produce an index:
 \makeindex
+
+% in case we are not generating a pdf this command will not be availeable
+% in that case define it as a noop
+\providecommand{\pdfbookmark}{}
 
 \begin{document}
 \sloppy

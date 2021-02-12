@@ -223,7 +223,7 @@ the call.
 
 A special notation is available to define lists containing
 \emph{ranges}\index{list!ranges} of integers.
-The most common of this notation is \ccode{[$e_1$\,..\,$e_2$]}\pindex{[u..v]}
+The most common of this notation is \ccode{[$e_1$\,..\,$e_2$]}\pindex{\lbrack{}u..v\rbrack{}}
 which denotes the list \ccode{[$e_1,e_1+1,e_1+2,\cdots,e_2$]}.
 For example:
 %
@@ -233,7 +233,7 @@ Result: [2,3,4,5] ?
 Prelude> 
 \end{prog}
 %
-Similarly, the expression \ccode{[$e$\,..]}\pindex{[u..]}
+Similarly, the expression \ccode{[$e$\,..]}\pindex{\lbrack{}u..\rbrack{}}
 denotes the \emph{infinite}\index{infinite structures}
 list of all the integers starting from $e$.
 This list cannot be printed in its entirety,
@@ -249,12 +249,12 @@ This distance is inferred from the first two elements of the expression.
 For example:
 %
 \begin{prog}
-Prelude> \userinput{[2,\,6\,..\,20]}\pindex{[u,v..w]}
+Prelude> \userinput{[2,\,6\,..\,20]}\pindex{\lbrack{}u,v..w\rbrack{}}
 Result: [2,6,10,14,18] ? 
 Prelude> 
 \end{prog}
 %
-Likewise, \ccode{[2,\,6\,..]}\pindex{[u,v..]}
+Likewise, \ccode{[2,\,6\,..]}\pindex{\lbrack{}u,v..\rbrack{}}
 generates the infinite list \ccode{[2,6,10,14,$\ldots$]}.
 
 Ranges can be defined using ordinary functions.
@@ -760,18 +760,17 @@ and ``carton'' stores the letter `c', `a', and `r', only
 once as shown below.  The distinguished symbol `$\bullet$'
 terminates a string.
 
+%TODO re-add the trie using something else or wait for xymatrix support
 %\hspace*{2in}
-$$
-\xymatrix@1@C=6pt@R=6pt@M=1pt{
-  & c \ar@{-}[d] \\  
-  & a \ar@{-}[d] \\  
-  & r \ar@{-}[dl]\ar@{-}[d]\ar@{-}[dr] \\  
-  \bullet & e \ar@{-}[d] & t \ar@{-}[d] \\
-  & \bullet & o \ar@{-}[d] \\  
-  & & n \ar@{-}[d] \\  
-  & & \bullet
-}
-$$
+%\xymatrix@1@C=6pt@R=6pt@M=1pt{
+%  & c \ar@{-}[d] \\  
+%  & a \ar@{-}[d] \\  
+%  & r \ar@{-}[dl]\ar@{-}[d]\ar@{-}[dr] \\  
+%  \bullet & e \ar@{-}[d] & t \ar@{-}[d] \\
+%  & \bullet & o \ar@{-}[d] \\  
+%  & & n \ar@{-}[d] \\  
+%  & & \bullet
+%}
 
 \noindent
 We declare the type of a trie as follows:
