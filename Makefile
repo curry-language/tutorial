@@ -18,9 +18,8 @@ what:
 	@echo pdf programs clean publish
 
 .PHONY: html
-html: main.pdf
-	latexml --includestyles --dest=main.xml main.tex
-	latexmlpost --format=html5 --dest=main.html main.xml
+html: main.html
+	xdg-open main.html \&
 
 .PHONY: pdf
 pdf:
@@ -37,6 +36,12 @@ main.pdf: main.tex introduction.tex start.tex features.tex programming.tex \
 	pdflatex main
 	makeindex main.idx
 	pdflatex main
+
+main.xml: main.pdf
+	latexml --includestyles --dest=main.xml main.tex
+	
+main.html: main.xml
+	latexmlpost --format=html5 --splitat=section --dest=main.html main.xml
 
 # Generate URLs for all example programs and write them into `browseurl.tex`
 .PHONY: programs
