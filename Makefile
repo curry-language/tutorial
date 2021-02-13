@@ -19,7 +19,7 @@ what:
 
 .PHONY: html
 html: main.html
-	xdg-open main.html \&
+	xdg-open main.html
 
 .PHONY: pdf
 pdf:
@@ -29,8 +29,7 @@ pdf:
 	rm -f thumb* main.out
 	@echo acroread main.pdf \&
 
-main.pdf: main.tex introduction.tex start.tex features.tex programming.tex \
-	  packages.tex patterns.tex html.tex libraries.tex browseurl.tex
+main.pdf: ./*.tex browseurl.tex
 	pdflatex main
 	bibtex main
 	pdflatex main
@@ -40,8 +39,8 @@ main.pdf: main.tex introduction.tex start.tex features.tex programming.tex \
 main.xml: main.pdf
 	latexml --includestyles --dest=main.xml main.tex
 	
-main.html: main.xml
-	latexmlpost --format=html5 --splitat=section --dest=main.html main.xml
+main.html: main.xml css/main.css
+	latexmlpost --format=html5 --css=css/main.css --splitat=section --dest=main.html main.xml
 
 # Generate URLs for all example programs and write them into `browseurl.tex`
 .PHONY: programs
@@ -54,7 +53,7 @@ browseurl.tex: PROGRAMS/*/*.curry
 .PHONY: clean
 clean:
 	/bin/mv main.tex main.texx
-	/bin/rm -f main.?? main.??? *.aux
+	/bin/rm -f main.?? main.??? *.aux *.html LaTeXML.css ltx-report.css LaTeXML.cache
 	/bin/mv main.texx main.tex
 
 
