@@ -18,8 +18,8 @@ what:
 	@echo pdf programs clean publish
 
 .PHONY: html
-html: html-out/main.html
-	xdg-open html-out/main.html
+html: output/html/main.html
+	xdg-open output/html/main.html
 
 .PHONY: pdf
 pdf:
@@ -36,12 +36,19 @@ main.pdf: ./*.tex browseurl.tex
 	makeindex main.idx
 	pdflatex main
 
-main.xml: main.pdf
-	latexml --includestyles --dest=main.xml main.tex
+output/main.xml: main.pdf
+	latexml --includestyles \
+		--dest=output/main.xml \
+		--documentid=curry-tutorial \
+		main.tex
 	
-html-out/main.html: main.xml css/main.css
-	mkdir html-out
-	latexmlpost --format=html5 --css=css/main.css --splitat=section --dest=html-out/main.html main.xml
+output/html/main.html: output/main.xml css/*.css Makefile
+	latexmlpost --format=html5 \
+		--splitat=section \
+		--css=LaTeXML-blue.css \
+		--css=css/main.css \
+		--dest=output/html/main.html \
+		output/main.xml
 
 # Generate URLs for all example programs and write them into `browseurl.tex`
 .PHONY: programs
