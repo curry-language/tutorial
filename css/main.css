@@ -1,10 +1,5 @@
-body {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.ltx_page_main {
-    width: auto;
-    flex-grow: 1;
+.ltx_page_footer [rel~="index"] {
+    display: block;
+    text-align: center;
+    float: none;
 }
