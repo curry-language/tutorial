@@ -1,85 +1,4 @@
-\documentclass[11pt,fleqn]{report}
-
-\usepackage{latexsym}
-\usepackage{makeidx}
-\usepackage{amssymb}
-%\usepackage{url}
-\usepackage{program-text}
-\usepackage{color}
-\usepackage{a4}
-\usepackage{graphicx}
-\usepackage{ifthen}
-\usepackage[all]{xy}
-\usepackage{xspace}
-
-\input{browseurl}
-
-%%% ------------------------------------------------------------------
-
-\usepackage[colorlinks,linkcolor=blue]{hyperref}
-%\usepackage[]{hyperref}
-\hypersetup{bookmarksopen=true}
-\hypersetup{bookmarksopenlevel=0}
-\hypersetup{pdftitle={Curry: A Tutorial Introduction}}
-\hypersetup{pdfauthor={S. Antoy and M. Hanus}}
-\hypersetup{pdfstartview=FitH}
-\usepackage{thumbpdf}
-
-%%% ------------------------------------------------------------------
-
-\setlength{\textwidth}{15.5cm}
-\setlength{\textheight}{23cm}
-\renewcommand{\baselinestretch}{1.1}
-\setlength{\topmargin}{-1cm}
-\setlength{\oddsidemargin}{0.5cm}
-\setlength{\evensidemargin}{0.5cm}
-\setlength{\marginparwidth}{0.0cm}
-\setlength{\marginparsep}{0.0cm}
-
-\newlength{\figurewidth}
-\setlength{\figurewidth}{\textwidth}
-\addtolength{\figurewidth}{-0.4cm}
-
-% base URL for downloading programs:
-\def\baseurl{http://www.informatik.uni-kiel.de/~curry/tutorial/}
-% reference to a program in the PROGRAMS directory:
-\newcommand{\globalproghref}[2]{\href{\baseurl PROGRAMS/#1.pdf}{#2}}
-\newcommand{\downloadref}[2]{\href{\baseurl PROGRAMS/chapter\thechapter/#1.curry}{[Download #2]}}
-
-% reference to a program for the current chapter in the PROGRAMS directory:
-%\newcommand{\proghref}[2]{\globalproghref{chapter\thechapter/#1}{[#2]}}
-\newcommand{\proghref}[2]{\progbrowseurl{chapter\thechapter/#1.curry}{[Browse #2]}\downloadref{#1}{#2}}
-
-\newcommand{\todo}[1]{{\color{red}\sc [{#1}]}}
-
-\newcommand{\define}[1]{\emph{#1}\index{#1}} % definition of a new notion
-\newcommand{\definei}[2]{\emph{#1}\index{#2}} % definition of a new notion
-\newcommand{\pindex}[1]{\index{#1@{\tt #1}}}  % program elements in index
-
-% allow underscores in programs:
-\catcode`\_=\active
-\let_=\sb
-\catcode`\_=12
-
 % ------------------------------------------------------------------
-%%% Next should be relative to the current document rather than absolute
-%\hyperbaseurl{file:/home/mh/papers/tutorial/}
-\newtheorem{rmexercise}{Exercise}
-\newenvironment{exercise}{\begin{rmexercise}\rm}{\end{rmexercise}}
-% ------------------------------------------------------------------
-
-% ------------------------------------------------------------------
-\newcommand{\curryurl}{http://www.curry-lang.org}
-\newcommand{\curry}%
-  {\href{\curryurl}{Curry}}
-\newcommand{\pakcs}%
-  {\href{http://www.informatik.uni-kiel.de/~pakcs}{{\sc PAKCS}}\xspace}
-\newcommand{\kics}%
-  {\href{http://www-ps.informatik.uni-kiel.de/kics2}{{\sc KiCS2}}\xspace}
-\newcommand{\cpm}{\href{http://curry-language.org/tools/cpm}{CPM}\xspace}
-\newcommand{\wwwc}{\href{http://www.w3c.org}{W3C}}
-% ------------------------------------------------------------------
-
 % produce an index:
 \makeindex
 
@@ -87,21 +6,32 @@
 \sloppy
 
 \pagenumbering{roman}
-\begin{titlepage}
 \begin{center}
 \fbox{
 \begin{minipage}[t]{\figurewidth}
 \begin{center}\vspace{20ex}
-{\Huge\bf Curry}\\[4ex]
-{\LARGE\bf A Tutorial Introduction}\\[5ex]
-{\large Draft of \today}\\[8ex]
+{\Huge\bf Curry}\\
+\vspace{4ex}
+
+{\LARGE\bf A Tutorial Introduction}\\
+\vspace{5ex}
+
+{\large Draft of \today}\\
+\vspace{8ex}
+
 \Large
-\href{http://www.cs.pdx.edu/~antoy/}{Sergio Antoy}\\[1ex]
+\href{http://www.cs.pdx.edu/~antoy/}{Sergio Antoy}\\
+\vspace{1ex}
+
 \large
 \href{http://www.pdx.edu}{Portland State University}, U.S.A.\\
-Web: \url{http://www.cs.pdx.edu/~antoy/}\\[3ex]
+Web: \url{http://www.cs.pdx.edu/~antoy/}\\
+\vspace{3ex}
+
 \Large
-\href{http://www.informatik.uni-kiel.de/~mh/}{Michael Hanus}\\[1ex]
+\href{http://www.informatik.uni-kiel.de/~mh/}{Michael Hanus}\\
+\vspace{1ex}
+
 \large
 \href{http://www.uni-kiel.de}{Christian-Albrechts-Universit\"at Kiel}, Germany\\
 Web: \url{http://www.informatik.uni-kiel.de/~mh/}\\
@@ -110,7 +40,6 @@ Web: \url{http://www.informatik.uni-kiel.de/~mh/}\\
 \end{minipage}}
 \end{center}
 \setcounter{page}{0} 
-\end{titlepage}
 \pdfbookmark[1]{Contents}{Contents}
 \tableofcontents
 
@@ -120,7 +49,7 @@ Web: \url{http://www.informatik.uni-kiel.de/~mh/}\\
 \chapter*{Preface}
 \addcontentsline{toc}{chapter}{Preface}
 
-This book is about programming in \curry,
+This book is about programming in \curryref,
 a general-purpose declarative programming language
 that integrates functional with logic programming.
 Curry seamlessly combines the key features of
@@ -187,3 +116,8 @@ and execute them on your locally installed Curry system.
 \printindex
 
 \end{document}
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: "main_pdf"
+%%% End: 

@@ -19,31 +19,30 @@ The executable of the Curry Package Manager is named \code{cypm}\pindex{cypm}
 and located in the \code{bin} directory of \pakcs or \kics.
 When you use \cpm for the first time, execute
 %
-\begin{prog}
+\begin{curry}
 > cypm update
-\end{prog}
+\end{curry}
 %
 to download a local copy of the index of all available packages.
 A list of all packages in this index can be shown by
 the \code{list} command:
 %
-\begin{prog}
+\begin{curry}
 > cypm list
-Name               Synopsis                                           Version   
-----               --------                                           -------   
-abstract-curry     Libraries to deal with AbstractCurry programs      2.0.0     
-abstract-haskell   Libraries to represent Haskell programs in Curry   2.0.0     
-addtypes           A tool to add missing type signatures in a Curry   2.0.0     
-                   program                                           
-base               Base libraries for Curry systems                   1.0.0     
-$\ldots$
-\end{prog}
+Name             Synopsis                                         Version   
+----             --------                                         -------   
+abstract-curry   Libraries to deal with AbstractCurry programs     3.0.0     
+abstract-haskell Libraries to represent Haskell programs in Curry  3.0.0     
+addtypes         A tool to add missing type signatures in a Curry  3.0.0     
+                 program                                           
+...
+\end{curry}
 %
 The command
 %
-\begin{prog}
+\begin{curry}
 > cypm info PACKAGE
-\end{prog}
+\end{curry}
 %
 can be used to show more information about the package with name
 \code{PACKAGE}.
@@ -68,15 +67,15 @@ probabilistic functional logic programming
 \cite{ChristiansenDylusTeegen18}.
 It can be installed as a global dependency by the command
 %
-\begin{prog}
+\begin{curry}
 > cypm add pflp
-\end{prog}
+\end{curry}
 %
 The command
 %
-\begin{prog}
+\begin{curry}
 > cypm info pflp --all
-\end{prog}
+\end{curry}
 %
 shows all information about this package.
 In particular, one can see that the module \code{PFLP}
@@ -84,9 +83,9 @@ is exported by this package.
 Thus, one can use this module in a program
 using probabilistic functional logic programming by adding the line
 %
-\begin{prog}
+\begin{curry}
 import PFLP
-\end{prog}
+\end{curry}
 %
 in the header of the program.
 When this program is loaded with \pakcs,
@@ -119,9 +118,9 @@ by \cpm's \code{info} command).
 In order to install a tool provided by \code{PACKAGE},
 one can use the command
 %
-\begin{prog}
+\begin{curry}
 > cypm install PACKAGE
-\end{prog}
+\end{curry}
 %
 This command downloads the package into some internal directory
 (\code{\$HOME/.cpm/apps_\ldots}), compiles the tool,
@@ -132,14 +131,14 @@ Hence it is recommended to add this directory to your path.
 For instance, the most recent version of \cpm
 can be installed by the commands
 %
-\begin{prog}
+\begin{curry}
 > cypm update
-$\ldots$
+...
 > cypm install cpm
-$\ldots$ Package 'cpm-xxx' checked out $\ldots$
-$\ldots$
+... Package 'cpm-xxx' checked out ...
+...
 INFO  Installing executable 'cypm' into '/home/joe/.cpm/bin'
-\end{prog}
+\end{curry}
 %
 Now, the binary \code{cypm} of the most recent \cpm version can be used
 if \code{\$HOME/.cpm/bin} is in your path
@@ -156,9 +155,9 @@ so that they can be managed by \cpm.
 The easiest way to create a new package is to use
 \cpm's \code{new} command with the name of the new package:
 %
-\begin{prog}
+\begin{curry}
 > cypm new myproject
-\end{prog}
+\end{curry}
 %
 This creates a new directory \code{myproject} in which
 the application can be developed.
@@ -209,9 +208,9 @@ e.g.:
 %
 After modifying the metadata, one can run
 %
-\begin{prog}
+\begin{curry}
 > cypm install
-\end{prog}
+\end{curry}
 %
 (inside the package directory \code{myproject})
 to resolve, download, and install all dependencies of the current package.
@@ -238,17 +237,17 @@ whereas the name of the main module (key \code{main}) is optional
 (if it is missing, the name \code{Main} is taken).
 The main module must export a function
 %
-\begin{prog}
+\begin{curry}
 main :: IO ()
-\end{prog}
+\end{curry}
 %
 which starts the application.
 If a package contains an \code{executable} specification,
 the command
 %
-\begin{prog}
+\begin{curry}
 > cypm install
-\end{prog}
+\end{curry}
 %
 also compiles the main module and installs the executable
 in the default directory

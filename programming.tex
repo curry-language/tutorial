@@ -39,9 +39,9 @@ as \emph{Nil}\index{Nil} and \emph{Cons}\index{Cons}.
 Within the Curry language, the datatype ``\emph{List of a}''
 would be declared as:
 %
-\begin{prog}
+\begin{curry}
 data List a = Nil | Cons a (List a)
-\end{prog}
+\end{curry}
 %
 Because lists are one of the most frequently used types in
 functional, logic and functional logic programs,
@@ -55,9 +55,9 @@ takes an element of type \code{a} and a list of \code{a}'s.
 Thus, with a syntax that is \emph{not} legal in Curry, but
 is quite expressive, the above declaration would look like:
 %
-\begin{prog}
+\begin{curry}
 data [a] = [] | a : [a]
-\end{prog}
+\end{curry}
 %
 The expression \code{(u:v)} denotes the list with the first element \code{u}
 followed by the list \code{v}.
@@ -87,16 +87,16 @@ However, all the elements of a particular list must have the same type.
 The following annotated examples show this point
 \proghref{lists}{Program}:
 %
-\begin{prog}
+\begin{curry}
 -- list of integers
 digits = [0,1,2,3,4,5,6,7,8,9]
-\vspace*{1.5ex}
+
 -- list of characters, equivalent to "Pakcs", print with putStr
 string = ['P','a','k','c','s'] 
-\vspace*{1.5ex}
+
 -- list of list of integers
 matrix = [[1,0,2],[3,7,2],[2,8,1],[3,3,4]]
-\end{prog}
+\end{curry}
 %
 Other special notations available for lists are described in 
 Sections~\ref{list-ranges} and~\ref{list-comprehensions}.
@@ -115,10 +115,10 @@ In a program, this is expressed by a recursive call.
 The function that counts the number of elements of a list
 is emblematic in this respect:
 %
-\begin{prog}
+\begin{curry}
 len []    = 0
 len (u:v) = 1 + len v
-\end{prog}
+\end{curry}
 %
 For computing the length of a list, the value of \code{u} is irrelevant and
 \code{u} should be replaced by an anonymous variable in the above
@@ -148,13 +148,14 @@ to code, understand and evaluate.  Sometimes they may be inefficient.
 Below are two definitions of a function to reverse a list.
 For long lists, the second one is much more efficient.
 %
-\begin{prog}
+\begin{curry}
 slowRev [] = []
-slowRev (u:v) = slowRev v ++ [u] \\[-2ex]
+slowRev (u:v) = slowRev v ++ [u]
+
 fastRev l = aux l []
   where aux [] r = r
         aux (u:v) r = aux v (u:r)
-\end{prog}
+\end{curry}
 %
 A function inductively defined performs a ``traversal'' of its argument.
 During this traversal some computation is performed on each
@@ -173,13 +174,13 @@ The subtraction is computed after the recursive
 calls (otherwise the minimum could not be known)
 \proghref{submin}{Program}:
 %
-\begin{prog}
-submin [] = []
+\begin{curry}
+submin []     = []
 submin (x:xs) = fst (aux (x:xs) x)
   where aux []     m = ([],m)
         aux (y:ys) m = let (zs,n) = aux ys (min y m)
                         in (y-n:zs,n)
-\end{prog}
+\end{curry}
 %%% Would a diagram of the execution help?
 %
 The function \code{fst}, which returns the first element of a pair,
@@ -207,11 +208,12 @@ Below are two definitions of the function that computes the
 last element of a list.  The first definition is inductive,
 whereas the second is narrowing-based. 
 %
-\begin{prog}
-inductLast [x] = x
-inductLast (x:y:z) = inductLast (y:z) \\[-2ex]
+\begin{curry}
+inductLast [x]     = x
+inductLast (x:y:z) = inductLast (y:z)
+
 narrowLast (_++[e]) = e
-\end{prog}
+\end{curry}
 %
 Observe that \code{narrowLast} computes the result by solving the
 equation \ccode{l == \_++[e]} in which \ccode{l} is the argument of
@@ -223,7 +225,7 @@ the call.
 
 A special notation is available to define lists containing
 \emph{ranges}\index{list!ranges} of integers.
-The most common of this notation is \ccode{[$e_1$\,..\,$e_2$]}\pindex{[u..v]}
+The most common of this notation is \ccode{[$e_1$\,..\,$e_2$]}\pindex{\lbrack{}u..v\rbrack{}}
 which denotes the list \ccode{[$e_1,e_1+1,e_1+2,\cdots,e_2$]}.
 For example:
 %
@@ -233,7 +235,7 @@ Result: [2,3,4,5] ?
 Prelude> 
 \end{prog}
 %
-Similarly, the expression \ccode{[$e$\,..]}\pindex{[u..]}
+Similarly, the expression \ccode{[$e$\,..]}\pindex{\lbrack{}u..\rbrack{}}
 denotes the \emph{infinite}\index{infinite structures}
 list of all the integers starting from $e$.
 This list cannot be printed in its entirety,
@@ -249,12 +251,12 @@ This distance is inferred from the first two elements of the expression.
 For example:
 %
 \begin{prog}
-Prelude> \userinput{[2,\,6\,..\,20]}\pindex{[u,v..w]}
+Prelude> \userinput{[2,\,6\,..\,20]}\pindex{\lbrack{}u,v..w\rbrack{}}
 Result: [2,6,10,14,18] ? 
 Prelude> 
 \end{prog}
 %
-Likewise, \ccode{[2,\,6\,..]}\pindex{[u,v..]}
+Likewise, \ccode{[2,\,6\,..]}\pindex{\lbrack{}u,v..\rbrack{}}
 generates the infinite list \ccode{[2,6,10,14,$\ldots$]}.
 
 Ranges can be defined using ordinary functions.
@@ -275,10 +277,10 @@ For example, the infinite sequence of square and triangular
 numbers are obtained as follows
 \proghref{comprehensions}{Program}:
 %
-\begin{prog}
-squares   = [x * x | x <- [0\,..]]
-triangles = [x * (x+1) `div` 2 | x <- [0\,..]]
-\end{prog}
+\begin{curry}
+squares   = [x * x | x <- [0 ..]]
+triangles = [x * (x+1) `div` 2 | x <- [0 ..]]
+\end{curry}
 %
 A \emph{generator}\index{comprehension!generator}
 is an expression of the form
@@ -292,9 +294,9 @@ an integer greater than 2 is a prime number, the following
 comprehension is the sequence of the prime numbers
 \proghref{comprehensions}{Program}:
 %
-\begin{prog}
-primes = [x | x <- [2\,..], isPrime x] 
-\end{prog}
+\begin{curry}
+primes = [x | x <- [2 ..], isPrime x] 
+\end{curry}
 %
 In this example, the guard is the Boolean expression
 \code{(isPrime x)}. The elements produced by the generator
@@ -305,9 +307,9 @@ The following example shows how to compute pairs where
 the second component is not greater than the first
 \proghref{comprehensions}{Program}:
 %
-\begin{prog}
-lexPairs = [(x,y) | x <- [0..3], y <- [x .. 3]]
-\end{prog}
+\begin{curry}
+lexPairs = [(x,y) | x <- [0 .. 3], y <- [x .. 3]]
+\end{curry}
 %
 This simple example shows that the second generator
 \code{(y<-[x\,..\,3])} is nested within
@@ -397,10 +399,10 @@ the same function, say \code{f}, to all the elements of the argument list.
 This is easily accomplished by defining a new function, say
 \code{flist} since its analogy to \code{f}, as follows:
 %
-\begin{prog}
-flist [] = []
+\begin{curry}
+flist []     = []
 flist (x:xs) = f x : flist xs
-\end{prog}
+\end{curry}
 %
 Although trivial, the definition of \code{flist} can be
 avoided altogether using the function \code{map},
@@ -414,11 +416,11 @@ is the same as \code{map\,\,f}.
 The following code, taken from the prelude, shows
 the type and the definition of \code{map}\pindex{map}:
 %
-\begin{prog}
+\begin{curry}
 map          :: (a->b) -> [a] -> [b]
 map _ []     = []
 map f (x:xs) = f x : map f xs
-\end{prog}
+\end{curry}
 %
 It can be seen that the first argument of \code{map}
 is a function from any type \emph{a} to any type \emph{b}.
@@ -438,11 +440,11 @@ expressed by a predicate.
 The following code, taken from the prelude, shows
 the type and the definition of \code{filter}\pindex{filter}:
 %
-\begin{prog}
+\begin{curry}
 filter          :: (a -> Bool) -> [a] -> [a]
 filter _ []     = []
 filter p (x:xs) = if p x then x : filter p xs else filter p xs
-\end{prog}
+\end{curry}
 %
 It can be seen that the first argument of \code{filter}
 is a function from any type \emph{a} to \code{Bool},
@@ -474,22 +476,22 @@ functions starts with ``\code{fold}''\index{folding functions}.
 The following code, taken from the prelude, shows
 the type and the definition of \code{foldr}\pindex{foldr}:
 %
-\begin{prog}
+\begin{curry}
 foldr            :: (a->b->b) -> b -> [a] -> b
 foldr _ z []     = z
 foldr f z (x:xs) = f x (foldr f z xs)
-\end{prog}
+\end{curry}
 %
 For example, functions that compute the sum, product and maximum
 of all the elements of a list of integers are easily defined
 through \code{foldr} as follows
 \proghref{fold}{Program}:
 %
-\begin{prog}
+\begin{curry}
 sumList  = foldr (+) 0
 prodList = foldr (*) 1
-maxList  = \char92l -> foldr max (head l) (tail l)
-\end{prog}
+maxList  = \l -> foldr max (head l) (tail l)
+\end{curry}
 %
 The last function is more complicated than the previous two,
 because it is meaningful only for non-empty lists.
@@ -511,9 +513,9 @@ for some combination of arguments is called the \emph{set function} of $f$
 and is typically denoted $\funset f$.\index{set function}
 For example, given:
 %
-\begin{prog}
-  f x = x ? x+1
-\end{prog}
+\begin{curry}
+f x = x ? x+1
+\end{curry}
 %
 the value of \code{\funset{f} x} is the set \code{\{x,x+1\}}
 where the details of the representation of this set are irrelevant to our
@@ -558,25 +560,25 @@ The following non-deterministic function returns a
 subset of its argument, a set represented as a list
 \proghref{AllSubsets}{Program}:
 %
-\begin{prog}
+\begin{curry}
 subset []     = []
 subset (x:xs) = x:subset xs
 subset (_:xs) =   subset xs
-\end{prog}
+\end{curry}
 %
 In \pakcs{}, with the help of the \code{SetFunctions} library,
 we define the power set of a set as follows:
 %
-\begin{prog}
+\begin{curry}
 powerset s = set1 subset s  -- powerset is the set function of subset
-\end{prog}
+\end{curry}
 %
 For example, the prerequisites for the undergraduate 
 Computer Science courses at Portland State
 are abstracted by 16 rules as follows
 \proghref{CSIS}{Program}:
 %
-\begin{prog}
+\begin{curry}
 isPrereqOf 162 = 161
 isPrereqOf 163 = 162
 isPrereqOf 200 = 162
@@ -584,7 +586,7 @@ isPrereqOf 200 = 162
 isPrereqOf 303 = 252
 isPrereqOf 303 = 300
 isPrereqOf 350 = 252
-\end{prog}
+\end{curry}
 %
 The meaning is that, e.g., \code{162} is a direct prerequisite of both
 \code{163} and \code{200} and that, e.g., 
@@ -623,10 +625,10 @@ If the hand is a four-of-a-kind, the function returns \emph{just}
 the rank of the four cards, otherwise it returns \emph{nothing}.
 \proghref{poker}{Program}:
 %
-\begin{prog}
+\begin{curry}
 isFour (x++[_]++z) | map rank (x++z) == [r,r,r,r] = Just r where r free
 isFour'default _ = Nothing
-\end{prog}
+\end{curry}
 %
 The card removed from the hand is represented by the anonymous
 variable in the functional pattern.
@@ -687,9 +689,9 @@ of the tree.
 \medskip\noindent
 A (decorated) binary tree is declared in Curry as:
 %
-\begin{prog}
+\begin{curry}
 data BinTree a = Leaf | Branch a (BinTree a) (BinTree a)
-\end{prog}
+\end{curry}
 %
 where \code{BinTree} is a \emph{type constructor}
 \index{data declaration!type constructor}\index{type constructor}
@@ -706,21 +708,21 @@ The following function inserts a value in a binary search tree
 in such a way that the result is again a binary search tree
 \proghref{binsearchtree}{Program}:
 %
-\begin{prog}
+\begin{curry}
 insert x Leaf = Branch x Leaf Leaf
 insert x (Branch d l r)
   | x < d = Branch d (insert x l) r
   | x > d = Branch d l (insert x  r)
   | otherwise = Branch d l r
-\end{prog}
+\end{curry}
 %
 An in-order traversal\index{tree!traversal} of any binary search tree
 produces the sorted list of the decorations of the tree.
 %
-\begin{prog}
+\begin{curry}
 inorder Leaf = []
 inorder (Branch d l r) = inorder l ++ [d] ++ inorder r
-\end{prog}
+\end{curry}
 %
 \begin{exercise}
 Sort a list without repeated values by constructing
@@ -739,9 +741,9 @@ is a sequence of ordered trees.
 \medskip\noindent
 An ordered tree is declared in Curry as:
 %
-\begin{prog}
+\begin{curry}
 data Tree a = Tree a [Tree a]
-\end{prog}
+\end{curry}
 %
 where $a$ is a parameter that stands for the type of the
 decorations and the identifier ``\emph{Tree}'' is overloaded to
@@ -755,6 +757,9 @@ are stored.  This variant is useful to efficiently
 represent a dictionary and tell whether a string is
 in the dictionary.
 %
+%TODO re-add the trie for the htmlversion using something else
+%TODO or wait for xymatrix support
+\begin{pdfversion}
 For example, a trie storing the strings ``car'', ``care''
 and ``carton'' stores the letter `c', `a', and `r', only
 once as shown below.  The distinguished symbol `$\bullet$'
@@ -772,28 +777,29 @@ $$
   & & \bullet
 }
 $$
+\end{pdfversion}
 
 \noindent
 We declare the type of a trie as follows:
 %
-\begin{prog}
+\begin{curry}
 type Trie = [Tree Char]
-\end{prog}
+\end{curry}
 %
 The following function inserts a string in a trie
 sharing whatever prefix of the string might already be present in the trie.
 The distinguished symbol that terminates a string is a period.
 \proghref{TrieInsert}{Program}
 %
-\begin{prog}
+\begin{curry}
 insert :: String -> Trie -> Trie
-insert [] t = (Tree '.' [] : t)
+insert []     t  = (Tree '.' [] : t)
 insert (w:ws) [] = [Tree w (insert ws [])]
 insert (w:ws) (Tree c cs : ts)
   | ord w < ord c = insert (w:ws) [] ++ (Tree c cs : ts)
   | ord w > ord c = Tree c cs : insert (w:ws) ts
   | otherwise = Tree c (insert ws cs) : ts
-\end{prog}
+\end{curry}
 %
 \begin{exercise}
 Code functions to build a trie from a list of words

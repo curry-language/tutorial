@@ -1,0 +1,5 @@
+.ltx_page_footer [rel~="index"] {
+    display: block;
+    text-align: center;
+    float: none;
+}

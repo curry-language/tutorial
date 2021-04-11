@@ -1,0 +1,80 @@
+
+\usepackage{latexsym}
+\usepackage{makeidx}
+\usepackage{amssymb}
+%\usepackage{url}
+\usepackage{program-text}
+\usepackage{color}
+\usepackage{a4}
+\usepackage{graphicx}
+\usepackage{ifthen}
+\usepackage{xspace}
+\begin{pdfversion}
+\usepackage[all]{xy}
+\end{pdfversion}
+
+\input{browseurl}
+
+%%% ------------------------------------------------------------------
+
+\usepackage[colorlinks,linkcolor=blue]{hyperref}
+%\usepackage[]{hyperref}
+\hypersetup{bookmarksopen=true}
+\hypersetup{bookmarksopenlevel=0}
+\hypersetup{pdftitle={Curry: A Tutorial Introduction}}
+\hypersetup{pdfauthor={S. Antoy and M. Hanus}}
+\hypersetup{pdfstartview=FitH}
+
+%%% ------------------------------------------------------------------
+
+\setlength{\textwidth}{15.5cm}
+\setlength{\textheight}{23cm}
+\renewcommand{\baselinestretch}{1.1}
+\setlength{\topmargin}{-1cm}
+\setlength{\oddsidemargin}{0.5cm}
+\setlength{\evensidemargin}{0.5cm}
+\setlength{\marginparwidth}{0.0cm}
+\setlength{\marginparsep}{0.0cm}
+
+\newlength{\figurewidth}
+\setlength{\figurewidth}{\textwidth}
+\addtolength{\figurewidth}{-0.4cm}
+
+% base URL for downloading programs:
+\def\baseurl{http://www.informatik.uni-kiel.de/~curry/tutorial/}
+% reference to a program in the PROGRAMS directory:
+\newcommand{\globalproghref}[2]{\href{\baseurl PROGRAMS/#1.pdf}{#2}}
+\newcommand{\downloadref}[2]{\href{\baseurl PROGRAMS/chapter\thechapter/#1.curry}{[Download #2]}}
+
+% reference to a program for the current chapter in the PROGRAMS directory:
+%\newcommand{\proghref}[2]{\globalproghref{chapter\thechapter/#1}{[#2]}}
+\newcommand{\proghref}[2]{\progbrowseurl{chapter\thechapter/#1.curry}{[Browse #2]}\downloadref{#1}{#2}}
+
+\newcommand{\todo}[1]{{\color{red}\sc [{#1}]}}
+
+\newcommand{\define}[1]{\emph{#1}\index{#1}} % definition of a new notion
+\newcommand{\definei}[2]{\emph{#1}\index{#2}} % definition of a new notion
+\newcommand{\pindex}[1]{\index{#1@{\tt #1}}}  % program elements in index
+
+% allow underscores in programs:
+\catcode`\_=\active
+\let_=\sb
+\catcode`\_=12
+
+% ------------------------------------------------------------------
+%%% Next should be relative to the current document rather than absolute
+%\hyperbaseurl{file:/home/mh/papers/tutorial/}
+\newtheorem{rmexercise}{Exercise}
+\newenvironment{exercise}{\begin{rmexercise}\rm}{\end{rmexercise}}
+% ------------------------------------------------------------------
+
+% ------------------------------------------------------------------
+\newcommand{\curryurl}{http://www.curry-lang.org}
+\newcommand{\curryref}{\href{\curryurl}{Curry}}
+\newcommand{\pakcs}%
+  {\href{http://www.informatik.uni-kiel.de/~pakcs}{{\sc PAKCS}}\xspace}
+\newcommand{\kics}%
+  {\href{http://www-ps.informatik.uni-kiel.de/kics2}{{\sc KiCS2}}\xspace}
+\newcommand{\cpm}{\href{http://curry-language.org/tools/cpm}{CPM}\xspace}
+\newcommand{\wwwc}{\href{http://www.w3c.org}{W3C}}
+% ------------------------------------------------------------------

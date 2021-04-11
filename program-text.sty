@@ -7,10 +7,12 @@
 % \DeclareFixedFont{\codefont}{T1}{pcr}{b}{n}{10pt}
 % \DeclareFixedFont{\codefontsmall}{T1}{pcr}{b}{n}{8pt}
 
+% use this environment for program text containing \userinput
 \newenvironment{prog}%
-  {\par\vspace{2ex}\setlength{\parindent}{2em}%
+  {\par\vspace{2ex}\setlength{\parindent}{2ex}%
    \parskip=0ex\obeylines\@vobeyspaces\small\codefont}%
-  {\vspace{2ex}\noindent\kern-.3em}
+  {\par\vspace{2ex}\noindent\kern-.3em}
+  %{\vspace{2ex}\noindent\kern-.3em}
 
 % program text in normal text
 \newcommand{\code}[1]{\mbox{\codefont #1}}
@@ -35,4 +37,19 @@
 \newcommand{\boolOr}{||}
 
 % user input
+%\newcommand{\userinput}[1]{\underline{\code{#1}}}
 \newcommand{\userinput}[1]{\underline{#1}}
+
+% the standard Curry listing style (should not be used with mathescape
+% since it will not be correctly processed by latex->html converter)
+\usepackage{listings}
+\lstset{aboveskip=2ex,
+        belowskip=2ex,
+        showstringspaces=false, % no special string space
+        xleftmargin=2ex,
+        flexiblecolumns=false,
+        basewidth=0.55em,
+        basicstyle=\small\ttfamily}
+\lstnewenvironment{curry}{}{}
+\newcommand{\listline}{\vrule width0pt depth1.5ex}
+

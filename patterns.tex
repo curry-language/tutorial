@@ -62,12 +62,12 @@ We show the application of this pattern in one example.
 Consider a simple type for representing arithmetic
 expressions:
 %
-\begin{prog}
+\begin{curry}
 data Exp = Lit Int
          | Var [Char]
          | Add Exp Exp
          | Mul Exp Exp
-\end{prog}
+\end{curry}
 %
 For example, the expression $x+1$ is encoded as 
 $e = \code{Add (Var "x") (Lit 1)}$.
@@ -79,12 +79,12 @@ that takes an expression $t$
 and non-deterministically generates 
 some expression with $t$ as subexpression.
 %
-\begin{prog}
+\begin{curry}
 withSub exp = exp
             ? op (withSub exp) unknown
             ? op unknown (withSub exp)
    where op = Add ? Mul  
-\end{prog}
+\end{curry}
 %
 For example, if $t = \code{Var "x"}$, then
 \code{withSub $t$} evaluates, among other possibilities,
@@ -99,10 +99,10 @@ only a variable at a fixed position, e.g., the root or the left
 argument of an expression, can be matched.  With \emph{withSub} we
 match any variable anywhere:
 %
-\begin{prog}
+\begin{curry}
 varOf :: Exp -> String
 varOf (withSub (Var v)) = v  
-\end{prog}
+\end{curry}
 %
 For example, the set of the identifiers of all the variables of
 occurring in an expression $e$ is simply obtained with the set function
@@ -146,9 +146,9 @@ A state of this puzzle is represented by the number of
 missionaries and cannibals and the presence of the boat on an
 arbitrarily chosen bank of the river, by convention the \emph{initial} one:
 %
-\begin{prog}
+\begin{curry}
 data State = State Int Int Bool
-\end{prog}
+\end{curry}
 %
 For example, with suitable conventions,
 \code{(State 3 3 True)} represents the initial state.
@@ -164,11 +164,11 @@ the creation of invalid states.
 The programmer invokes the constructor indirectly
 through the following function:
 %
-\begin{prog}
-makeState m c b | valid \boolAnd safe = State m c b
-   where valid = 0<=m \boolAnd m<=3 \boolAnd 0<=c \boolAnd c<=3
+\begin{curry}
+makeState m c b | valid && safe = State m c b
+   where valid = 0<=m && m<=3 \boolAnd 0<=c && c<=3
          safe  = m==3 || m==0 || m==c
-\end{prog}
+\end{curry}
 %
 Function \code{makeState} invokes the constructor only
 after checking that only states
@@ -186,13 +186,13 @@ simply and silently ignored.
 Operation \code{makeState} eases the definition of an operation,
 say \code{move}, to move people and boat across the river:
 %
-\begin{prog}
+\begin{curry}
 move (State m c True)
-   = makeState (m-2) c False      \lineComment move 2 missionaries
-   ? makeState (m-1) c False      \lineComment move 1 missionary
-   ? makeState m (c-2) False      \lineComment move 2 cannibals
+   = makeState (m-2) c False      -- move 2 missionaries
+   ? makeState (m-1) c False      -- move 1 missionary
+   ? makeState m (c-2) False      -- move 2 cannibals
    ? ...
-\end{prog}
+\end{curry}
 %
 since ``undesirable'' states are never produced
 \proghref{missionaries}{Program}.
@@ -258,17 +258,17 @@ A world is three stacks of blocks.
 A solution is a sequence of worlds.
 A problem is a pair of words.
 %
-\begin{prog}
+\begin{curry}
 data Block = A | B | C | D | E deriving Eq
 type Stack = [Block]
 type World = (Stack, Stack, Stack)
 type Trace = [World]
 data Problem = Problem World World
-\medskip
+
 simpleProblem, difficultProblem :: Problem
 simpleProblem = Problem ([A,B],[],[]) ([],[A,B],[])
 difficultProblem = Problem ([A,B,C,D,E],[],[]) ([],[C,B,A,D,E],[])
-\end{prog}
+\end{curry}
 %
 We define two functions to solve a blocks world problem.
 Function \code{move} moves the block at the top of a pile to
@@ -288,21 +288,21 @@ since the trace is reversed):
 (2) if $t$ is repeated in the trace, the computation is aborted,
 otherwise (3) the trace is extended with a move from $t$:
 %
-\begin{prog}
+\begin{curry}
 move :: World -> World
 move (x:xs, ys, zs) = (xs, x:ys, zs) ? (xs, ys, x:zs) -- p -> q/r
 move (xs, y:ys, zs) = (y:xs, ys, zs) ? (xs, ys, y:zs) -- q -> p/r
 move (xs, ys, z:zs) = (z:xs, ys, zs) ? (xs, z:ys, zs) -- r -> p/q
-\medskip
+
 extend :: Trace -> World -> Trace
 extend trace@(t:ts) goal
   | t == goal    = reverse trace
   | t `elem` ts  = failed
   | otherwise    = extend (move t : trace) goal
-\medskip
+
 main :: Problem -> Trace
 main = extend [s] f where Problem s f = simpleProblem
-\end{prog}
+\end{curry}
 %
 The \pakcs{} interpreter produces 40 solutions of \code{simpleProblem}
 in which the number of moves ranges from 3 to 10, in a fraction of a second.
@@ -326,7 +326,7 @@ final state of a blocks world problem.  An invariant of this
 and the previous program is that no move is attempted on any
 final state.
 %
-\begin{prog}
+\begin{curry}
 moveToGoal :: World -> World -> World
 moveToGoal (x:xs, ys, zs) (_, _++x:ys, _) = (xs, x:ys, zs) -- p -> q
 moveToGoal (x:xs, ys, zs) (_, _, _++x:zs) = (xs, ys, x:zs) -- p -> r
@@ -335,7 +335,7 @@ moveToGoal (xs, y:ys, zs) (_, _, _++y:zs) = (xs, ys, y:zs) -- q -> r
 moveToGoal (xs, ys, z:zs) (_++z:xs, _, _) = (z:xs, ys, zs) -- r -> q
 moveToGoal (xs, ys, z:zs) (_, _++z:ys, _) = (xs, z:ys, zs) -- r -> p
 moveToGoal'default w g = noMoveFromGoal w g
-\medskip
+
 noMoveFromGoal :: World -> World -> World
 noMoveFromGoal (x:xs, ys, zs) (g, _, _)
   | not (isSuffixOf (x:xs) g) = (xs, x:ys, zs) ? (xs, ys, x:zs)
@@ -343,17 +343,17 @@ noMoveFromGoal (xs, y:ys, zs) (_, g, _)
   | not (isSuffixOf (y:ys) g) = (y:xs, ys, zs) ? (xs, ys, y:zs)
 noMoveFromGoal (xs, ys, z:zs) (_, _, g)
   | not (isSuffixOf (z:zs) g) = (z:xs, ys, zs) ? (xs, z:ys, zs)
-\medskip
+
 extend :: Trace -> World -> Trace
 extend trace@(t:ts) goal
   | t == goal    = reverse trace
   | t `elem` ts  = failed
   | otherwise    = extend (moveToGoal t goal : trace) goal
-\medskip
+
 main :: Trace
 main = selectValue (set2 extend [s] f) 
      where Problem s f= difficultProblem
-\end{prog}
+\end{curry}
 %
 The \pakcs{} interpreter produces 6 solutions of \code{simpleProblem}
 in which the number of moves ranges from 3 to 7, in a fraction of a second.

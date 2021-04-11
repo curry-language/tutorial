@@ -16,3 +16,4 @@ CVS
 *.toc
 *.tpt
 browseurl.tex
+/output/

@@ -88,11 +88,11 @@ are defined in a program by a declaration.
 The following declarations, from the prelude,
 define these parameters for some ordinary arithmetic operations:
 %
-\begin{prog}
+\begin{curry}
 infixl 7 *, `div`, `mod`
 infixl 6 +, -
 infix  4  <, >, <=, >=
-\end{prog}
+\end{curry}
 %
 For example, 
 the precedence of the addition and subtraction operators is 6
@@ -334,9 +334,9 @@ The result is obtained by evaluating an expression
 which generally involves the function's arguments.
 The following function computes the \emph{square} of a number.
 %
-\begin{prog}
+\begin{curry}
 square x = x * x
-\end{prog}
+\end{curry}
 %
 The symbols \ccode{square} is the name or
 \emph{identifier}\index{function!identifier} of the function.
@@ -371,9 +371,9 @@ only once.  In this case, the reference to the function
 can be replaced by the expression defining the function.
 In the following example:
 %
-\begin{prog}
-result = (\char92x -> x * x) (2+3)
-\end{prog}
+\begin{curry}
+result = (\x -> x * x) (2+3)
+\end{curry}
 %
 the value of \code{result} is \code{25}.
 It is obtained by applying the expression
@@ -425,18 +425,18 @@ to be returned depending on the values of its arguments.
 The following example shows the definition of the Boolean 
 negation function \ccode{not}:
 %
-\begin{prog}
+\begin{curry}
 not True = False
 not False = True
-\end{prog}
+\end{curry}
 %
 The above definition is equivalent to the following one
 which does not use pattern matching but relies on a conditional
 expression:
 %
-\begin{prog}
+\begin{curry}
 not x = if x == True then False else True
-\end{prog}
+\end{curry}
 %
 Pattern matching is particularly convenient for functions
 that operate on algebraic datatypes.
@@ -473,10 +473,10 @@ i.e., it holds regardless of any value of the arguments.
 The following example shows a plausible definition of the maximum
 of two numbers:
 %
-\begin{prog}
+\begin{curry}
 max x y | x < y     = y
         | otherwise = x
-\end{prog}
+\end{curry}
 %
 % A rule can also have a
 % \emph{constraint}\index{constraint}\index{expression!constraint}
@@ -499,13 +499,13 @@ because they can return different values for the same input.
 For example, a hospital's information system defines which
 days a doctor is on-call with a non-deterministic function:
 %
-\begin{prog}
+\begin{curry}
 oncall Joan    = Monday
 oncall Joan    = Wednesday
 oncall Richard = Monday
 oncall Luc     = Tuesday
 ...
-\end{prog}
+\end{curry}
 %
 The value of \ccode{oncall Joan} can be either
 \ccode{Monday} or \ccode{Wednesday}.
@@ -521,10 +521,10 @@ the week is today.
 A predicate, \ccode{available}, telling whether
 its argument, a doctor, is available at the current time is coded as:
 %
-\begin{prog}
+\begin{curry}
 available x | oncall x == today = True
             | otherwise         = False
-\end{prog}
+\end{curry}
 %
 Without non-determinism, coding \ccode{oncall}
 would require some data structure, e.g., 
@@ -573,9 +573,9 @@ a function is an expression containing a function symbol.
 For example, the function computing the last element
 of a non-empty list can be defined as:
 %
-\begin{prog}
+\begin{curry}
 last (_++[e]) = e
-\end{prog}
+\end{curry}
 %
 where \ccode{++} is an infix operator that concatenates two lists,
 see function \code{conc} in Sect.~\ref{sec-lists}.
@@ -585,21 +585,21 @@ then $e$ is the last element of $l$.
 
 The meaning of the above rule is the same as the infinite set of rules:
 %
-\begin{prog}
+\begin{curry}
 last [e] = e
 last [_,e] = e
 last [_,_,e] = e
-$\ldots$%
-\end{prog}
+...
+\end{curry}
 
 \noindent
 Code employing functional patterns should be preferred to
 similar code using conditions (see below)
 because it is more readable and more efficient:
 %
-\begin{prog}
-last xs | xs =:= _++[e] = e~~where e free  %
-\end{prog}
+\begin{curry}
+last xs | xs =:= _++[e] = e  where e free
+\end{curry}
 %
 \begin{exercise}
 Define a function that takes a list $a$ of integers and
@@ -633,10 +633,10 @@ It is not part of \pakcs but the preprocessor can easily be installed
 by the Curry package manager with the following commands
 (see also Section~\ref{sec:installing-tools}):
 %
-\begin{prog}
+\begin{curry}
 > cypm update
 > cypm install currypp
-\end{prog}
+\end{curry}
 %
 After the installation of the Curry preprocessor,\footnote{%
 The executable \code{currypp} of the preprocessor is stored in
@@ -645,9 +645,9 @@ in the load path.}
 one can use default rules in a program by placing the following
 line at the beginning of the source program.
 %
-\begin{prog}
-\{-\# OPTIONS_CYMAKE -F --pgmF=currypp --optF=defaultrules \#-\}  
-\end{prog}
+\begin{curry}
+{-# OPTIONS_CYMAKE -F --pgmF=currypp --optF=defaultrules #-}  
+\end{curry}
 %
 We recall that a standard rule $r$ is applicable to an expression
 $e$ iff $e$ and the left-hand side of $r$ unify and the condition
@@ -655,10 +655,10 @@ of $r$, if any exists, is satisfied by the instantiation of $e$.
 For example, the operation \code{zip}
 is defined with a default rule as follows:
 %
-\begin{prog}
+\begin{curry}
 zip (x:xs) (y:ys) = (x,y) : zip xs ys
 zip'default _ _ = []
-\end{prog}
+\end{curry}
 %
 Since the standard rule is applicable to \code{zip\,[1]\,[2]}, the
 default rule is ignored so that this expression is solely reduced to
@@ -673,10 +673,10 @@ the two values \code{[(1,2)]} and \code{[]}.
 Default rules are useful to regain control after a failed search.  For
 example, consider looking up the value of a key in a key-value pair list.
 %
-\begin{prog}
-  lookup (key, \_ ++ [(key,value)] ++ \_) = Just value
+\begin{curry}
+  lookup (key, _ ++ [(key,value)] ++ _) = Just value
   lookup'default _ = Nothing
-\end{prog}
+\end{curry}
 %
 If the key of a search is not in a list $l$, the call
 \code{lookup} $l$, returns \code{Nothing} instead of failing.
@@ -695,9 +695,9 @@ In fact,
 the declaration of some builtin types could have been left to the programmer.
 For example\index{data declaration}:
 %
-\begin{prog}
+\begin{curry}
 data Boolean = False | True
-\end{prog}
+\end{curry}
 %
 is exactly how the builtin \ccode{Boolean} type would be declared
 if it were not builtin.
@@ -710,11 +710,11 @@ are referred to as \emph{data constructors}%
 The following declarations, very similar to the previous one,
 define plausible types \ccode{WeekDay} and \ccode{PrimaryColor}.
 %
-\begin{prog}
+\begin{curry}
 data WeekDay = Monday | Tuesday | Wednesday | Thursday | Friday
-\medskip
+
 data PrimaryColor = Red | Green | Blue
-\end{prog}
+\end{curry}
 %
 All these types are finite, i.e., they define a finite set of values,
 and resemble enumerated types in the Pascal or C languages.
@@ -737,17 +737,17 @@ are referred to as the left and right children of $T$.
 A declaration defining binary trees where the decoration
 is an integer follows:
 %
-\begin{prog}
+\begin{curry}
 data IntTree = Leaf | Branch Int IntTree IntTree
-\end{prog}
+\end{curry}
 %
 All the following expressions are values of type \ccode{IntTree}:
 %
-\begin{prog}
+\begin{curry}
 Leaf
 Branch 0 Leaf Leaf
 Branch 7 (Branch 5 Leaf Leaf) (Branch 9 Leaf Leaf)
-\end{prog}
+\end{curry}
 %
 The first tree is a leaf and therefore it contains no decoration.
 The second tree contains a single decoration, \ccode{0},
@@ -766,9 +766,9 @@ the result is a polymorphic binary tree.
 This is achieved by the following declaration
 \proghref{BinTree}{Program}:
 %
-\begin{prog}
+\begin{curry}
 data BinTree a = Leaf | Branch a (BinTree a) (BinTree a)
-\end{prog}
+\end{curry}
 %
 The identifier \ccode{a} is a \emph{type variable}%
 \index{data declaration!type variable}\index{type variable}.
@@ -783,10 +783,10 @@ For example, a function that looks for the string \ccode{Curry}
 in a tree of strings is defined as
 \proghref{BinTree}{Program}:
 %
-\begin{prog}
+\begin{curry}
 findCurry Leaf           = False
 findCurry (Branch x l r) = x == "Curry" || findCurry l || findCurry r
-\end{prog}
+\end{curry}
 %
 The type of the argument of function \ccode{findCurry} is
 \ccode{BinTree String}.
@@ -800,9 +800,9 @@ by binding its variable to a specific type by an explicit declaration
 as follows
 \proghref{BinTree}{Program}:
 %
-\begin{prog}
+\begin{curry}
 type IntTree = BinTree Int
-\end{prog}
+\end{curry}
 %
 where \ccode{type}\pindex{type} is a reserved word of the language.
 This declaration defines \ccode{IntTree} as a synonym
@@ -813,11 +813,11 @@ The following example defines a function that tallies
 all the decorations of a tree of integers
 \proghref{BinTree}{Program}:
 %
-\begin{prog}
+\begin{curry}
 total :: IntTree -> Int
 total Leaf           = 0
 total (Branch x l r) = x + total l + total r
-\end{prog}
+\end{curry}
 %
 \begin{exercise}
 \label{ex_userlist}
@@ -866,13 +866,13 @@ and reverse a list, respectively.
 The \ccode{Prelude} defines the first one as the infix operator \ccode{++}
 and the second one, much more efficiently, as the operation \ccode{reverse}.
 %
-\begin{prog}
+\begin{curry}
 conc []     ys = ys
 conc (x:xs) ys = x : conc xs ys
-\medskip
+
 rev []     = []
 rev (x:xs) = conc (rev xs) [x]
-\end{prog}
+\end{curry}
 %
 Several \emph{ad hoc} notations available for lists are 
 described in Sections~\ref{list-ranges} and~\ref{list-comprehensions}.
@@ -895,15 +895,15 @@ are considered as lists of characters. In addition, Curry
 provides a handy notation for string constants, i.e.,
 the string constant
 %
-\begin{prog}
+\begin{curry}
 "hello world"
-\end{prog}
+\end{curry}
 %
 is identical to the character list
 %
-\begin{prog}
+\begin{curry}
 ['h','e','l','l','o',' ','w','o','r','l','d']
-\end{prog}
+\end{curry}
 %
 Thus, any operation applicable to arbitrary lists can also be applied
 to strings. For instance, the prelude defines an infix operator
@@ -932,11 +932,11 @@ length sequence of values of possibly different types.
 Examples of tuples are pairs and triples.
 They could be defined by the programmer as follows:
 %
-\begin{prog}
+\begin{curry}
 data Pair a b = Pair a b
-\medskip
+
 data Triple a b c = Triple a b c
-\end{prog}
+\end{curry}
 %
 These types are polymorphic.  Observe the two occurrences of
 the identifiers \ccode{Pair} and \ccode{Triple} in the above declarations.
@@ -952,22 +952,22 @@ For example, the information system of a ``Big \& Tall'' shoe store
 declares a function that defines the largest size and width of each model
 \proghref{BigTall}{Program}:
 %
-\begin{prog}
+\begin{curry}
 data Width = C | D | E | EE | EEE | EEEE
 largest "New Balance 495" = Pair 13 EEE
 largest "Adidas Comfort"  = Pair 15 EE
 ...
-\end{prog}
+\end{curry}
 %
 The language predefines tuples and denotes them with a special
 notation similar to the standard mathematical notation.
 Using predefined tuples, the above function is coded as:
 %
-\begin{prog}
+\begin{curry}
 largest "New Balance 495" = (13,EEE)
 largest "Adidas Comfort"  = (15,EE)
 ...
-\end{prog}
+\end{curry}
 %
 Tuples are denoted by a fixed-length sequence of comma-separated
 values between parentheses.
@@ -976,9 +976,9 @@ The type of a tuple is represented
 as a tuple as well, e.g., the type of \ccode{largest}
 can be defined as:
 %
-\begin{prog}
+\begin{curry}
 largest :: String -> (Int,Width)
-\end{prog}
+\end{curry}
 %
 
 \section{Type classes}
@@ -991,10 +991,10 @@ For example, many numeric structures, such as integer,
 vectors and matrices, allow the addition of elements in the structure.
 We capture the property of ``being \emph{addable}'' as follows:
 %
-\begin{prog}
+\begin{curry}
 class Addable a where
   (+) :: a ->  a  -> a
-\end{prog}
+\end{curry}
 %
 The variable \code{a} is a type parameter.
 The identifier \ccode{+} is chosen because we are generalizing
@@ -1006,28 +1006,28 @@ declaration.  For example, the following declaration
 states that the integers are addable
 and the addition operation is the addition function defined in the Prelude.
 %
-\begin{prog}
+\begin{curry}
 instance Addable Int where
   x + y = x Prelude.+ y
-\end{prog}
+\end{curry}
 %
 Next, we represent vectors (without an explicit data declaration)
 as lists of \emph{addables} and we define the addition of vectors
 as the component-wise addition of their elements:
 %
-\begin{prog}
+\begin{curry}
 instance Addable a => Addable [a] where
   xs + ys = zipWith (+) xs ys
-\end{prog}
+\end{curry}
 %
 The symbol \ccode{+} refers to the same symbol defined in the
 \code{Addable} type class and it is applied to the vectors' elements.
 With these definition we can add two vectors as follows:
 %
-\begin{prog}
+\begin{curry}
 testv :: [Int]
 testv = [1,2,3] + [4,5,6]
-\end{prog}
+\end{curry}
 %
 \begin{exercise}
   % \label{instance}
@@ -1061,17 +1061,16 @@ On non-empty arguments, the function \ccode{sort} recursively sorts the tail
 and inserts the head at the right place in the sorted tail.
 This algorithm becomes inefficient as lists grow longer,
 but it is easy to understand
-\proghref{InsertionSort}{Program}:
+\proghref{InsertionSort}{Program}:\label{InsertSort}
 %
-\begin{prog}
-\label{InsertSort}
+\begin{curry}
 sort []     = []
 sort (x:xs) = insert x (sort xs)
-\medskip
+
 insert x [] = [x]
 insert x (y:ys) | x <= y    = x : y : ys
                 | otherwise = y : insert x ys
-\end{prog}
+\end{curry}
 %
 To sort a list in descending order or to sort a list
 of a different type, a new function must be coded.
@@ -1084,26 +1083,25 @@ is denoted by \ccode{f}.
 This argument is a function that takes two arguments
 and returns \ccode{True} if and only if the first argument
 must appear before the second argument in the output list
-\proghref{HOInsertionSort}{Program}:
+\proghref{HOInsertionSort}{Program}:\label{HOInsertionSort}
 %
-\begin{prog}
-\label{HOInsertionSort}
+\begin{curry}
 sort _ []     = []
 sort f (x:xs) = insert f x (sort f xs)
-\medskip
+
 insert _ x [] = [x]
 insert f x (y:ys) | f x y     = x : y : ys
                   | otherwise = y : insert f x ys
-\end{prog}
+\end{curry}
 %
 For example:
 %
-\begin{prog}
+\begin{curry}
 HOInsertionSort> sort (<=) [3,5,1,2,6,8,9,7]
 [1,2,3,5,6,7,8,9]
 HOInsertionSort> sort (>) [3,5,1,2,6,8,9,7]
 [9,8,7,6,5,3,2,1]
-\end{prog}
+\end{curry}
 %
 In the above expressions, 
 the operators \ccode{<=} and \ccode{>} are the functional arguments.
@@ -1135,18 +1133,18 @@ The following ordering criterion sorts the classes
 in a  ``natural'' (lexicographic) order
 \proghref{anon}{Program}:
 %
-\begin{prog}
+\begin{curry}
 sortClasses xs = sort lex xs
-   where lex (x,y) (u,v) = x<u || x==u \&\& ord y <= ord v 
-\end{prog}
+   where lex (x,y) (u,v) = x<u || x==u && ord y <= ord v 
+\end{curry}
 %
 A more compact and informative formulation uses
 an anonymous function as follows
 \proghref{anon}{Program}:
 %
-\begin{prog}
-sortClasses xs = sort (\char92(x,y) (u,v) -> x<u || x==u \&\& ord y <= ord v) xs
-\end{prog}
+\begin{curry}
+sortClasses xs = sort (\(x,y) (u,v) -> x<u || x==u && ord y <= ord v) xs
+\end{curry}
 %
 Observe that pattern matching is normally used in the definition
 of the above anonymous function.
@@ -1172,9 +1170,9 @@ instance of the right-hand side.
 For example, referring to the function \emph{square} defined
 in Section \ref{Basic concepts}:
 %
-\begin{prog}
+\begin{curry}
 square x = x * x
-\end{prog}
+\end{curry}
 %
 an instance of $\emph{square}\;x$
 is replaced with the corresponding instance of $x * x$.
@@ -1188,9 +1186,9 @@ otherwise $v$ is the result of a computation of $t$.
 For example, the following function \emph{head}
 computes the first element of a (non-null) list:
 %
-\begin{prog}
+\begin{curry}
 head (x:_) = x
-\end{prog}
+\end{curry}
 %
 An attempt to evaluate \ccode{head []} fails, since
 no replacement is possible and the expression is not a value
@@ -1219,23 +1217,23 @@ The following function computes the list of
 all the integers beginning with some initial value $n$
 \proghref{lazy}{Program}:
 %
-\begin{prog}
+\begin{curry}
 from n = n : from (n+1)
-\end{prog}
+\end{curry}
 %
 An attempt to evaluate \ccode{from 1} aborts with a
 memory overflow since the ``result'' would be the infinite term:
 %
-\begin{prog}
+\begin{curry}
 [1,2,3,...
-\end{prog}
+\end{curry}
 %
 However, the function \ccode{from} is perfectly legal.
 The following function returns the $n$-th element of a list:
 %
-\begin{prog}
+\begin{curry}
 nth n (x:xs) = if n==1 then x else nth (n-1) xs
-\end{prog}
+\end{curry}
 %
 The expression \ccode{nth 3 (from 1)} evaluates to \code{3}
 despite the fact that \ccode{from 1} has no (finite) value:
@@ -1262,9 +1260,9 @@ E.g., the following function, initially applied to
 \code{0} and \code{1}, computes the (infinite) sequence of
 the Fibonacci numbers:
 %
-\begin{prog}
+\begin{curry}
 fibolist x0 x1 = x0 : fibolist x1 (x0+x1)
-\end{prog}
+\end{curry}
 %
 The function \ccode{nth} can be reused to compute the $n$-th
 Fibonacci number through the evaluation of the expression
@@ -1285,9 +1283,9 @@ This design decision has implications both on the efficiency
 and the result of a computation.
 For example, consider again the following definition:
 %
-\begin{prog}
+\begin{curry}
 square x = x * x
-\end{prog}
+\end{curry}
 %
 The evaluation of say \code{square\,$t$} goes through
 \code{$t$\,*\,$t$}.  Without sharing, $t$ would be evaluated
@@ -1309,11 +1307,11 @@ of a rule is the rule itself, which includes the right-hand side
 and the condition, if any.
 In the following code:
 %
-\begin{prog}
+\begin{curry}
 square x = x * x
-\medskip
+
 cube   x = x * square x
-\end{prog}
+\end{curry}
 %
 the variable identified by \ccode{x} in the definition of \ccode{square}
 is completely separated from the variable 
@@ -1363,14 +1361,14 @@ The following example defines an infix operator, \ccode{**}, for
 integer exponentiation
 \proghref{power}{Program}:
 %
-\begin{prog}
+\begin{curry}
 infixl 8 **
-\medskip
+
 a ** b | b >= 0 = accum 1 a b
    where accum x y z | z == 0    = x
                      | otherwise = accum aux (y * y) (z `div` 2)
            where aux = if (z `mod` 2 == 1) then x * y else x
-\end{prog}
+\end{curry}
 %
 For example, $\code{2\,**\,5}=2^5=32$.
 There are several noteworthy points in the above code fragment.
@@ -1414,14 +1412,14 @@ and the result of computations involving non-deterministic
 functions.  The following example clarifies this subtle point
 \proghref{localvar}{Program}:
 %
-\begin{prog}
+\begin{curry}
 coin = 0
 coin = 1
-\medskip
+
 g = (x,x) where x = coin
-\medskip
+
 f = (coin,coin)
-\end{prog}
+\end{curry}
 %
 The values of \ccode{g} are \code{(0,0)} and \code{(1,1)} only,
 whereas the values of \ccode{f} also include 
@@ -1438,9 +1436,9 @@ in a nesting scope---a condition referred to as
 \emph{shadowing}\index{shadowing}\index{scope!shadowing}.
 An example of showing is shown below:
 %
-\begin{prog}
+\begin{curry}
 f x = x where x = 0
-\end{prog}
+\end{curry}
 %
 The variable \ccode{x} introduced in the \code{where} clause
 \emph{shadows} the variable with the same name introduced in
@@ -1486,15 +1484,16 @@ presented earlier can be coded using \ccode{let} clauses
 as well
 \proghref{PowerLet}{Program}:
 %
-\begin{prog}
+\begin{curry}
 infixl 8 **
+
 a ** b | b >= 0 = 
   let accum x y z | z == 0    = x
                   | otherwise =
                        let aux = if (z `mod` 2 == 1) then x * y else x
                        in  accum aux (y * y) (z `div` 2)
   in  accum 1 a b
-\end{prog}
+\end{curry}
 %
 Using a \ccode{let} declaration is more appropriate than a
 \ccode{where} declaration for the definition of operation \ccode{aux}.
@@ -1517,20 +1516,20 @@ terminates at the end of a line, unless the following line
 is more indented.
 For example, consider the following layout:
 %
-\begin{prog}
+\begin{curry}
 f = g
  h...
-\end{prog}
+\end{curry}
 %
 Since \ccode{f} starts in column 1 and \ccode{h} starts in column 2,
 the right-hand side of the rule defining \ccode{f} consists in
 the application of \ccode{g} to \ccode{h} to \ccode{...}\ %
 By contrast, with the following layout:
 %
-\begin{prog}
+\begin{curry}
 f = g
 h...
-\end{prog}
+\end{curry}
 %
 the right-hand side of the rule defining \ccode{f} consists of
 \ccode{g} only.
@@ -1566,9 +1565,9 @@ also called \define{pattern variable},
 stands for any expression (of an appropriate type).
 For example, the following definition:
 %
-\begin{prog}
+\begin{curry}
 head (x:xs) = x
-\end{prog}
+\end{curry}
 %
 is read as ``for all expressions $x$ and $xs$ the head of (the list)
 \code{(x:xs)} is \code{x}.''
@@ -1598,9 +1597,9 @@ may be useful and how variables are handled.
 The second kind of logic variable is shown in the following
 example:
 %
-\begin{prog}
-path a z = edge a b \&\& path b z   where b free
-\end{prog}
+\begin{curry}
+path a z = edge a b && path b z   where b free
+\end{curry}
 %
 The intuition behind the names tells that in a graph there exists a path
 from a node $a$ to a node $z$ if there exists an edge from
@@ -1685,13 +1684,13 @@ a reasonable option for them.
 For example, the prelude defines a list concatenation
 operation as follows:
 %
-\begin{prog}
+\begin{curry}
 infixr 5 ++
-\ldots
+...
 (++)          :: [a] -> [a] -> [a]
 []     ++ ys  = ys
 (x:xs) ++ ys  = x : xs ++ ys
-\end{prog}
+\end{curry}
 %
 Since the operation \ccode{++} is flexible, we can use it to search for
 a list satisfying a particular property:
@@ -1763,9 +1762,9 @@ Thus, the first step to build a parser is to design a suitable type
 to represent a term. Our choice is:
 \proghref{TermParser}{Program}:
 %
-\begin{prog}
+\begin{curry}
 data Term = Term String [Term]
-\end{prog}
+\end{curry}
 %
 Note that the occurrence of \ccode{Term} to right of the \ccode{=}
 character is a data constructor, whereas the two other occurrences
@@ -1779,10 +1778,10 @@ example, the term \code{"f(g(a,b))"} would be represented as
 The following operation parses a term
 \proghref{TermParser}{Program}:
 %
-\begin{prog}
+\begin{curry}
 parseTerm (fun++"("++args++")") | all isAlpha fun = Term fun (parseArgs args)
 parseTerm s | all isAlpha s = Term s []
-\end{prog}
+\end{curry}
 %
 The elements of the program relevant to our discussion are
 the variables \ccode{fun} and \ccode{args}.
@@ -1806,10 +1805,10 @@ In this case, though, a string is decomposed according to
 different criteria
 \proghref{TermParser}{Program}:
 %
-\begin{prog}
+\begin{curry}
 parseArgs (term++","++terms) = parseTerm term : parseArgs terms
 parseArgs s = [parseTerm s]
-\end{prog}
+\end{curry}
 %
 One could code more efficient versions of this parser.
 This version is very simple to understand and it is the
@@ -1853,9 +1852,9 @@ Conceptually, the world is encapsulated in an abstract datatype
 which provides actions to change the world.
 The type of such actions is \ccode{IO t}\pindex{IO}
 which is an abbreviation for
-\begin{prog}
+\begin{curry}
 World -> (t,World)
-\end{prog}
+\end{curry}
 where \ccode{World} denotes the type of all states of the outside world.
 If an action of type \ccode{IO t} is applied to a particular world,
 it yields a value of type \code{t} and a new (changed) world.
@@ -1875,9 +1874,9 @@ and compose actions on the world.
 Actions can only be sequentially composed, i.e., one can built a new
 action that consists of the sequential evaluation of two
 other actions. The predefined function \pindex{>>}
-\begin{prog}
+\begin{curry}
 (>>) :: IO a -> IO b -> IO b
-\end{prog}
+\end{curry}
 takes two actions as input and yields an action as the result.
 The resulting action consists of performing the first action followed
 by the second action, where the produced value of the first action is
@@ -1887,50 +1886,51 @@ ignored. For instance, the value of the expression
 we can define a function \code{putStrLn}\pindex{putStrLn}
 (which is actually predefined in the prelude)
 that takes a string and produces an action to print this string:
-\begin{prog}
-putStrLn []     = putChar \verb|'\n'|
+\begin{curry}
+putStrLn []     = putChar '\n'
 putStrLn (c:cs) = putChar c >> putStrLn cs
-\end{prog}
+\end{curry}
 If two actions should be composed and the
 value of the first action should be taken into account
 before performing the second action, the actions can be also composed by
 the predefined function\pindex{>>=}
-\begin{prog}
+\begin{curry}
 (>>=) :: IO a -> (a -> IO b) -> IO b
-\end{prog}
+\end{curry}
 where the second argument is a function taking the value produced
 by the first action as input and performs another action.
 For instance, the action
-\begin{prog}
+\begin{curry}
 getChar >>= putChar
-\end{prog}
+\end{curry}
 is of type \ccode{IO ()} and copies, when executed, a character
 from standard input to standard output.
 Actually, this composition operator is the only elementary one
 since the operator \ccode{>>} can be defined in terms of \ccode{>>=}:
-\begin{prog}
-a1 >> a2  =  a1 >>= \char92\char95\,->\,a2
-\end{prog}
+\begin{curry}
+a1 >> a2  =  a1 >>= \_ -> a2
+\end{curry}
 There is also a primitive ``empty'' action\pindex{return}
-\begin{prog}
+\begin{curry}
 return :: a -> IO a
-\end{prog}
+\end{curry}
 that only returns the argument without changing the world.
-The prelude also defines the ``empty'' action\pindex{done}
-which returns nothing (i.e., the unit type):
-\begin{prog}
+Thus, one can define an ``empty'' action\pindex{done}
+which returns nothing (i.e., the unit type) as
+\begin{curry}
 done :: IO ()
 done = return ()
-\end{prog}
+\end{curry}
 %
 Using these primitives, we can define more complex interactive programs.
 For instance, an I/O action that copies all characters from
 the standard input to the standard output up to the first period
 can be defined as follows
 \proghref{IOExamples}{Program}:
-\begin{prog}
-echo = getChar >>= \char92c -> if c=='.' then done else putChar c >> echo
-\end{prog}
+\begin{curry}
+echo = getChar >>= \c -> if c=='.' then return ()
+                                   else putChar c >> echo
+\end{curry}
 %
 Obviously, such a definition is not well readable.
 Therefore, Curry provides a special syntax extension for
@@ -1939,38 +1939,38 @@ writing sequences of I/O actions, called the
 The do notation follows the layout style
 (see Section~\ref{sec-layout}), i.e., a sequence of actions
 is vertically aligned so that
-\begin{prog}
+\begin{curry}
 do putChar 'a'
    putChar 'b'
-\end{prog}
+\end{curry}
 is the same as \ccode{putChar 'a' >> putChar 'b'}, and
-\begin{prog}
+\begin{curry}
 do c <- getChar
    putChar c
-\end{prog}
+\end{curry}
 is just another notation for \ccode{getChar >>= \char92c\,->\,putChar c}.
 Thus, the do notation allows a more traditional style of writing
 interactive programs. For instance, the function \code{echo}
 defined above can be written in the do notation as follows:
-\begin{prog}
+\begin{curry}
 echo = do c <- getChar
           if c=='.'
-            then done
+            then return ()
             else do putChar c
                     echo
-\end{prog}
+\end{curry}
 As a further example, we show the definition of the I/O action
 \code{getLine} as defined in the prelude.
 \code{getLine} as an action that reads a line from the standard input
 and returns it:\pindex{getLine}
-\begin{prog}
+\begin{curry}
 getLine :: IO String
 getLine = do c <- getChar
-             if c=='\char92n'
+             if c=='\n'
                 then return []
                 else do cs <- getLine
                         return (c:cs)
-\end{prog}
+\end{curry}
 Curry also provides predefined I/O actions for reading files
 and accessing other parts of the environment.
 For instance, \ccode{readFile f}\pindex{readFile}
@@ -1983,11 +1983,11 @@ in a very concise way (\code{toUpper}\pindex{toUpper}
 is defined in the standard character library \code{Char} and converts
 lowercase into uppercase letters)
 \proghref{IOExamples}{Program}:
-\begin{prog}
+\begin{curry}
 convertFile input output = do
   s <- readFile input
   writeFile output (map toUpper s)
-\end{prog}
+\end{curry}
 % To avoid introducing map in this chapter,
 % consider next version or add function to Char library
 % or explain map informally (as for ``all'' in parser

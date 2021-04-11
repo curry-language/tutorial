@@ -1,0 +1,20 @@
+\documentclass[11pt,fleqn]{report}
+
+% VERSIONING:
+\usepackage{comment}
+% These two definitions are for the HTML version:
+\includecomment{htmlversion}
+\excludecomment{pdfversion}
+
+\input{macros}
+
+% in case we are not generating a pdf this command will not be availeable
+% in that case define it as a noop
+\providecommand{\pdfbookmark}[3][]{}
+
+\input{main}
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: t
+%%% End: 
