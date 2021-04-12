@@ -14,6 +14,8 @@ CPM=cypm -d CURRYBIN=$(PAKCS)
 MAINPDF=main_pdf
 # main document for HTML generation
 MAINHTML=main_html
+# main HTML target document
+HTMLINDEX=output/html/index.html
 
 .PHONY: all
 all: pdf
@@ -28,8 +30,8 @@ pdf:
 	xdg-open $(MAINPDF).pdf
 
 .PHONY: html
-html: output/html/$(MAINHTML).html
-	xdg-open output/html/$(MAINHTML).html
+html: $(HTMLINDEX)
+	xdg-open $(HTMLINDEX)
 
 %.pdf: ./*.tex browseurl.tex
 	pdflatex $*
@@ -44,12 +46,12 @@ output/$(MAINHTML).xml: $(MAINHTML).pdf
 		--documentid=curry-tutorial \
 		$(MAINHTML).tex
 
-output/html/$(MAINHTML).html: output/$(MAINHTML).xml css/*.css Makefile
+$(HTMLINDEX): output/$(MAINHTML).xml css/*.css Makefile
 	latexmlpost --format=html5 \
 		--splitat=section \
 		--css=LaTeXML-blue.css \
 		--css=css/main.css \
-		--dest=output/html/$(MAINHTML).html \
+		--dest=$(HTMLINDEX) \
 		output/$(MAINHTML).xml
 	$(MAKE) convtilde
 
@@ -83,8 +85,11 @@ clean:
 
 # put the current version of the PDF and all programs into my web pages:
 WEBDIR=$(HOME)/public_html/curry/tutorial
-publish: $(MAINPDF).pdf
+.PHONY: publish
+publish: $(MAINPDF).pdf $(HTMLINDEX) index.html
+	cp index.html $(WEBDIR)
 	cp $(MAINPDF).pdf $(WEBDIR)/tutorial.pdf
+	cp -r output/html $(WEBDIR)/html
 	cd PROGRAMS && cleancurry -r
 	/bin/rm -rf $(WEBDIR)/PROGRAMS
 	cp -r PROGRAMS $(WEBDIR)

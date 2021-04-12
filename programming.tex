@@ -186,7 +186,7 @@ submin (x:xs) = fst (aux (x:xs) x)
 The function \code{fst}, which returns the first element of a pair,
 is defined in the prelude.
 The function \code{min}, which returns the minimum of two
-integers, is defined in the \code{Integer} library.
+integers, is defined in the standard prelude.
 
 More complicated computations may lead to more complicated
 inductive definitions. A discussion on the structure
@@ -375,7 +375,7 @@ up-to-date consultation of the content of these libraries.
 \noindent
 Many more functions that operate on lists are defined
 in the libraries of the \pakcs{} distribution
-(e.g., see the library \code{List} which contains
+(e.g., see the library \code{Data.List} which contains
 the definition of \code{nub} and \code{delete} discussed above).
 The above table is intended to give only a feeling
 of what is available.
@@ -566,7 +566,7 @@ subset (x:xs) = x:subset xs
 subset (_:xs) =   subset xs
 \end{curry}
 %
-In \pakcs{}, with the help of the \code{SetFunctions} library,
+In \pakcs{}, with the help of the library \code{Control.SetFunctions},
 we define the power set of a set as follows:
 %
 \begin{curry}
@@ -827,5 +827,5 @@ whether or not the word is in the trie
 
 %%% Local Variables: 
 %%% mode: latex
-%%% TeX-master: "main"
+%%% TeX-master: "main_pdf"
 %%% End: 

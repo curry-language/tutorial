@@ -381,13 +381,13 @@ It is obtained by applying the expression
 to \code{(2+3)}, its argument.
 An anonymous function definition has the following structure:
 %
-\begin{prog}
-\char92\progit{args} -> \progit{right-hand side}
-\end{prog}
+\begin{curry}
+\ <arguments> -> <right-hand side>
+\end{curry}
 %
-% The arguments are provided as in any rewrite rule,
-% in particular pattern matching, which is discussed, is allowed
-% whereas conditions, \code{where} clauses or multiple rules are not.
+The arguments are listed as in any rewrite rule.
+The right-hand side is the expression to be evaluated
+when the anonymous function is applied to actual arguments.
 A more motivating example of anonymous function
 is presented in Section~\ref{Higher-Order}
 
@@ -1791,7 +1791,7 @@ is the argument of \ccode{parseTerm}.
 The first condition of the first rule of the operation \ccode{parseTerm}
 instantiates these variables and ensures that \ccode{fun}
 is an alphabetic identifier.
-The operation \ccode{isAlpha}, defined in the library \ccode{Char},
+The operation \ccode{isAlpha}, defined in the library \ccode{Data.Char},
 ensures that its argument, a character, is alphabetic.
 The operation \ccode{all} is defined in the \ccode{Prelude}.
 The combination \ccode{all isAlpha} ensures that all the characters
@@ -1980,7 +1980,7 @@ is an action writing string
 \code{s} into the file \code{f}. This allows us to define a function
 that copies a file with transforming all letters into uppercase ones
 in a very concise way (\code{toUpper}\pindex{toUpper}
-is defined in the standard character library \code{Char} and converts
+is defined in the standard character library \code{Data.Char} and converts
 lowercase into uppercase letters)
 \proghref{IOExamples}{Program}:
 \begin{curry}
@@ -1999,7 +1999,7 @@ convertFile input output = do
 %    where capitalize [] = []
 %          capitalize (c:cs) = toUpper c : capitalize cs
 % 
-The function \code{toUpper}, defined in the library \ccode{Char},
+The function \code{toUpper}, defined in the library \ccode{Data.Char},
 takes a character. If the character is lower case and alphabetic,
 then it returns it in upper case, otherwise it returns it unchanged.
 The operation \ccode{map} is defined in the \ccode{Prelude}
@@ -2052,5 +2052,5 @@ i.e., the number of characters contained in this file.
 
 %%% Local Variables: 
 %%% mode: latex
-%%% TeX-master: "main"
+%%% TeX-master: "main_pdf"
 %%% End: 
