@@ -3,12 +3,13 @@
 --- into a LaTeX macro.
 ---
 --- @author Michael Hanus
---- @version February 2021
+--- @version April 2021
 ----------------------------------------------------------------
 
-import Directory
-import List      ( isPrefixOf, isSuffixOf )
-import HTML.Base ( string2urlencoded )
+import Data.List        ( isPrefixOf, isSuffixOf )
+import HTML.Base        ( string2urlencoded )
+import System.Directory ( doesDirectoryExist, doesFileExist
+                        , getDirectoryContents )
 
 main :: IO ()
 main = do
@@ -60,7 +61,7 @@ generateProgramURL progname = do
 -- Generate a LaTeX file containing results of macro execution.
 genMacroFile :: [String] -> String -> IO ()
 genMacroFile fnames outfile = do
-  s <- mapIO showMacro fnames
+  s <- mapM showMacro fnames
   writeFile outfile ("\\newcommand{\\progbrowseurl}[2]\n" ++
                      genResultMacro s ++ "\n")
   putStrLn $ "LaTeX macro definition written into file '" ++ outfile ++ "'"

@@ -1,8 +1,8 @@
 # To format the Curry tutorial
 
-# The PAKCS executable (currently: Version 2)
-ifneq ("$(wildcard $(/opt/pakcs/pakcs2/bin/pakcs))","")
-PAKCS=/opt/pakcs/pakcs2/bin/pakcs
+# The PAKCS executable (currently: Version 3)
+ifneq ("$(wildcard /opt/pakcs/pakcs3/bin/pakcs)","")
+PAKCS=/opt/pakcs/pakcs3/bin/pakcs
 else
 PAKCS=$(shell which pakcs)
 endif
