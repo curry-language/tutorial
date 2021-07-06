@@ -79,7 +79,7 @@ clean:
 	/bin/rm -f $(MAINPDF).?? $(MAINPDF).??? *.aux
 	/bin/mv $(MAINPDF).texx $(MAINPDF).tex
 	/bin/mv $(MAINHTML).tex $(MAINHTML).texx
-	/bin/rm -f $(MAINHTML).?? $(MAINHTML).??? *.aux *.html LaTeXML.css ltx-report.css LaTeXML.cache
+	/bin/rm -f $(MAINHTML).?? $(MAINHTML).??? *.aux LaTeXML.css ltx-report.css LaTeXML.cache
 	/bin/mv $(MAINHTML).texx $(MAINHTML).tex
 
 
@@ -89,6 +89,7 @@ WEBDIR=$(HOME)/public_html/curry/tutorial
 publish: $(MAINPDF).pdf $(HTMLINDEX) index.html
 	cp index.html $(WEBDIR)
 	cp $(MAINPDF).pdf $(WEBDIR)/tutorial.pdf
+	/bin/rm -rf $(WEBDIR)/html
 	cp -r output/html $(WEBDIR)/html
 	cd PROGRAMS && cleancurry -r
 	/bin/rm -rf $(WEBDIR)/PROGRAMS
