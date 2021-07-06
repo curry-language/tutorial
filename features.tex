@@ -679,12 +679,41 @@ example, consider looking up the value of a key in a key-value pair list.
 \end{curry}
 %
 If the key of a search is not in a list $l$, the call
-\code{lookup} $l$, returns \code{Nothing} instead of failing.
+\code{lookup} $l$ returns \code{Nothing} instead of failing.
+
+\paragraph{Important notes:}
+\begin{enumerate}
+\item
+Default rules can only be added to operations defined at the top-level
+(i.e., not to locally defined operations,
+see Section~\ref{sec:localdefinitions}).
+A reason for this restriction is that default rules are applied
+after searching for all possibilities to apply a previous standard rule.
+With local definitions, the precise scope of the ``previous'' search
+is difficult to define.
+
+\item
+The implementation of default rules is based on set functions
+(implemented by the module \code{Control.SetFunctions}).
+Therefore, this module should be imported in programs using
+default rules and the package \code{setfunctions} should be installed
+as a dependency.
+The latter can easily be done by executing
+(see also Section~\ref{sec:importing-packages})
+%
+\begin{curry}
+> cypm add setfunctions
+\end{curry}
+%
+before compiling a program containing default rules with the
+Curry preprocessor.
+\end{enumerate}
+
 
 \section{User-defined Types}
 
 A \emph{type}\index{type} is a set of values.
-Some common types, presented in Section \ref{Predefined Types},
+Some common types, presented in Section~\ref{Predefined Types},
 are built into the language
 and the programmer does not declare them.
 All other types used in a program must be declared by the programmer.
@@ -1297,6 +1326,7 @@ discussed in Section~\ref{where-clause},
 sharing produces the same value for both occurrences.
 
 \section{Local Definitions}
+\label{sec:localdefinitions}
 
 The syntax of Curry implicitly associates a scope
 to each identifier, whether a function, a type, a variable, etc.
