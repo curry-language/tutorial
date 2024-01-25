@@ -166,7 +166,7 @@ htmlQuote :: String -> String
 htmlQuote [] = []
 htmlQuote (c:cs) | c=='<' = "&lt;"   ++ htmlQuote cs
                  | c=='>' = "&gt;"   ++ htmlQuote cs
-                 | c=='\&' = "&amp;"  ++ htmlQuote cs
+                 | c=='&' = "&amp;"  ++ htmlQuote cs
                  | c=='"' = "&quot;" ++ htmlQuote cs
                  | otherwise = c : htmlQuote cs
 \end{curry}
@@ -230,8 +230,8 @@ page title hexps = HtmlPage title [] hexps
 %
 Furthermore, the \code{HTML} library defines a wrapper function
 \begin{curry}
-showHtmlPage :: HtmlPage -> String\pindex{showHtmlPage}
-\end{curry}
+showHtmlPage :: HtmlPage -> String
+\end{curry}\pindex{showHtmlPage}
 to generate the concrete textual
 representation of a complete HTML page with head and body parts.
 For instance, the value of
@@ -345,8 +345,8 @@ the library \code{HTML.Base}
 has a definition for HTML \emph{forms}\index{form!HTML}\index{HTML!form}
 as follows:
 \begin{curry}
-data HtmlForm = HtmlForm String [FormParam] [HtmlExp] \pindex{HtmlForm}
-\end{curry}
+data HtmlForm = HtmlForm String [FormParam] [HtmlExp]
+\end{curry}\pindex{HtmlForm}
 The first argument is the title of the form (as in HTML documents)
 and the third argument is the contents of the form
 which can also contain elements for user input, as

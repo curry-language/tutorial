@@ -1,4 +1,4 @@
-import Char
+import Data.Char
 
 data Term = Term String [Term]
 

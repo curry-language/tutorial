@@ -2,8 +2,8 @@
 
 {-# OPTIONS_CYMAKE -F --pgmF=currypp --optF=defaultrules #-}
 
-import Control.SetFunctions
-import List(isSuffixOf)
+import Control.Search.SetFunctions
+import Data.List ( isSuffixOf )
 
 data Block = A | B | C | D | E deriving Eq
 type Stack = [Block]

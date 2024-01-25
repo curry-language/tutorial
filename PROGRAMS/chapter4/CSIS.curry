@@ -1,7 +1,5 @@
--- Package `setfunctions` required, i.e., install this dependency by
---     > cypm add setfunctions
-import List
-import Control.SetFunctions
+import Data.List
+import Control.Search.SetFunctions
 
 -- Prerequisites table, 2001 catalog
 -- This is a directed acyclic graph

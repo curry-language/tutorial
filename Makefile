@@ -1,8 +1,8 @@
 # To format the Curry tutorial
 
-# The PAKCS executable (currently: Version 3)
-ifneq ("$(wildcard /opt/pakcs/pakcs3/bin/pakcs)","")
-PAKCS=/opt/pakcs/pakcs3/bin/pakcs
+# The PAKCS executable
+ifneq ("$(wildcard /opt/pakcs/bin/pakcs)","")
+PAKCS=/opt/pakcs/bin/pakcs
 else
 PAKCS=$(shell which pakcs)
 endif
@@ -91,9 +91,10 @@ publish: $(MAINPDF).pdf $(HTMLINDEX) index.html
 	cp $(MAINPDF).pdf $(WEBDIR)/tutorial.pdf
 	/bin/rm -rf $(WEBDIR)/html
 	cp -r output/html $(WEBDIR)/html
-	cd PROGRAMS && cleancurry -r
+	cd PROGRAMS && for i in * ; do cd $$i ; cleancurry ; cd .. ; done
 	/bin/rm -rf $(WEBDIR)/PROGRAMS
 	cp -r PROGRAMS $(WEBDIR)
 	cd $(WEBDIR) && rm -rf PROGRAMS/.curry PROGRAMS/*/.curry *~ */*~ */*/*~
 	cd $(WEBDIR) && rm -f PROGRAMS.zip && zip -r PROGRAMS.zip PROGRAMS
 	chmod -R go+rX $(WEBDIR)
+

@@ -694,19 +694,9 @@ is difficult to define.
 
 \item
 The implementation of default rules is based on set functions
-(implemented by the module \code{Control.SetFunctions}).
+(implemented by the module \code{Control.Search.SetFunctions}).
 Therefore, this module should be imported in programs using
-default rules and the package \code{setfunctions} should be installed
-as a dependency.
-The latter can easily be done by executing
-(see also Section~\ref{sec:importing-packages})
-%
-\begin{curry}
-> cypm add setfunctions
-\end{curry}
-%
-before compiling a program containing default rules with the
-Curry preprocessor.
+default rules.
 \end{enumerate}
 
 

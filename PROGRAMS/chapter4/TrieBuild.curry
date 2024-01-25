@@ -1,4 +1,5 @@
-import SetRBT
+
+import Data.List ( sortBy )
 
 ---------------------------------------------------------------------
 -- Definitions from TrieInsert:
@@ -13,7 +14,7 @@ insert (w:ws) [] = [Tree w (insert ws [])]
 insert (w:ws) (Tree c cs : ts)
   | ord w < ord c = insert (w:ws) [] ++ (Tree c cs : ts)
   | ord w > ord c = Tree c cs : insert (w:ws) ts
-  | otherwise = Tree c (insert ws cs) : ts
+  | otherwise     = Tree c (insert ws cs) : ts
 ---------------------------------------------------------------------
 
 -- A set of words
@@ -47,7 +48,7 @@ sample = [
   "zooms"]
 
 -- the same set in scrambled order
-scrambled = map reverse (sortRBT precede (map reverse sample))
+scrambled = map reverse (sortBy precede (map reverse sample))
   where precede [] _ = True
         precede (_:_) [] = False
         precede (x:xs) (y:ys) 

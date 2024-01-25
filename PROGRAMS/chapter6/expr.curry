@@ -1,6 +1,4 @@
--- Package `setfunctions` required, i.e., install this dependency by
---     > cypm add setfunctions
-import Control.SetFunctions
+import Control.Search.SetFunctions
 
 -- the type of simple symbolic arithmetic expressions
 data Exp = Lit Int

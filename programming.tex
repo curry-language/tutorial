@@ -531,12 +531,7 @@ originates entirely from the argument.
 
 To ease the definition of set functions,
 there is a library\index{set function!library}
-\code{Control.SetFunctions}.\footnote{Since this library is
-part of the package \code{setfunctions},\index{package!setfunctions}
-this package must be installed as a dependency
-with the Curry package manager, e.g., by the command
-\ccode{cypm add setfunctions}, see also
-Section~\ref{sec:importing-packages}.}
+\code{Control.Search.SetFunctions}.
 This library defines both a suitable abstraction of a type \emph{set}
 to represent the results of a set function application, and
 a family of functions \code{set0}, \code{set1}, $\ldots$~
@@ -566,7 +561,7 @@ subset (x:xs) = x:subset xs
 subset (_:xs) =   subset xs
 \end{curry}
 %
-In \pakcs{}, with the help of the library \code{Control.SetFunctions},
+In \pakcs{}, with the help of the library \code{Control.Search.SetFunctions},
 we define the power set of a set as follows:
 %
 \begin{curry}
@@ -798,7 +793,7 @@ insert (w:ws) [] = [Tree w (insert ws [])]
 insert (w:ws) (Tree c cs : ts)
   | ord w < ord c = insert (w:ws) [] ++ (Tree c cs : ts)
   | ord w > ord c = Tree c cs : insert (w:ws) ts
-  | otherwise = Tree c (insert ws cs) : ts
+  | otherwise     = Tree c (insert ws cs) : ts
 \end{curry}
 %
 \begin{exercise}

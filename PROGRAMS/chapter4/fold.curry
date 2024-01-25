@@ -1,4 +1,3 @@
-import Integer
 
 sumList = foldr (+) 0
 prodList = foldr (*) 1

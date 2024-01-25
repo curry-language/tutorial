@@ -2,8 +2,6 @@
 -- from each element of the list in 1 pass.
 -- There also a solution based on narrowing.
 
-import Integer
-
 submin [] = []
 submin (x:xs) = fst (aux (x:xs) x)
   where aux []     m = ([],m)

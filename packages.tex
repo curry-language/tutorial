@@ -94,8 +94,7 @@ the module \code{PFLP} from package \code{pflp}
 can be imported.
 
 Note that this method to use packages should be used only
-for small programs or to try some package,
-since a specific appropriate version of the package is globally installed.
+for small programs or to try some features of a specific package.
 Actually, each version of each Curry system
 has its own global package cache.\footnote{%
 Use the command \code{cypm config} and look at \code{HOME_PACKAGE_PATH}
@@ -200,8 +199,8 @@ e.g.:
    {
      ...,
      "dependencies": {
-       "base": ">= 1.0.0, < 2.0.0",
-       "json": "~> 1.1.0"
+       "base": ">= 3.0.0, < 4.0.0",
+       "json": "~> 3.0.0"
      }
    }
 \end{verbatim}

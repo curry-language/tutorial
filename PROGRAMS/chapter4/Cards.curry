@@ -3,6 +3,7 @@ data Suit
   | Spade 
   | Heart
   | Diamond 
+
 data Rank
   = Ace
   | King
@@ -17,6 +18,7 @@ data Rank
   | Four
   | Three
   | Two 
+
 data Card = Card Rank Suit
 
 rank (Card r _) = r

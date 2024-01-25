@@ -1,6 +1,5 @@
--- Package `setfunctions` required, i.e., install this dependency by
---     > cypm add setfunctions
-import Control.SetFunctions
+-- Import the library defining set functions:
+import Control.Search.SetFunctions
 
 subset :: [a] -> [a]
 subset []     = []

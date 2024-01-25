@@ -1,13 +1,13 @@
 -- A few simple examples for I/O programming
 
-import Char
+import Data.Char
 
 
 -- An I/O action thats copies the standard input to standard output
 -- until the first period character:
 
 echo :: IO ()
-echo = getChar >>= \c -> if c=='.' then done else putChar c >> echo
+echo = getChar >>= \c -> if c=='.' then return () else putChar c >> echo
 
 
 -- The same I/O action using the "do" notation:
@@ -15,7 +15,7 @@ echo = getChar >>= \c -> if c=='.' then done else putChar c >> echo
 echoDo :: IO ()
 echoDo = do c <- getChar
             if c=='.'
-              then done
+              then return ()
               else do putChar c
                       echoDo
 
