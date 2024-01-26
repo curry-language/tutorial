@@ -1,30 +1,45 @@
 ------------------------------------------------------------------------------
--- Example for CGI programming in Curry:
--- a recursive form for a number guessing game
+-- Example for HTML programming in Curry:
+--
+-- A recursive form for a number guessing game
 -- which also counts the number of guesses
 ------------------------------------------------------------------------------
 
 import HTML.Base
+import HTML.Session
 
-guessForm :: IO HtmlForm
-guessForm = return $ form "Number Guessing" (guessInput 1)
+--- The data stored in the session is the number of guesses.
+trials :: SessionStore Int
+trials = sessionStore "trials"
 
-guessInput :: Int -> [HtmlExp]
-guessInput n =
-  [htxt "Guess a natural number: ", textfield nref "",
-   button "Check" (guessHandler n nref)]   where nref free
+guessForm :: HtmlFormDef Int
+guessForm = formDef (getSessionData trials 1) guessFormHtml
 
-guessHandler :: Int -> CgiRef -> (CgiRef -> String) -> IO HtmlForm
-guessHandler n nref env =
-  return $ form "Answer" $
+guessFormHtml :: Int -> [HtmlExp]
+guessFormHtml t =
+  [htxt "Guess a number: ", textField nref "",
+   button "Check" guessHandler]
+ where
+  nref free
+
+  guessHandler env =
     case reads (env nref) of
-      [(nr,"")] ->
-         if nr==42
-           then [h1 [htxt $ "Right! You needed "++show n++" guesses!"]]
-           else [h1 [htxt $ if nr<42 then "Too small!"
-                                     else "Too large!"],
-                 hrule] ++ guessInput (n+1)
-      _ -> [h1 [htxt "Illegal input, try again!"]] ++ guessInput n
+      [(n,"")] -> 
+        if n==42
+          then do
+            removeSessionData trials
+            return $ headerPage ("Correct! " ++ show t ++ " guesses!") []
+          else do
+            putSessionData trials (t+1)
+            return $ headerPage ("Too " ++ if n<42 then "small!" else "large!")
+               [formElem guessForm ]
+      _ -> return $ headerPage "Illegal input, try again!"
+             [formElem guessForm]
 
--- Install the CGI program by:
--- curry-makecgi -o guess.cgi -m guessForm guess
+-- main HTML page containing the form
+main :: IO HtmlPage
+main = withSessionCookieInfo $
+  headerPage "Number Guessing Game" [ formElem guessForm ]
+
+-- Install the CGI script in user homepage by:
+-- > curry2cgi -o guess.cgi guess

@@ -8,9 +8,13 @@
 
 import HTML.Base
 
-loginForm :: IO HtmlForm
-loginForm = return $ cookieForm "Login" [("SETCOOKIE","")]
-  [htxt "Enter your name: ", textfield tref "",
+loginPage :: IO HtmlPage
+loginPage = return $
+  addCookies [("SETCOOKIE","")] $ page "Login" [formElem loginForm]
+
+loginForm :: HtmlFormDef ()
+loginForm = simpleFormDef
+  [htxt "Enter your name: ", textField tref "",
    hrule,
    button "Login" handler
   ]
@@ -20,11 +24,11 @@ loginForm = return $ cookieForm "Login" [("SETCOOKIE","")]
    handler env = do
      cookies <- getCookies
      return $
-       if lookup "SETCOOKIE" cookies == Nothing
-       then form "No cookies" [h2 [htxt "Sorry, can't set cookies."]]
-       else cookieForm "Logged In"
-                       [("LOGINNAME",env tref)]
-                       [h2 [htxt $ env tref ++ ": thank you for visiting us"]]
+       maybe (page "No cookies" [h2 [htxt "Sorry, can't set cookies."]])
+             (\_ -> addCookies [("LOGINNAME",env tref)] $
+                      page "Logged In"
+                        [h2 [htxt $ env tref ++ ": thank you for visiting us"]])
+             (lookup "SETCOOKIE" cookies)
 
 -- Install the script by:
--- curry-makecgi -o login.cgi -m loginForm checkcookie
+-- curry2cgi -o login.cgi -m loginPage checkcookie

@@ -2,24 +2,59 @@
 -- Example for CGI programming in Curry: a questionnaire
 ------------------------------------------------------------------------------
 
-import Directory ( doesFileExist, removeFile, renameFile )
-import IOExts    ( exclusiveIO )
+import System.Directory ( doesFileExist, removeFile, renameFile )
+import System.IOExts    ( exclusiveIO )
 import HTML.Base
 
--- The parameters of the form:
+-- The question of the form:
 question :: String
 question = "Who is your favorite actress?"
 
+-- The choices for the votes:
 choices :: [String]
 choices = ["Doris Day", "Jodie Foster", "Marilyn Monroe",
            "Julia Roberts", "Sharon Stone", "Meryl Streep"]
 
+-- The name of the file where the current numbers of votes are stored:
+voteFile :: String
+voteFile = "votes.data"
+
+-- Reads the vote file and return the votes in a list.
+-- Initializes it if necessary.
+readVoteFile :: IO [Int]
+readVoteFile = do
+  existnumfile <- doesFileExist voteFile
+  if existnumfile
+    then do vfcont <- readFile voteFile
+            return (map read (lines vfcont))
+    else do let nums = take (length choices) (repeat 0)
+            writeFile voteFile (unlines (map show nums))
+            return nums
+
+-- Overwrites the vote file with a new list of votes.
+overwriteVoteFile :: [Int] -> IO ()
+overwriteVoteFile nums = do
+  writeFile (voteFile ++ ".new") (unlines (map show nums))
+  removeFile voteFile
+  renameFile (voteFile ++ ".new") voteFile
+
+-- Increments a number in the vote file.
+incNumberInFile :: Int -> IO ()
+incNumberInFile voteindex = do
+  nums <- readVoteFile
+  overwriteVoteFile (incNth nums voteindex)
+ where
+  -- increment n-th element in a list:
+  incNth []     _             = []
+  incNth (x:xs) n | n==0      = (x+1) : xs
+                  | otherwise = x : incNth xs (n-1)
+
 -- Form for voting:
-questForm :: IO HtmlForm
-questForm = return $ form "Vote Form" $
+questForm :: HtmlFormDef ()
+questForm = simpleFormDef $
   [h1 [htxt question],
-    radio_main vref "0", htxt (' ':head choices), breakline] ++
-   concatMap (\ (i,s) -> [radio_other vref (show i), htxt (' ':s), breakline])
+   radioMain vref "0", htxt (' ' : head choices), breakline] ++
+   concatMap (\ (i,s) -> [radioOther vref (show i), htxt (' ':s), breakline])
              (zip [1..] (tail choices)) ++
    [hrule, button "submit" questHandler]
  where
@@ -28,56 +63,20 @@ questForm = return $ form "Vote Form" $
    questHandler env = do
      exclusiveIO (voteFile ++ ".lock")
                  (incNumberInFile (read (env vref)))
-     evalForm
+     evalPage
 
--- Form for evaluating current votes:
-evalForm :: IO HtmlForm
-evalForm = do
+-- HTML page showing the current votes:
+evalPage :: IO HtmlPage
+evalPage = do
   votes <- exclusiveIO (voteFile ++ ".lock") readVoteFile
-  return $ form "Evaluation"
+  return $ page "Evaluation"
    [h1 [htxt "Current votes:"],
-    table (map (\(s,v)->[[htxt s],[htxt $ show v]])
+    table (map (\(s,v) -> [[htxt s], [htxt $ show v]])
                (zip choices votes))]
 
-
--- increment n-th element in a list:
-incNth :: [Int] -> Int -> [Int]
-incNth []     _ = []
-incNth (x:xs) n | n==0      = (x+1) : xs
-                | otherwise = x : incNth xs (n-1)
-
--- increment a number in the vote file:
-incNumberInFile :: Int -> IO ()
-incNumberInFile n = do
-  initVoteFile (length choices)
-  nums <- readVoteFile
-  overwriteVoteFile (incNth nums n)
-
--- initialize data file if necessary:
-initVoteFile :: Int -> IO ()
-initVoteFile n = do
-  existnumfile <- doesFileExist voteFile
-  unless existnumfile $
-    writeFile voteFile (unlines (map show (take n (repeat 0))))
-
--- read the vote file with lines containing numbers and return them in a list:
-readVoteFile :: IO [Int]
-readVoteFile = do
-  vfcont <- readFile voteFile
-  return (map read (lines vfcont))
-
-
--- overwrite the vote file with a new list of numbers (each number into a line):
-overwriteVoteFile :: [Int] -> IO ()
-overwriteVoteFile nums = do
-  writeFile (voteFile ++ ".new") (unlines (map show nums))
-  removeFile voteFile
-  renameFile (voteFile ++ ".new") voteFile
-
--- the file where the current numbers of votes are stored:
-voteFile :: String
-voteFile = "votes.data"
-
+-- Voting page:
+main :: IO HtmlPage
+main = return $ page "Vote Form" [formElem questForm]
 
 -- Install the CGI program by:
--- curry-makecgi -o quest.cgi -m questForm questionnaire
+-- curry2cgi -o quest.cgi questionnaire

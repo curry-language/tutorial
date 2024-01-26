@@ -4,7 +4,7 @@
 import HTML.Base
 
 -- Generate bold/italic lines from a list of text lines:
-boldItalicLines :: [String] -> [HtmlExp]
+boldItalicLines :: [String] -> [BaseHtml]
 boldItalicLines [] = []
 boldItalicLines [line] = [bold [htxt line], breakline]
 boldItalicLines (line1:line2:lines) =

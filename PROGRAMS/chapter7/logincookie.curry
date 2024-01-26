@@ -1,15 +1,15 @@
 ------------------------------------------------------------------------------
 -- Example for CGI programming with cookies in Curry:
--- a login form setting a cookie and another form using this cookie
+-- a login page setting a cookie and another page using this cookie
 --
 -- Michael Hanus
 ------------------------------------------------------------------------------
 
 import HTML.Base
 
-loginForm :: IO HtmlForm
-loginForm = return $ form "Login"
-  [htxt "Enter your name: ", textfield tref "",
+loginForm :: HtmlFormDef ()
+loginForm = simpleFormDef
+  [htxt "Enter your name: ", textField tref "",
    hrule,
    button "Login" handler
   ]
@@ -17,18 +17,23 @@ loginForm = return $ form "Login"
    tref free
 
    handler env = return $
-     cookieForm "Logged In"
-                [("LOGINNAME", env tref)]
-                [h2 [htxt $ env tref ++ ": thank you for visiting us"]]
+     addCookies [("LOGINNAME", env tref)] $
+       page "Logged In"
+            [h2 [htxt $ env tref ++ ": thank you for visiting us"]]
 
-getNameForm :: IO HtmlForm
-getNameForm = do
+loginPage :: IO HtmlPage
+loginPage = return $ page "Login" [formElem loginForm]
+
+
+-- Page to read the cookie:
+getNamePage :: IO HtmlPage
+getNamePage = do
   cookies <- getCookies
-  return $ form "Hello" $
-   maybe [h1 [htxt "Not yet logged in"]]
-         (\n -> [h1 [htxt $ "Hello, " ++ n]])
-         (lookup "LOGINNAME" cookies)
+  return $ page "Hello" $
+    maybe [h1 [htxt "Not yet logged in"]]
+          (\n -> [h1 [htxt $ "Hello, " ++ n]])
+          (lookup "LOGINNAME" cookies)
 
 -- Install the scripts by:
--- curry-makecgi -o login.cgi   -m loginForm   logincookie
--- curry-makecgi -o getname.cgi -m getNameForm logincookie
+-- curry2cgi -o login.cgi   -m loginPage   logincookie
+-- curry2cgi -o getname.cgi -m getNamePage logincookie

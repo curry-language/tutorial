@@ -19,10 +19,12 @@ Up-to-date information about HTML is available from the
 World Wide Web Consortium (\wwwc)\index{W3C}.
 
 The approach to web programming described in this chapter is based
-on the library \ccode{HTML} \index{library!HTML}
-contained in the \pakcs{} distribution. Details about the
-ideas and the implementation of this library can also be found in
-\cite{Hanus01PADL}.
+on the package \code{html2}\index{package!html2}.\footnote{%
+\url{https://cpm.curry-lang.org/pkgs/html2.html}}
+It is based on the library \code{HTML} contained
+in earlier versions of \pakcs{} described in \cite{Hanus01PADL}.
+Ideas and details about this newer library for web programming
+can also be found in \cite{Hanus21PADL}.
 
 
 \section{Representing HTML Documents in Curry}
@@ -103,33 +105,36 @@ into a string.
 
 For representing abstract HTML documents in Curry,
 we define the following datatype of
-\emph{HTML expressions}\index{HTML!expression}\index{expression!HTML}:
+\emph{basic HTML expressions}\index{HTML!expression}\index{expression!HTML}:
 \begin{curry}
-data HtmlExp = HtmlText   String                              
-             | HtmlStruct String [(String,String)] [HtmlExp]
+data BaseHtml = BaseText String
+              | BaseStruct String Attrs [BaseHtml]
+
+type Attrs = [(String ,String)
 \end{curry}
-\pindex{HtmlExp}\pindex{HtmlText}\pindex{HtmlStruct}%
-The constructor \code{HtmlText} corresponds to elementary text
-in an HTML document, whereas the constructor \code{HtmlStruct}
+\pindex{BaseHtml}\pindex{BaseText}\pindex{BaseStruct}%
+The constructor \code{BaseText} corresponds to elementary text
+in an HTML document, whereas the constructor \code{BaseStruct}
 correspond to HTML elements with a tag and attributes.
-Thus, the parameter of type \ccode{[(String,String)]} is the list of
-attributes, i.e., name/value pairs.
+Thus, the parameter of type \ccode{Attrs},
+which is a type synonym for \ccode{[(String,String)]},
+is the list of attributes, i.e., name/value pairs.
 
 For instance, our first HTML document above is represented with this
 datatype as the following list of HTML expressions:
 %
 \begin{curry}
-[HtmlText "This is the ",
- HtmlStruct "i" [] [HtmlText "italic"],
- HtmlText " and the ",
- HtmlStruct "b" [] [HtmlText "bold"],
- HtmlText " font."]
+[BaseText "This is the ",
+ BaseStruct "i" [] [BaseText "italic"],
+ BaseText " and the ",
+ BaseStruct "b" [] [BaseText "bold"],
+ BaseText " font."]
 \end{curry}
 %
 Similarly, the image tag above is represented as follows:
 %
 \begin{curry}
-HtmlStruct "img" [("src","picture.jpg"),("alt","Picture")] []
+BaseStruct "img" [("src","picture.jpg"),("alt","Picture")] []
 \end{curry}
 %
 Obviously, we can specify any HTML document in this form
@@ -138,14 +143,14 @@ To avoid this, we define several functions as useful abbreviations
 of common HTML tags:
 %
 \begin{curry}
-h1     hexps  = HtmlStruct "h1" [] hexps                      -- header 1
-h2     hexps  = HtmlStruct "h2" [] hexps                      -- header 2
+h1     hexps  = BaseStruct "h1" [] hexps                -- header 1
+h2     hexps  = BaseStruct "h2" [] hexps                -- header 2
 ...
-bold   hexps  = HtmlStruct "b"  [] hexps                      -- bold font
-italic hexps  = HtmlStruct "i"  [] hexps                      -- italic font
-hrule         = HtmlStruct "hr" [] []                         -- horizontal rule
-breakline     = HtmlStruct "br" [] []                         -- line break
-image src alt = HtmlStruct "img" [("src",src),("alt",alt)] [] -- image
+bold   hexps  = BaseStruct "b"  [] hexps                -- bold font
+italic hexps  = BaseStruct "i"  [] hexps                -- italic font
+hrule         = BaseStruct "hr" [] []                   -- horizontal rule
+breakline     = BaseStruct "br" [] []                   -- line break
+image src alt = BaseStruct "img" [("src",src),("alt",alt)] [] -- image
 ...
 \end{curry}
 %
@@ -159,15 +164,15 @@ a function \ccode{htxt} for writing strings as
 elementary HTML texts where the special characters are quoted
 by the function \ccode{htmlQuote}:
 \begin{curry}
-htxt   :: String -> HtmlExp
-htxt s = HtmlText (htmlQuote s)
+htxt   :: String -> BaseHtml
+htxt s = BaseText (htmlQuote s)
 
 htmlQuote :: String -> String
 htmlQuote [] = []
-htmlQuote (c:cs) | c=='<' = "&lt;"   ++ htmlQuote cs
-                 | c=='>' = "&gt;"   ++ htmlQuote cs
-                 | c=='&' = "&amp;"  ++ htmlQuote cs
-                 | c=='"' = "&quot;" ++ htmlQuote cs
+htmlQuote (c:cs) | c=='<'    = "&lt;"   ++ htmlQuote cs
+                 | c=='>'    = "&gt;"   ++ htmlQuote cs
+                 | c=='&'    = "&amp;"  ++ htmlQuote cs
+                 | c=='"'    = "&quot;" ++ htmlQuote cs
                  | otherwise = c : htmlQuote cs
 \end{curry}
 \pindex{htxt}\pindex{htmlQuote}%
@@ -180,13 +185,13 @@ Now we can represent our first HTML document above as follows:
 %
 All the definitions we have introduced so far are contained
 in the library \ccode{HTML.Base}\index{library!HTML.Base}
-of the Curry package \code{html}.
+of the Curry package \code{html2}.
 In order to use this library, one has to add it as a dependency
 by the \cpm command (see Section~\ref{sec:importing-packages})
 \index{package!html}
 %
 \begin{curry}
-> cypm add html
+> cypm add html2
 \end{curry}
 %
 and add the import declaration
@@ -195,11 +200,11 @@ import HTML.Base
 \end{curry}
 in the header of the Curry program.
 The library \code{HTML.Base} also defines a wrapper function
-\code{showHtmlExps}\pindex{showHtmlExps} to generate the concrete textual
+\code{showBaseHtmls}\pindex{showBaseHtmls} to generate the concrete textual
 representation of an abstract HTML expression. For instance, the value of
 %
 \begin{curry}
-showHtmlExps [h1 [htxt "Hello World"], italic [htxt "Hello"], htxt " world!"]
+showBaseHtmls [h1 [htxt "Hello World"], italic [htxt "Hello"], htxt " world!"]
 \end{curry}
 %
 is the string
@@ -208,27 +213,28 @@ is the string
 <h1>
   Hello World
 </h1>
-<i>Hello</i> world!
+<i>Hello</i>
+world!
 \end{curry}
 %
 In order to generate a complete HTML page with header information,
-the \code{HTML} library contains the following definition of HTML pages:
+the library \code{HTML.Base} contains the following definition of HTML pages:
 \begin{curry}
-data HtmlPage = HtmlPage String [PageParam] [HtmlExp] \pindex{HtmlPage}
-\end{curry}
+data HtmlPage = HtmlPage String [PageParam] [BaseHtml]
+\end{curry} \pindex{HtmlPage}
 The first argument is the title of the page
 and the third argument is the contents of the page.
 The second argument is a list of optional parameters,
 like encoding scheme, style sheets etc.
 Since they are seldom used in standard pages,
-the \code{HTML} library contains also the following function
+the library \code{HTML.Base} contains also the following function
 to specify HTML pages without optional parameters:\pindex{page}
 \begin{curry}
-page :: String -> [HtmlExp] -> HtmlForm
+page :: String -> [BaseHtml] -> Htmlpage
 page title hexps = HtmlPage title [] hexps
 \end{curry}
 %
-Furthermore, the \code{HTML} library defines a wrapper function
+Furthermore, the library \code{HTML.Base} defines a wrapper function
 \begin{curry}
 showHtmlPage :: HtmlPage -> String
 \end{curry}\pindex{showHtmlPage}
@@ -280,7 +286,7 @@ Each triple is translated into a list of HTML expressions specifying the
 layout of a line:
 %
 \begin{curry}
-mult2html :: (Int,Int,Int) -> [HtmlExp]
+mult2html :: (Int,Int,Int) -> [BaseHtml]
 mult2html (x,y,z) =
  [htxt "The product of ", bold [htxt (show x)],
   htxt " and ", bold [htxt (show y)],
@@ -321,13 +327,13 @@ to split a string into a list of lines.
 \section{Server-Side Web Scripts}
 
 We have seen so far how to write programs that create
-HTML documents.
+static HTML documents.
 Such programs could be useful to transform existing data into a static
 set of HTML pages.
-However, this is not sufficient to create
-\emph{dynamic web pages}, i.e., web pages whose contents
-is computed at the time they are requested by a client.
-The creation of dynamic web pages is supported by most web servers
+In contrast, the contents of \emph{dynamic web pages}
+is computed at the time they are requested by a client
+(usually, a web browser).
+Technically, the creation of dynamic web pages is supported by web servers
 by so-called CGI (Common Gateway Interface)\index{CGI} programs.
 If a web server is asked for a document with the suffix \ccode{.cgi}
 instead of \ccode{.html} (the exact behavior is defined in the configuration
@@ -340,61 +346,64 @@ on its standard output. The CGI program can also take user input
 in an HTML form into account; this is described in
 Section~\ref{sec-html-forms}.
 
-To support the creation of dynamic HTML documents,
-the library \code{HTML.Base}
-has a definition for HTML \emph{forms}\index{form!HTML}\index{HTML!form}
-as follows:
+Since the CGI program is some executable stored on the web server,
+it can be written in any programming language.
+Thus, we can also write a Curry program which generates
+prints an HTML document when it is executed.
+As already discussed above, writing raw HTML documents
+could be error prone so that it is better create HTML data structures.
+Therefore, the library \code{HTML.Base}
+supports the creation of dynamic web pages by compiling
+a Curry program with a main operation of type
 \begin{curry}
-data HtmlForm = HtmlForm String [FormParam] [HtmlExp]
-\end{curry}\pindex{HtmlForm}
-The first argument is the title of the form (as in HTML documents)
-and the third argument is the contents of the form
-which can also contain elements for user input, as
-we will see later (see Section~\ref{sec-html-forms}).
-The second argument is a list of optional parameters
-to extend the functionality of forms, like cookies,
-style sheets etc (see Section~\ref{sec-advanced-web-programming}).
-Since they are seldom used in standard forms,
-the \code{HTML} library contains also the following function
-to specify forms without optional parameters:
-\begin{curry}
-form :: String -> [HtmlExp] -> HtmlForm
-form title hexps = HtmlForm title [] hexps
+main :: IO HtmlPage
 \end{curry}
-%
-Usually, the contents of dynamic HTML documents depend on the
+into an executable which prints the corresponding HTML document
+(the actual application of this compiler is described in the next section).
+Since this is an I/O operation,
+the contents of the generated HTML documents could also depend on the
 environment of the web server, e.g., information stored in the
-file system or databases. Thus, a dynamic web page is allowed to
-perform some I/O operations in order to compute the requested
-HTML document. As a consequence, a function to compute
-a dynamic web page must have
-the type \ccode{IO HtmlForm}. For instance, if we want to
-write a CGI program that computes the above multiplications
-of digits on demand, we define the following function \code{multForm}
+file system or databases.
+
+As a first example, we want to generate a CGI program
+that computes the above multiplications of digits on demand.
+For this purpose, we define the following operation \code{multPage}
 (the right-associate operator \ccode{\$}\pindex{\$} is
 defined with a low precedence
 in the prelude and denotes function application; it is often used to avoid
 brackets, e.g., the expression \ccode{f \$ g \$ 3+4} is equivalent to
 \ccode{f (g (3+4))})
 \proghref{multdigits}{Program}:
+%
 \begin{curry}
-multForm :: IO HtmlForm
-multForm = return $ form "Multiplication of Digits" htmlMultiplications
+multPage :: IO HtmlPage
+multPage =
+  return $ headerPage "Multiplication of Digits" htmlMultiplications
 \end{curry} %$
+%
+Here we use the operation \code{headerPage} which is similar to \code{page}
+but adds the page title as a header line:
+%
+\begin{curry}
+headerPage :: String -> [BaseHtml] -> HtmlPage
+headerPage title hexps = page title (h1 [htxt title] : hexps)
+\end{curry}
+%
 To see an application of accessing the server environment,
 we define a form that shows the current date and time of the server
-(the IO action \ccode{getLocalTime}\pindex{getLocalTime}\index{time},
-defined in the standard library \code{Time}, returns the local
+(the IO action \code{getLocalTime}\pindex{getLocalTime}\index{time},
+defined in the standard library \code{Data.Time} contained
+in Curry package \code{time}, returns the local
 date and time in some internal representation which can be
 converted into a readable string by the function
-\ccode{calendarTimeToString}\pindex{calendarTimeToString})
+\code{calendarTimeToString}\pindex{calendarTimeToString})
 \proghref{servertime}{Program}:
 \begin{curry}
-timeForm :: IO HtmlForm
-timeForm = do
+timePage :: IO HtmlPage
+timePage = do
  time <- getLocalTime
- return $ form "Current Server Time"
-          [h1 [htxt $ "Current date and time: " ++ calendarTimeToString time]]
+ return $ page "Current Server Time"
+   [h1 [htxt $ "Current date and time: " ++ calendarTimeToString time]]
 \end{curry}
 %
 The installation of such web programs on a web server is described
@@ -405,7 +414,7 @@ in the following section.
 \label{sec-cgi-install}
 
 Although the installation of CGI programs highly depends on the web server,
-in this section we will provide some hints so that you can
+this section provides some hints so that you can
 execute the programs described in this chapter on your web server.
 Clearly, your web server must be configured to enable the execution of
 CGI programs. Fortunately, most web servers support CGI programs, though
@@ -418,46 +427,40 @@ Ask your system administrator for the instructions
 on CGI execution that are specific to your system.
 
 In order to execute any web program written with the
-library \code{HTML.Base}, the helper programs
-\code{curry-cpnsd}\pindex{curry-cpnsd} (the Curry Port Name Server Demon),
-\code{curry-cgi}\pindex{curry-cgi} (managing and invoking CGI scripts
-written with \code{HTML.Base}), and
-\code{curry-makecgi}\pindex{curry-makecgi}
-(compiling and installing a web program)
-are required. They can easily be installed by executing
-the following CPM commands (see also Section~\ref{sec:installing-tools})
+library \code{HTML.Base}, the Curry-to-CGI compiler
+\code{curry2cgi}\pindex{curry2cgi} is required.
+It can easily be installed by executing
+the following CPM command (see also Section~\ref{sec:installing-tools})
 on the web server (where \pakcs should be already installed):
 %
 \begin{verbatim}
-   > cypm install cpns
-   > cypm install html-cgi
-   > cypm install html
+   > cypm install html2
 \end{verbatim}
 %
 Now the installation of a CGI program is quite simple.
 Assume you have written a Curry program \ccode{myscript.curry}
 containing a definition of a form function \ccode{main}
-of type \ccode{IO HtmlForm} (see previous section).
+of type \ccode{IO HtmlPage} (see previous section).
 Then you can compile it into an executable CGI program
 by the command
 %
 \begin{verbatim}
-   > curry-makecgi myscript
+   > curry2cgi myscript
 \end{verbatim}
 %
 This creates (after successful compilation) an executable program
 \ccode{myscript.cgi}.
 If your main form function has a name different from the default \code{main},
-you can provide it with option \ccode{-m}. For instance,
-the command
+you can specify it with option \ccode{-m}.
+For instance, the command
 %
 \begin{verbatim}
-   > curry-makecgi -m myForm myscript
+   > curry2cgi -m myForm myscript
 \end{verbatim}
 %
 creates a CGI program with form function \ccode{myForm}.
 In general, the parameter following \ccode{-m} can be any Curry expression
-of type \ccode{IO HtmlForm}.\footnote{%
+of type \ccode{IO HtmlPage}.\footnote{%
 Since this expression is executed as the main program,
 all symbols of this expression must be exported from the
 Curry program.}
@@ -489,8 +492,8 @@ HTML includes also elements for user input (text fields, buttons, etc)
 which is sent to the web server when requesting a document.
 How can we access the user input in a CGI program running on
 the server?
-The whole purpose of the Common Gateway Interface is
-to create a way to send information to the server and from the browswer,
+The whole purpose of the Common Gateway Interface is to define
+a method to send information to the server and from the web browser,
 hence the name Common Gateway.
 Fortunately, it is not necessary to know all the details of
 CGI since the library \code{HTML.Base} defines an abstraction layer
@@ -498,36 +501,56 @@ to provide a comfortable access to user inputs.
 This abstraction layer exploits the functional and logic features
 of Curry and will be explained in this section.
 
-The library \code{HTML.Base} contains definitions of various input
-elements for HTML forms.
-For instance, the element \ccode{textfield} defines
+Input elements are contained in \emph{HTML forms}\index{form}\index{HTML!form}
+that are embedded in HTML pages.
+If a form is submitted to the web server, the contents
+of the input elements, e.g., the text typed into text fields,
+is transmitted to the web server.
+To refer to the contents of input elements, there is a type
+%
+\begin{curry}
+data HtmlRef = ...
+\end{curry}
+%
+This type is abstract and the library \code{HTML.Base}
+does not export any constructor for this type.
+We will see later how to use such abstract
+\emph{HTML references}.\index{HTML!reference}
+
+The library \code{HTML.Base} uses such references
+in the definitions of the various input elements occurring in HTML forms.
+For instance, the element \ccode{textField} defines
 an HTML input element where the user can type a line of text:
 %
 \begin{curry}
-textfield :: CgiRef -> String -> HtmlExp
+textField :: HtmlRef -> String -> HtmlExp
 \end{curry}
 %
-The second argument is the initial contents and the first argument
-is the reference to this element (\emph{CGI reference}).\index{CGI!reference}
-The reference is used in the
-CGI program to access the user's actual input when computing
-an answer to this form.
-Now, how is the type \code{CgiRef} defined?
-The surprising answer is: the type is abstract (i.e., its constructors
-are not exported by the \code{HTML} library) since
-it is not necessary to know any constructor!
-It is sufficient to use a logic variable when using a text field
-in an HTML form.
-For instance, we can define a form containing a string
-and an input field as follows:
+The first argument is the reference to this input field and
+the second argument is the initial contents shown in the field.
+It should be noted that this input element has type
+\code{HtmlExp} rather than \code{BaseHtml}.
+This distinction is useful to avoid errors with input fields.
+Since input fields can only occur inside forms,
+forms contain data of type \code{HtmlExp} and are embedded
+in HTML pages, i.e., data of type \code{BaseHtml}.
+Note that the abbreviations of common HTML tags shown above
+(\code{htxt}, \code{h1}, \code{h2}, \code{italic},$\ldots$)
+are actually overloaded (via type classes)
+so that they can be used as \code{BaseHtml} and also as \code{HtmlExp} data.
+
+How can we use a \code{textField} if there are no constructors
+of type \code{HtmlRef}?
+The simple and may be surprising answer is: by logic variables!
+For instance, a form containing a string
+and an input field can be defined as follows:
 %
 \begin{curry}
-rdForm = return $ form "Question"
-          [htxt "Enter a string: ", textfield tref ""]
+rdForm = [htxt "Enter a string: ", textfield tref ""]
  where tref free
 \end{curry} %$
 %
-A \code{CgiRef} variable serves as a reference to the corresponding
+A \code{HtmlRef} variable serves as a reference to the corresponding
 input field to access the user's input. Raw CGI requires concrete
 strings as references (attribute \ccode{name} of \ccode{input} tags)
 which is error-prone (since typos in these strings lead to
@@ -536,26 +559,26 @@ However, the concrete strings are not important, and so the
 logic variables are sufficient. It is only important
 to use them when computing the answer to the client.
 For this purpose, the library \code{HTML.Base} defines
-a \emph{CGI environment}\index{CGI!environment} as a mapping
-from CGI references to strings:
+an \emph{HTML environment}\index{HTML!environment} as a mapping
+from HTML references to strings:
 %
 \begin{curry}
-type CgiEnv = CgiRef -> String
+type HtmlEnv = HtmlRef -> String
 \end{curry}
 %
-A CGI environment is used to collect the input of the user
+An HTML environment is used to collect the input of the user
 when computing the response. The computation of the response is done
-by an \emph{event handler}\index{event handler}\index{CGI!event handler}
+by an HTML \emph{event handler}\index{event handler}\index{HTML!event handler}
 that is attached to each button for submitting a form to the web server.
 For this purpose, the library \code{HTML.Base}
-defines the type of event handlers as
+defines the type of HTML event handlers as
 %
 \begin{curry}
-type HtmlHandler = CgiEnv -> IO HtmlForm
+type HtmlHandler = HtmlEnv -> IO HtmlPage
 \end{curry}
 %
-i.e., an event handler is called with the current CGI environment and
-yields an I/O action that returns a form to be sent back to the client.
+i.e., an event handler is called with the current HTML environment and
+yields an I/O action that returns a new HTML page to be sent back to the client.
 Thus, the library \code{HTML.Base} contains the following type definition
 for a button to submit forms:
 %
@@ -568,9 +591,9 @@ and the second argument is the event handler called when the user
 clicks this submit button.
 
 The actual event handlers can simply be defined as local functions
-attached to forms so that the \code{CgiRef} variables are in scope
+attached to forms so that the \code{HtmlRef} variables are in scope
 and need not be passed.
-To see a simple but complete example, we show the specification of
+To see a simple example, we show the specification of
 a form where the user can enter a string and choose between two
 actions (reverse or duplicate the string) by two submit buttons
 (see Figure~\ref{fig-revdup}) \proghref{revdup}{Program}:
@@ -583,305 +606,241 @@ actions (reverse or duplicate the string) by two submit buttons
 \end{figure}
 %
 \begin{curry}
-rdForm :: IO HtmlForm
-rdForm = return $ form "Question"
-           [htxt "Enter a string: ", textfield tref "", hrule,
-            button "Reverse string"   revhandler,
-            button "Duplicate string" duphandler]
+rdFormContents :: [HtmlExp]
+rdFormContents =
+  [htxt "Enter a string: ", textfield tref "", hrule,
+   button "Reverse string"   revhandler,
+   button "Duplicate string" duphandler]
  where
    tref free
 
-   revhandler env = return $ form "Answer"
+   revhandler env = return $ page "Answer"
      [h1 [htxt $ "Reversed input: " ++ reverse (env tref)]]
 
-   duphandler env = return $ form "Answer"
+   duphandler env = return $ page "Answer"
      [h1 [htxt $ "Duplicated input: " ++ env tref ++ env tref]]
-\end{curry} %$
+\end{curry}
 %
 Note the simplicity of retrieving values entered into the form:
 since the event handlers are called with the appropriate environment
 containing these values (parameter \ccode{env}),
 they can easily access these values
-by applying the environment to the appropriate CGI reference,
+by applying the environment to the appropriate HTML reference,
 like \ccode{(env tref)}.
 
+So far we have the definition of a form, but how can such forms
+be embedded in an HTML page?
+Note that a form has two different purposes:
+%
+\begin{enumerate}
+\item
+A form defines the layout and input fields shown to the user.
+\item
+A form defines the reaction via handlers when it is submitted.
+\end{enumerate}
+%
+For this purpose, the library \code{HTML.Base}
+distinguishes between a \emph{form definition} and
+its actual \emph{use}.
+For this purpose, forms must be defined as top-level entities
+(which will be compiled by \code{curry2cgi}).
+For this purpose, there is a constructor \code{simpleFormDef}
+(other constructors are shown later):
+%
+\begin{curry}
+simpleFormDef :: [HtmlExp] -> HtmlFormDef ()
+\end{curry}
+%
+This operation wraps a form layout, possibly containing
+input elements and event handlers, into a form definition
+(the type argument of \code{HtmlFormDef} will be discussed later).
+For instance, we turn our form above into a form definition by
+%
+\begin{curry}
+rdFormDef :: HtmlFormDef ()
+rdFormDef = simpleFormDef rdFormContents
+\end{curry}
+%
+A defined form can be embedded into an HTML page
+by wrapping the form definition with operation
+\begin{curry}
+formElem :: HtmlFormDef a -> BaseHtml
+\end{curry}
+Hence, the following code defines an HTML page
+containing our form:
+\begin{curry}
+rdPage :: IO HtmlPage
+rdPage = return $ page "String reverse/duplicate" [formElem rdFormDef]
+\end{curry} % $
+%
+By defining the form together with the various handlers
+in one top-level entity, forms are more reliable compared
+to a separate definition of HTML structures and scripts to process them.
+The advantage of distinguishing a form definition from its actual use
+is that we can use a form in any HTML document,
+in particular, recursively in the answer computed by an event handler.
+For instance, a form to compute the length of
+an input string and showing the form again in the answer can be defined
+as follows \proghref{stringlength}{Program}:
+\begin{curry}
+lengthForm = simpleFormDef
+  [htxt "Enter a string: ", textField ref "", button "Length"
+    (\env -> return $ page "Answer"
+               [h1 [htxt $ "Length: " ++ show (length (env ref))],
+                hrule, formElem lengthForm])]
+ where ref free
 
-\section{Further Examples for Web Server Programming}
-
-Now we have seen all elements for writing CGI programs
-in Curry.
-In this section we will show by various examples how to use
-this programming interface. We will see that this programming model
-(i.e., logic variables for CGI references,
-associated event handlers depending on CGI environments)
-is sufficient to solve typical problems in web server programming
-in an appropriate way, like
-handling sequences of interactions or
-holding intermediate states between interactions.
+main :: IO HtmlPage
+main = return $ headerPage "String length" [formElem lengthForm]
+\end{curry} % $
 
 
-\subsection{Interaction Sequences}
+\section{Stateful Forms}
 
-In the previous example, the interaction between the
-client and the web server is quite simple:
-the client sends a request by filling a form which is answered
-by the server with an HTML document containing the requested
-information. In realistic applications, it is often the case
-that the interaction is not finished by sending back the requested
-information but the client requests further (e.g., more detailed)
-information based on the received results. Thus, one
-has to deal with sequences of longer interactions between the
-client and the server.
+The simple HTML forms presented so far are quite limited.
+Form definitions are top-level entities so that their
+layout is fixed, i.e., they cannot show data
+from a possible usage context,
+e.g., database entities or authentication data.
+In order to make forms more flexible, it should be possible
+that forms access some state to be shown in the form.
+Such \emph{stateful forms} need only to read data,
+since the manipulation of data, e.g., updating a data base
+depending on the user input,
+is usually performed by the event handlers
+(therefore, event handlers are of type \code{IO}).
 
-Our programming model provides a direct support for
-interaction sequences. Since the answer provided by the event handler
-is an HTML form rather than an HTML expression,
-this answer can also contain further input elements
-and associated event handlers. By nesting event handlers,
-it is straightforward to implement bounded sequences of interactions.
-An example for this technique is shown in the next section.
+To support stateful forms, the library \code{HTML.Base}
+defines a monad \code{FormReader} with
+operations to read data (see below), i.e.,
+the \code{FormReader} monad is a restriction of the \code{IO} monad
+where only read operations are supported.\footnote{The restriction
+to read operations is necessary since forms might be executed
+several times, e.g., to construct the form layout,
+to start an event handler, or if the form
+has multiple occurrences in a web page.
+Thus, a form should not change the environment.
+Changes are only performed by the activation of some event handler.}
+Thus, a stateful form consists of a \code{FormReader} action
+to read data of some type \code{a} and an operation which maps
+values of this type into an HTML form.
+The library \code{HTML.Base} supports the definition
+of stateful forms by the form constructor operation
+%
+\begin{curry}
+formDef :: FormReader a -> (a -> [HtmlExp]) -> HtmlFormDef a
+\end{curry}
+%
+Therefore, an operation of type \code{HtmlFormDef$\;$a}
+specifies a form which reads some data of type \code{a}
+and use this data to generate the actual HTML form.
 
-A more interesting question is how to implement
-other control abstractions like arbitrary loops.
-For this purpose, we show the implementation of a simple
-number guessing game: the client has to guess a number
+In order to define a stateful form, we need an operation
+of type \code{FormReader$\;$a}.
+A difficulty in web programming is the fact that HTTP
+is a stateless protocol, i.e., each web page can be shown
+several times and there are no connections between different web pages
+to pass some state from one page to another.
+This problem is solved in typical web applications
+by a session concept where each user has its own session
+where session-local data can be stored,
+like the login name of a user or the contents of a virtual shopping basket.
+A session concept can be implemented via cookies to identify
+the client in a session.
+To hide the details of session handling,
+the package \code{html2} contains the library \code{HTML.Session}
+which provides the following operations (the type variable \code{a}
+denotes the type of session data):\label{sec:session}
+%
+\begin{curry}
+getSessionData    :: (Read a, Show a) => SessionStore a -> a -> FormReader a
+putSessionData    :: (Read a, Show a) => SessionStore a -> a -> IO ()
+removeSessionData :: (Read a, Show a) => SessionStore a -> IO ()
+\end{curry}
+%
+The type variable \code{a} specifies the type of session data.
+The class constraints \code{Read} and \code{Show} are required
+since the data is stored on the web server.
+\ccode{SessionStore$\;$a} is the type of a top-level entity
+referring to some memory cell containing session information of type \code{a}.
+\code{getSessionData} retrieves information of the current session
+(and returns the second argument if there is no information, e.g.,
+in case of a new session),
+\code{putSessionData} stores information in the current session,
+and \code{removeSessionData} removes such information.
+A session store containing data of type \code{a}
+can be defined in a Curry program as a top-level entity
+by using the constructor operation
+%
+\begin{curry}
+sessionStore :: (Read a, Show a) => String -> SessionStore a
+\end{curry}
+%
+The argument is a unique name (consisting of letters and digits)
+for the session store in the web application.\footnote{Session stores
+are implemented as persistent global entities, see Curry package \code{global},
+which are stored in the file system of the server.}
+
+In order to see an application of this concept,
+we implement a simple number guessing game:
+the client has to guess a number
 known by the server (here: \code{42}), and for each number entered
 by the client the server responds whether this number
-is right, smaller or larger than the number to be guessed.
+is correct, smaller or larger than the number to be guessed.
 If the guess is not right, the answer form contains an input
 field where the client can enter the next guess.
 Moreover, the number of guesses should also be counted
 and shown at the end.
-
-As the typical approach in declarative languages,
-we implement looping constructs by recursion.
-Thus, the event handler computing the answer for the client
-contains a recursive call to the initial form
-which implements the interaction loop.
-The entire implementation of this number guessing game
-is as follows \proghref{guess}{Program}:
+Hence, the session state contains the number of trials
+and is defined as
 %
 \begin{curry}
-guessForm :: IO HtmlForm
-guessForm = return \$ form "Number Guessing" (guessInput 1)
-
-guessInput :: Int -> [HtmlExp]
-guessInput n =
-  [htxt "Guess a natural number: ", textfield nref "",
-   button "Check" (guessHandler n nref)]   where nref free
-
-guessHandler :: Int -> CgiRef -> (CgiRef -> String) -> IO HtmlForm
-guessHandler n nref env =
-  return $ form "Answer" $
-    case reads (env nref) of
-      [(nr,"")] ->
-            if nr==42
-              then [h1 [htxt $ "Right! You needed "++show n++" guesses!"]]
-              else [h1 [htxt $ if nr<42 then "Too small!"
-                                        else "Too large!"],
-                    hrule] ++ guessInput (n+1)
-      _ -> [h1 [htxt "Illegal input, try again!"]] ++ guessInput n
+trials :: SessionStore Int
+trials = sessionStore "trials"
 \end{curry}
 %
-\ccode{guessInput n} is an HTML expression corresponding to
-the initial form which contains an
-input field for entering the client's guess.
-\ccode{guessHandler} is the associated event handler where the
-number of guesses and the
-CGI reference to the input field are the first and the second argument
-of the handler, respectively.
-It checks the number entered by the client
-(\code{reads}\pindex{reads} is defined in the standard prelude
-and used to parse a string into a value)
-and returns the different answers depending on the client's guess.
-If the guess is not right, the \code{guessInput} is appended
-to the answer which implements the recursive call.
-
-
-\subsection{Handling Intermediate States}
-\label{sec-intermediate-state}
-
-A nasty problem in many CGI applications is the handling
-of intermediate states due to the fact that HTTP is a stateless
-protocol. For instance, in electronic commerce applications,
-the clients have shopping baskets where
-the already selected items are stored, and the contents of
-these baskets must be kept between the interactions.
-Storing this information on the server side
-has several drawbacks. For instance, the client
-wants to identify himself only after he really orders
-the items, i.e., during the selection phase the server
-cannot uniquely associate the selections to a client.
-Furthermore, the client might not proceed with his selections
-so that the server does not know whether
-the basket information can be deleted (which is necessary
-at some point to avoid a memory overflow).
-Therefore, it is often better to store such client-dependent
-information on the client side. For this purpose,
-one can have HTML forms with input elements of type \ccode{hidden}
-which have no visual representation but can be used
-to pass client-dependent information between interactions.
-``Raw'' HTML/CGI programmers must explicitly handle
-these fields which is awkward and a source of many
-programming problems.
-
-Our programming model offers a much simpler solution
-to this problem. By nesting event handlers
-(which is allowed in languages with lexical scoping like Curry),
-one can directly refer to input elements in previous forms.
-As a concrete example, we consider
-a sequence of HTML forms where the client enters
-his first name in the first form and his last name in the second form.
-The complete name is returned in the third form.
-This example can be implemented as follows
-\proghref{state}{Program}:
+The form definition consists of an action that reads the current
+session data and the HTML form for this data \proghref{guess}{Program}:
 %
 \begin{curry}
-nameForm = return $ form "First Name Form"
-  [htxt "Enter your first name: ", textfield firstref "",
-   button "Continue" fhandler]
+guessForm :: HtmlFormDef Int
+guessForm = formDef (getSessionData trials 1) guessFormHtml
+
+guessFormHtml :: Int -> [HtmlExp]
+guessFormHtml t =
+  [htxt "Guess a number: ", textField nref "",
+   button "Check" guessHandler]
  where
-   firstref free
+  nref free
 
-   fhandler _ = return $ form "Last Name Form"
-                  [htxt "Enter your last name: ", textfield lastref "",
-                   button "Continue" lhandler]
-     where
-       lastref free
-
-       lhandler env = return $ form "Answer"
-                        [htxt $ "Hi, " ++ env firstref ++ " " ++ env lastref]
-\end{curry}
+  guessHandler env = do
+    let n = read (env nref)
+    if n==42
+      then do
+        removeSessionData trials
+        return $ headerPage ("Correct! " ++ show t ++ " guesses!") []
+      else do
+        putSessionData trials (t+1)
+        return $ headerPage ("Too " ++ if n<42 then "small!" else "large!")
+               [formElem guessForm ]
+\end{curry} % $
 %
-Due to lexical scoping, the variable \ccode{firstref}
-is visible in the event handler \ccode{lhandler} without explicitly
-passing it as an argument.
+The form handler reads the user input from the HTML environment
+(one could add an additional check whether the input is a number string)
+and compares it with the ``secret'' number.
+If it is equal, the session data is removed before returning the answer,
+otherwise the session data is updated
+so that the next form invocation gets the updated data.
 
 
-\subsection{Storing Information on the Server}
+\section{Example: A Web Questionnaire}
 
-We have seen how we can retrieve information from the server
-by CGI programs. This is possible by performing I/O actions
-on the server before computing the HTML form as the response to
-the client. In many applications, clients also want to store
+In many web applications, clients want to store
 or update information on the server, e.g., by putting orders
 for books, flight tickets, etc.
-In this section we will see a small example that demonstrates
-how this can be done using the already known techniques.
+In this section we show an example where a client
+can change persistent data stored on the web server.
 
-Consider the implementation of a web form that counts
-and shows the number of visitors. Thus, each visitor
-updates the current visitor counter on the server.
-This can be easily implemented by storing the current
-visitor number in a file.
-For this purpose, we define an I/O action \ccode{incVisitNumber}
-that reads the number stored in this file, increments it,
-stores the incremented number
-in the file, and returns the incremented number
-(\code{doesFileExist}\pindex{doesFileExist},
-\code{removeFile}\pindex{removeFile}, and
-\code{renameFile}\pindex{renameFile} are
-I/O operations defined in the library \code{Directory}
-to check the existence of a file, delete a file, and
-rename a file, respectively):\label{sec-overwriteVisitFile}
-%
-\begin{curry}
-incVisitNumber :: IO Int
-incVisitNumber = do
- existnumfile <- doesFileExist visitFile
- if existnumfile
-   then do vfcont <- readFile visitFile
-           overwriteVisitFile (read vfcont + 1)
-   else do writeFile visitFile "1"
-           return 1
-
-overwriteVisitFile :: Int -> IO Int
-overwriteVisitFile n = do
-  writeFile (visitFile++".new") (show n)
-  removeFile visitFile
-  renameFile (visitFile ++ ".new") visitFile
-  return n
-
-visitFile :: String
-visitFile = "numvisit"  -- file to store the current visitor number
-\end{curry}
-%
-Note the definition of \code{overwriteVisitFile}:
-it does not directly write the incremented number
-into the \code{visitFile} but it writes it into another file that is
-subsequently renamed to the \code{visitFile}.
-This is necessary to avoid the overlapping of reading and writing actions
-on the same file due to the lazy evaluation of \code{readFile}.
-
-Now the visitor form is simply obtained by calling \code{incVisitNumber}
-before generating the form
-\proghref{visitor}{Program}:
-%
-\begin{curry}
-visitorForm = do
-  visitnum <- incVisitNumber
-  return $ form "Access Count Form"
-           [h1 [htxt $ "You are the " ++ show visitnum ++ ". visitor!"]]
-\end{curry}
-
-
-\subsection{Ensuring Exclusive Access}
-\label{sec-exclusiveIO}
-
-Since CGI programs are executed whenever a client accesses them,
-one has not much control on the order of their execution.
-In particular, the same CGI program can be executed
-in parallel if two clients accessing them simultaneously.
-This can cause a problem if both update the same information.
-For instance, an access to the visitor form above
-reads the current visitor number from the global \code{visitFile}
-and write the incremented number back.
-If the script is simultaneously executed by two clients,
-it may be the case that one update is lost (if both read the same
-number and write the same incremented number).
-
-Multiple simultaneous accesses or updates can be avoided
-by ensuring the exclusive access to a resource on the web server
-between different processes running on the server.
-Although Curry has no direct features to support this,\footnote{%
-It could be implemented in Curry by the use of ports but this
-will be discussed later.}
-it can be implemented by the use of the underlying
-operating system. For instance, Unix/Linux systems
-offer the command \ccode{lockfile} to ensure
-an exclusive access to a resource of the system.
-\code{lockfile} tries to create
-a given file (the argument to \code{lockfile}).
-If the file cannot be created (since it has been already created
-by another process), the \code{lockfile} command waits
-and retries after some time.
-Using \code{lockfile}, we can implement a generic function
-\ccode{exclusiveIO} that takes a name for a global lock file
-and exclusively executes an I/O action (the second parameter),
-i.e., it ensures that two processes using the same lock file
-do not execute the action at the same time:
-%
-\begin{curry}
-exclusiveIO :: String -> IO a -> IO a
-exclusiveIO lockfile action = do
-  system ("lockfile " ++ lockfile)
-  actionResult <- action
-  system ("rm -f " ++ lockfile)
-  return actionResult
-\end{curry}
-%
-Now it is straightforward to extend our visitor form
-in order to ensure the exclusive update of the visitor counter.
-This is done by replacing the expression \code{incVisitNumber}
-in the definition of \code{visitorForm} by the following
-expression \proghref{exclusive}{Program}:
-%
-\begin{curry}
-exclusiveIO (visitFile ++ ".lock") incVisitNumber
-\end{curry}
-
-
-\subsection{Example: A Web Questionnaire}
 
 \begin{figure}[t]
 \begin{center}
@@ -890,8 +849,6 @@ exclusiveIO (visitFile ++ ".lock") incVisitNumber
 \caption{A web questionnaire\label{fig-quest}}
 \end{figure}
 
-This section shows an example for web programming
-where the formerly discussed techniques are applied.
 Consider the implementation of a web-based questionnaire
 which allows the clients to vote on a particular topic.
 Figure~\ref{fig-quest} shows an example of such a questionnaire.
@@ -911,8 +868,10 @@ we define the main question and the choices for the answers
 as constants in our program so that they can be easily adapted
 to other questionnaires:
 \begin{curry}
+question :: String
 question = "Who is your favorite actress?"
 
+choices :: [String]
 choices = ["Doris Day", "Jodie Foster", "Marilyn Monroe",
            "Julia Roberts", "Sharon Stone", "Meryl Streep"]
 \end{curry}
@@ -921,6 +880,7 @@ The current votes are stored in a file on the web server.
 We define the name of this file as a constant in our program:
 %
 \begin{curry}
+voteFile :: String
 voteFile = "votes.data"
 \end{curry}
 %
@@ -928,39 +888,38 @@ For the sake of simplicity, this file is a simple text file.
 If there are $n$ choices for voting, the file has $n$ lines
 where each line contains the textual representation of the
 number of votes for the corresponding choice.
-Thus, the following function defines an action that reads
+Thus, the following operation reads
 the vote file and returns the list of numbers in this file
+or, if the file does not exist, initializes the vote file
+and returns zeros
 (the prelude function \code{lines}\pindex{lines} breaks
-a string into a list of lines where lines are separated by newline
-characters):
+a string into a list of lines, where lines are separated by newline
+characters, and the opposite function \code{unlines}\pindex{unlines}
+concatenates a list of strings into lines).
 %
 \begin{curry}
 readVoteFile :: IO [Int]
 readVoteFile = do
-  vfcont <- readFile voteFile
-  return (map read (lines vfcont))
+  existnumfile <- doesFileExist voteFile
+  if existnumfile
+    then do vfcont <- readFile voteFile
+            return (map read (lines vfcont))
+    else do let nums = take (length choices) (repeat 0)
+            writeFile voteFile (unlines (map show nums))
+            return nums
 \end{curry}
 %
-To initialize the vote file, we define an action \code{initVoteFile}
-that initializes the vote file with \code{n} zeros if it does not exist.
-The prelude function \code{unlines}\pindex{unlines}
-is the opposite of \code{lines} and concatenates a list of strings
-into one string by inserting newline characters.
-%
-\begin{curry}
-initVoteFile :: Int -> IO ()
-initVoteFile n = do
-  existnumfile <- doesFileExist voteFile
-  unless existnumfile $
-    writeFile voteFile (unlines (map show (take n (repeat 0))))
-\end{curry} %$
-%
 To update the vote file, we define \code{overwriteVoteFile}
-that writes a list of
-numbers into the vote file. Similarly to the definition of
-\code{overwriteVisitFile} in Section~\ref{sec-overwriteVisitFile},
-the numbers are written into a new file that is moved to the vote file
+that writes a list of numbers into the vote file.
+The numbers are written into a new file that is moved to the vote file
 in order to avoid an overlapping between reading and writing the same file.
+\code{doesFileExist}\pindex{doesFileExist},
+\code{removeFile}\pindex{removeFile}, and
+\code{renameFile}\pindex{renameFile} are
+I/O operations defined in the library \code{System.Directory}
+(from package \code{directory})
+to check the existence of a file, delete a file, and
+rename a file, respectively.
 %
 \begin{curry}
 overwriteVoteFile :: [Int] -> IO ()
@@ -970,36 +929,30 @@ overwriteVoteFile nums = do
   renameFile (voteFile ++ ".new") voteFile
 \end{curry}
 %
-When a client submits a vote, we have to increment to corresponding
-number in the vote file. This can be easily done by a sequence of
-actions that initialize the vote file (if necessary), read the current
-votes and write the votes that are incremented by the function
-\code{incNth}:
+When a client submits a vote, we have to increment the corresponding
+number in the vote file. This can be easily done by
+reading the current votes and writing the votes
+that are incremented by the auxiliary function \code{incNth}:
 \begin{curry}
 incNumberInFile :: Int -> IO ()
-incNumberInFile n = do
-  initVoteFile (length choices)
+incNumberInFile voteindex = do
   nums <- readVoteFile
-  overwriteVoteFile (incNth nums n)
-
-incNth :: [Int] -> Int -> [Int]
-incNth []     _ = []
-incNth (x:xs) n | n==0      = (x+1) : xs
-                | otherwise = x : incNth xs (n-1)
+  overwriteVoteFile (incNth nums voteindex)
+ where
+  incNth []     _             = []
+  incNth (x:xs) n | n==0      = (x+1) : xs
+                  | otherwise = x : incNth xs (n-1)
 \end{curry}
 %
 Now we have all auxiliary definitions that are necessary to define
 the web script. First, we show the definition of
-the HTML form \ccode{evalForm} that shows the current votes
+the HTML page \ccode{evalPage} that shows the current votes
 (which produces the result shown in Figure~\ref{fig-quest-answer}).
-Note that we ensure the exclusive access to the vote file
-by the use of the function \ccode{exclusiveIO} defined in
-Section~\ref{sec-exclusiveIO}
-(the prelude function \ccode{zip}\pindex{zip} joins two lists
-into one list of pairs of corresponding elements):
+The prelude function \ccode{zip}\pindex{zip} joins two lists
+into one list of pairs of corresponding elements.
 \begin{curry}
-evalForm :: IO HtmlForm
-evalForm = do
+evalPage :: IO HtmlPage
+evalPage = do
   votes <- exclusiveIO (voteFile ++ ".lock") readVoteFile
   return $ form "Evaluation"
    [h1 [htxt "Current votes:"],
@@ -1007,36 +960,57 @@ evalForm = do
                (zip choices votes))]
 \end{curry}
 %
-Now we can define our main form that allows the user to submit a
+Note that we ensure the exclusive access to the vote file
+by the use of the operation \code{exclusiveIO}.\footnote{The
+operation \code{exclusiveIO} is defined in the library \code{System.IOExts}
+contained in the package \code{io-extra}.}
+This is necessary since there is not much control on the
+access to web pages by clients.
+In particular, the same CGI program might be executed
+in parallel if two clients accessing them simultaneously.
+This can cause problems if both read and update the same information.
+Thus, it is mandatory to ensure exlusive data access
+in web applications which might change data.
+If the data is stored in files, it must be manually done, as above.
+If the data is stored in databases, the database system ensures
+the exclusive access but one has to take care
+on the definition of transations.
+
+Now we can define our form that allows the user to submit a
 vote (see Figure~\ref{fig-quest}).
 It uses radio buttons as input elements.
 \label{radio button}\index{button!radio}
 Radio buttons are lists of buttons where exactly one button
-can be turned on. Thus, all buttons have the same CGI reference
-but different values. When a form is submitted, the CGI environment
-maps the CGI reference to the value of the selected radio button.
+can be turned on. Thus, all buttons have the same HTML reference
+but different values. When a form is submitted, the HTML environment
+maps the HTML reference to the value of the selected radio button.
 A complete radio button suite consists always of a main button
-(\code{radio_main}) which is initially on and some further buttons
-with the same CGI reference as the main button (\code{radio_others})
+(\code{radioMain}) which is initially on and some further buttons
+with the same HTML reference as the main button (\code{radioOthers})
 that are initially off.
 In our example, we associate to each button the index of the corresponding
 choice as a value. The event handler \code{questHandler}
 increments he appropriate vote number and returns the current votes
-with the form \code{evalForm}
+by the use of \code{evalPage}
 \proghref{questionnaire}{Program}:
 \begin{curry}
-questForm = return $ form "Vote Form" $
+questForm :: HtmlFormDef ()
+questForm = simpleFormDef $
   [h1 [htxt question],
-   radio_main vref "0", htxt (' ':head choices), breakline] ++
-  concatMap (\(i,s) -> [radio_other vref (show i), htxt (' ':s), breakline])
-            (zip [1..] (tail choices)) ++
-  [hrule, button "submit" questHandler]
+   radioMain vref "0", htxt (head choices), breakline] ++
+   concatMap (\(i,s) -> [radioOther vref (show i), htxt s, breakline])
+             (zip [1..] (tail choices)) ++
+   [hrule, button "submit" questHandler]
  where
    vref free
 
    questHandler env = do
-     exclusiveIO (voteFile ++ ".lock") (incNumberInFile (read (env vref)))
-     evalForm
+     exclusiveIO (voteFile ++ ".lock")
+                 (incNumberInFile (read (env vref)))
+     evalPage
+
+main :: IO HtmlPage
+main = return $ page "Vote Form" [formElem questForm]
 \end{curry}
 
 
@@ -1102,145 +1076,11 @@ or add some debug output, as described above, to your script.
 
 This section discusses some further features which are useful
 for writing web applications in Curry.
+\emph{URL parameters} can be exploited to write generic web scripts.
 \emph{Cookies} are useful to store information about the client
 between different web scripts.
-\emph{URL parameters} can be exploited to write generic web scripts.
 \emph{Style sheets} can be used to modify and add new presentation styles
 for web documents.
-
-
-\subsection{Cookies}
-
-Cookies\index{cookie} are small pieces of information
-(represented by strings) that are stored on the client's machine
-when a client communicates to a web server via his browser.
-The web server can sent cookies to the client together
-with a requested web document. If the client wants to retrieve
-the same or another document from the web server, the client's browser
-sends the stored cookies together with the request for a document
-to the browser.
-Thus, cookies can be used to identify the client during a longer
-interaction with the web server (also across various web scripts
-stored on the same web browser).
-Cookies are another approach to handle intermediate state
-in web applications. The technique presented in
-Section~\ref{sec-intermediate-state} is only useful
-inside the same web script whereas cookies can be used
-as a link between different web scripts.
-However, cookies need special support on the browser's side
-and the client must enable cookies in his web browser.
-Fortunately, most web browsers support cookies
-since they are used in many web sites.
-
-Basically, a cookie has a name and a value.
-Both parameters are of type string.
-Cookies can also have additional parameters to control their
-lifetime, validity for different web servers or regions
-on a web server etc (see definition of datatype
-\ccode{CookieParam} in the library \code{HTML.Base}) which we will not describe
-here. As the default, a cookie is a valid during the client's
-browser session for all documents in the same directory or
-a subdirectory in which the cookie was set.
-
-The library \code{HTML.Base} provides two functions to set
-and retrieve cookies.
-As described above, a cookie is set by sending it with some
-web document. For doing so, there is the function\pindex{cookieForm}
-%
-\begin{curry}
-cookieForm :: String -> [(String,String)] -> [HtmlExp] -> HtmlForm
-\end{curry}
-%
-which behaves similarly to the function \ccode{form} but
-takes an additional parameter: a list of cookies, i.e.,
-name/value pairs. These cookies are submitted with the form
-to the client's browser. To retrieve cookies (that are previously sent
-with a \ccode{cookieForm}), there is an I/O action\pindex{getCookies}
-%
-\begin{curry}
-getCookies :: IO [(String,String)]
-\end{curry}
-%
-that returns the list of all cookies (i.e., name/value pairs)
-sent from the browser for the current CGI script.
-
-As a simple example, we want to use cookies to write a web application
-where a user must identify himself and this identification is used
-in another independent script. The identification is done
-by setting a cookie of the form \code{("LOGINNAME",<name>)}
-where \code{<name>} is the user's name.
-We implement a ``login form'' that sets this cookie as follows
-\proghref{logincookie}{Program}:
-\begin{curry}
-loginForm = return $ form "Login"
-  [htxt "Enter your name: ", textfield tref "",
-   hrule,
-   button "Login" handler
-  ]
- where
-   tref free
-
-   handler env = return $
-     cookieForm "Logged In"
-                [("LOGINNAME",env tref)]
-                [h2 [htxt \$ env tref ++ ": thank you for visiting us"]]
-\end{curry}
-The first form asks the user for his name.
-The cookie is set together with the acknowledgment form
-(function \ccode{handler}).
-
-Now we can write another web script that uses this cookie.
-This script shows the user's name or the string
-\code{"Not yet logged in"} if the user has not used the
-login form to set the cookie.
-Using the function \code{getCookies}, the implementation
-is quite simple (the function \code{lookup}\pindex{lookup}, defined in the
-prelude, searches for a name in a name/value list;
-it returns \ccode{Nothing} of the name was not found and
-\ccode{Just v} if the first occurrence of the name in the list
-has the associated value \code{v}; the prelude function
-\code{maybe}\pindex{maybe} processes these two cases)
-\proghref{logincookie}{Program}:
-\begin{curry}
-getNameForm = do
-  cookies <- getCookies
-  return $ form "Hello" $
-   maybe [h1 [htxt "Not yet logged in"]]
-         (\n -> [h1 [htxt $ "Hello, " ++ n]])
-         (lookup "LOGINNAME" cookies)
-\end{curry} %$
-%
-As mentioned above, cookies need special support on the client's
-side, i.e., the web browser of the client must support cookies.
-If cookies are essential for an application, one should check
-whether the client allows the setting of cookies.
-This can be done by trying to set a cookie and by checking
-whether this was successful. For instance, one can modify
-the above login script as folllows.
-The first form immediately sets a cookie with name \ccode{SETCOOKIE}.
-Then the handler checks whether this cookie has been sent by the
-client's browser. If this cookie is not received, it returns a form
-with the message ``Sorry, can't set cookies.'' instead of the
-acknowledgment form which sets the cookie \ccode{LOGINNAME}
-\proghref{checkcookie}{Program}:
-\begin{curry}
-loginForm = return $ cookieForm "Login" [("SETCOOKIE","")]
-  [htxt "Enter your name: ", textfield tref "",
-   hrule,
-   button "Login" handler
-  ]
- where
-   tref free
-
-   handler env = do
-     cookies <- getCookies
-     return $
-       if lookup "SETCOOKIE" cookies == Nothing
-         then form "No cookies" [h2 [htxt "Sorry, can't set cookies."]]
-         else cookieForm "Logged In"
-                         [("LOGINNAME", env tref)]
-                         [h2 [htxt $ env tref ++ ": thank you for visiting us"]]
-\end{curry} %$
 
 
 \subsection{URL Parameters}
@@ -1267,7 +1107,7 @@ getUrlParameter :: IO String
 \end{curry}
 %
 which returns the part of the URL following the character \ccode{?}.
-Note that an URL parameter should be ``URL encoded'' to avoid
+Note that a URL parameter should be ``URL encoded'' to avoid
 the appearance of characters with a special meaning.
 The library \code{HTML.Base} provides the functions
 \code{urlencoded2string} and \code{string2urlencoded}
@@ -1284,24 +1124,25 @@ a mapping from elements into actions to all elements of a list
 and collect all results in a list):
 %
 \begin{curry}
-showDirForm = do
+showDirPage :: IO HtmlPage
+showDirPage = do
   param <- getUrlParameter
-  let dir = if param=="" then "." else urlencoded2string param
+  let dir = if null param then "." else urlencoded2string param
   entries <- getDirectoryContents dir
   hexps <- mapM (entry2html dir) entries
-  return $ form "Browse Directory"
+  return $ page "Browse Directory"
                 [h1 [htxt $ "Directory: " ++ dir], ulist hexps]
 \end{curry}
 %
 The I/O action \code{getDirectoryContents}\pindex{getDirectoryContents}
-is defined in the system library \code{Directory}
+is defined in the library \code{System.Directory} (in package \code{directory})
 and returns the list of all entries in a directory.
 The function \code{entry2html} checks for an entry whether it
 is a directory. If this is the case, it returns a link to
 the same web script but with an extended parameter, otherwise
 it simply returns the entry name as an HTML text
 (\code{doesDirectoryExist}\pindex{doesDirectoryExist}
-is defined in the library \code{Directory} and returns \code{True}
+is defined in the library \code{System.Directory} and returns \code{True}
 if the argument is the name of a directory):
 %
 \begin{curry}
@@ -1309,20 +1150,166 @@ entry2html :: String -> String -> IO [HtmlExp]
 entry2html dir e = do
   direx <- doesDirectoryExist (dir ++ "/" ++ e)
   if direx
-   then return [href ("browsedir.cgi?" ++ string2urlencoded (dir ++ "/" ++ e))
+   then return [href ("?" ++ string2urlencoded (dir ++ "/" ++ e))
                      [htxt e]]
    else return [htxt e]
 \end{curry}
+
+
+\subsection{Cookies}
+
+Cookies\index{cookie} are small pieces of information
+(represented by strings) that are stored on the client's machine
+when a client communicates to a web server via his browser.
+The web server can sent cookies to the client together
+with a requested web document. If the client wants to retrieve
+the same or another document from the web server, the client's browser
+sends the stored cookies together with the request for a document
+to the browser.
+Thus, cookies can be used to identify the client during a longer
+interaction with the web server (also across various web scripts
+stored on the same web browser).
+Hence, cookies are used to implement session data
+as described in Section~\ref{sec:session}.
+In this section, we describe more details about cookies
+if one is interested to implement his own session handling.
+
+Basically, a cookie has a name and a value.
+Both parameters are of type string.
+Cookies can also have additional parameters to control their
+lifetime, validity for different web servers or regions
+on a web server etc (see definition of datatype
+\code{CookieParam} in the library \code{HTML.Base}) which we will not describe
+here. As the default, a cookie is a valid during the client's
+browser session for all documents in the same directory or
+a subdirectory in which the cookie was set.
+
+The library \code{HTML.Base} provides two functions to set
+and retrieve cookies.
+As described above, a cookie is set by adding it with some
+web page. For doing so, there is the function\pindex{addCookies}
 %
+\begin{curry}
+addCookies :: [(String,String)] -> HtmlPage -> HtmlPage
+\end{curry}
+%
+which adds a list of cookies, i.e., name/value pairs, to a web page.
+These cookies are submitted with the page to the client's browser.
+To retrieve cookies (that are previously sent),
+there is an I/O action\pindex{getCookies}
+%
+\begin{curry}
+getCookies :: IO [(String,String)]
+\end{curry}
+%
+that returns the list of all cookies (i.e., name/value pairs)
+sent from the browser for the current HTML page.
+
+As a simple example, we want to use cookies to write a web application
+where a user must identify himself and this identification is used
+in another independent script. The identification is done
+by setting a cookie of the form \code{("LOGINNAME",<name>)}
+where \code{<name>} is the user's name.
+We implement a ``login form'' that sets this cookie as follows
+\proghref{logincookie}{Program}:
+%
+\begin{curry}
+loginForm :: HtmlFormDef ()
+loginForm = simpleFormDef
+  [htxt "Enter your name: ", textField tref "",
+   hrule,
+   button "Login" handler
+  ]
+ where
+   tref free
+
+   handler env = return $
+     addCookies [("LOGINNAME", env tref)] $
+       page "Logged In"
+            [h2 [htxt $ env tref ++ ": thank you for visiting us"]]
+
+-- A web page containing the login form:
+loginPage :: IO HtmlPage
+loginPage = return $ page "Login" [formElem loginForm]
+\end{curry}
+%
+First, the form asks the user for his name.
+The cookie is set together with the acknowledgment page
+(defined in function \ccode{handler}).
+
+Now we can write another web script that uses this cookie.
+This script shows the user's name or the string
+\code{"Not yet logged in"} if the user has not used the
+login form to set the cookie.
+Using the function \code{getCookies}, the implementation
+is quite simple (the function \code{lookup}\pindex{lookup}, defined in the
+prelude, searches for a name in a name/value list;
+it returns \ccode{Nothing} of the name was not found and
+\ccode{Just v} if the first occurrence of the name in the list
+has the associated value \code{v}; the prelude function
+\code{maybe}\pindex{maybe} processes these two cases)
+\proghref{logincookie}{Program}:
+\begin{curry}
+getNamePage :: IO HtmlPage
+getNamePage = do
+  cookies <- getCookies
+  return $ page "Hello" $
+    maybe [h1 [htxt "Not yet logged in"]]
+          (\n -> [h1 [htxt $ "Hello, " ++ n]])
+          (lookup "LOGINNAME" cookies)
+\end{curry} %$
+%
+As mentioned above, cookies need special support on the client's
+side, i.e., the web browser of the client must support cookies.
+If cookies are essential for an application, one should check
+whether the client allows the setting of cookies.
+This can be done by trying to set a cookie and by checking
+whether this was successful. For instance, one can modify
+the above login script as folllows.
+The first page immediately sets a cookie with name \ccode{SETCOOKIE}.
+Then the handler checks whether this cookie has been sent by the
+client's browser. If this cookie is not received, it returns a page
+with the message ``Sorry, can't set cookies.'' instead of the
+acknowledgment page which sets the cookie \ccode{LOGINNAME}
+\proghref{checkcookie}{Program}:
+\begin{curry}
+loginPage :: IO HtmlPage
+loginPage = return $
+  addCookies [("SETCOOKIE","")] $ page "Login" [formElem loginForm]
+
+loginForm :: HtmlFormDef ()
+loginForm = simpleFormDef
+  [htxt "Enter your name: ", textField tref "",
+   hrule,
+   button "Login" handler
+  ]
+ where
+   tref free
+
+   handler env = do
+     cookies <- getCookies
+     return $
+       maybe (page "No cookies" [h2 [htxt "Sorry, can't set cookies."]])
+             (\_ -> addCookies [("LOGINNAME",env tref)] $ page "Logged In"
+                    [h2 [htxt $ env tref ++ ": thank you for visiting us"]])
+             (lookup "SETCOOKIE" cookies)
+\end{curry}
 
 
 \subsection{Style Sheets}
 
-\todo{To be completed.}
-
+The library \code{HTML.Base} provides various operations to add
+style sheets to web pages (\code{pageCSS}) or to add
+style classes to individual elements
+(e.g., \code{style}, \code{textstyle}, \code{blockstyle}).
+The package \code{html2} also contains libraries
+to use \href{https://getbootstrap.com/}{Bootstrap} renderings
+in web pages, see library
+\href{https://cpm.curry-lang.org/DOC/html2-3.5.0/HTML.Styles.Bootstrap4.html}{HTML.Styles.Bootstrap4}
+for more details.
 
 %%% Local Variables: 
 %%% mode: latex
 %%% TeX-master: "main_pdf"
 %%% End: 
-% LocalWords:  HTML CGI URL
+% LocalWords:  HTML CGI URL stateful
