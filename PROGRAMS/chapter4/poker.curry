@@ -1,6 +1,5 @@
 {-# OPTIONS_CYMAKE -F --pgmF=currypp --optF=defaultrules #-}
 {-# OPTIONS_CYMAKE -Wnone #-} -- no warnings
-import Control.Search.SetFunctions -- for using default rules
 
 ----------------------------------------------------------------------
 -- imported from Cards:
