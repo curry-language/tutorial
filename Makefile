@@ -84,7 +84,7 @@ clean:
 
 
 # put the current version of the PDF and all programs into my web pages:
-WEBDIR=$(HOME)/public_html/curry/tutorial
+WEBDIR=$(HOME)/public_html/curry-lang.org/docs/tutorial
 .PHONY: publish
 publish: $(MAINPDF).pdf $(HTMLINDEX) index.html
 	cp index.html $(WEBDIR)
