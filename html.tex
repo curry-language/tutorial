@@ -469,7 +469,7 @@ Similarly, the option \ccode{-o} can be used to install the CGI program
 under a different name. For instance, the command
 %
 \begin{verbatim}
-   > curry-makecgi -o ~/cgi-bin/myscript.cgi -m myForm myscript
+   > curry2cgi -o ~/cgi-bin/myscript.cgi -m myForm myscript
 \end{verbatim}
 %
 installs the executable CGI program
@@ -546,7 +546,7 @@ For instance, a form containing a string
 and an input field can be defined as follows:
 %
 \begin{curry}
-rdForm = [htxt "Enter a string: ", textfield tref ""]
+rdForm = [htxt "Enter a string: ", textField tref ""]
  where tref free
 \end{curry} %$
 %
@@ -608,7 +608,7 @@ actions (reverse or duplicate the string) by two submit buttons
 \begin{curry}
 rdFormContents :: [HtmlExp]
 rdFormContents =
-  [htxt "Enter a string: ", textfield tref "", hrule,
+  [htxt "Enter a string: ", textField tref "", hrule,
    button "Reverse string"   revhandler,
    button "Duplicate string" duphandler]
  where
@@ -1036,22 +1036,6 @@ hPutStrLn stderr "A log message"
 %
 (where \code{hPutStrLn} and \code{stderr} are defined
 in the standard library \code{IO}).
-
-% If the execution of the CGI program does not produce a run-time error
-% but simply fails (e.g., because of an incompletely defined function
-% are a unification failure), you will probably see the message
-% \ccode{No more solutions} in the web browser instead of the
-% expected HTML document. For the purpose of debugging,
-% it is often useful to see the subexpressions where a
-% reduction was not possible but failed. In this case,
-% you can  generate the CGI program by \ccode{makecurrycgi}\pindex{makecurrycgi}
-% with the option \ccode{-debug}.
-% This has the effect that some debugging code is inserted in the CGI
-% program so that you can see the trace of all failed subexpressions
-% in the browser (not formatted with HTML so that you should better
-% view the source with your browser). Note that the debug option
-% produces less efficient CGI programs so that it is better to
-% use this option only when necessary.
 
 The use of logic variables as references to input elements
 in HTML forms ensures that typos in the name of references

@@ -83,7 +83,8 @@ clean:
 	/bin/mv $(MAINHTML).texx $(MAINHTML).tex
 
 
-# put the current version of the PDF and all programs into my web pages:
+# put the current version of the PDF and all programs into the web page
+# available as www.curry-lang.org
 WEBDIR=$(HOME)/public_html/curry-lang.org/docs/tutorial
 .PHONY: publish
 publish: $(MAINPDF).pdf $(HTMLINDEX) index.html
