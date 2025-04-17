@@ -9,6 +9,6 @@
     "dependencies": {
         "base"      : ">= 3.0.0, < 4.0.0",
         "directory" : "^ 3.0.0",
-        "html2"     : "^ 3.0.0"
+        "url-base"  : "^ 0.1.0"
     }
 }

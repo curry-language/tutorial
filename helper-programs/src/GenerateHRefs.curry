@@ -3,11 +3,11 @@
 --- into a LaTeX macro.
 ---
 --- @author Michael Hanus
---- @version April 2021
+--- @version April 2025
 ----------------------------------------------------------------
 
 import Data.List        ( isPrefixOf, isSuffixOf )
-import HTML.Base        ( string2urlencoded )
+import Network.URL      ( string2urlencoded )
 import System.Directory ( doesDirectoryExist, doesFileExist
                         , getDirectoryContents )
 
@@ -39,7 +39,7 @@ getCurryFiles dir =
 
 -- The base URL of Smap:
 smapBaseURL :: String
-smapBaseURL = "https://smap.informatik.uni-kiel.de/smap.cgi"
+smapBaseURL = "https://smap.curry-lang.org/smap.cgi"
 --smapBaseURL = "http://localhost/mh/smap/smap.cgi"
 
 -- The default programming language for uploaded programs:
