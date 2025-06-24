@@ -514,10 +514,11 @@ and is typically denoted $\funset f$.\index{set function}
 For example, given:
 %
 \begin{curry}
-f x = x ? x+1
+idOrInc :: Int -> Int
+idOrInc x = x ? x+1
 \end{curry}
 %
-the value of \code{\funset{f} x} is the set \code{\{x,x+1\}}
+the value of \code{\funset{idOrInc} x} is the set \code{\{x,x+1\}}
 where the details of the representation of this set are irrelevant to our
 discussion.
 
@@ -525,7 +526,7 @@ The definition of the set function of a function $f$
 separates the non-determinism of $f$ from any non-determinism
 of the arguments to which $\funset{f}$ is applied \cite{AntoyHanus09PPDP}.
 In particular, $\funset{f}$ is deterministic for any $f$.
-Referring to the example above, \code{\funset{f} (2\,?\,4)} evaluates
+Referring to the example above, \code{\funset{idOrInc} (2\,?\,4)} evaluates
 to \code{\{2,3\}} and \code{\{4,5\}} in which the non-determinism
 originates entirely from the argument.
 
@@ -533,18 +534,27 @@ To ease the definition of set functions,
 there is a library\index{set function!library}
 \code{Control.Search.SetFunctions}.
 This library defines both a suitable abstraction of a type \emph{set}
-to represent the results of a set function application, and
+to represent the results of a set function application,
+denoted \code{Values$\;\tau$} (where $\tau$ is the type of elements
+in the set), and
 a family of functions \code{set0}, \code{set1}, $\ldots$~
 Gives a function $f$ of arity $n$,
 the set function of $f$ is provided by the expression \code{set$n$ $f$}.
 The first argument of \code{set$n$} must be the \emph{identifier}
 of a function of arity $n$.
-
+For instance, we can write the set function \code{\funset{idOrInc}}
+with this library as \code{set1$\;$idOrInc}.
+This set function has the type
+%
+\begin{curry}
+set1 idOrInc :: Int -> Values Int
+\end{curry}
+%
 %%% This is a problematic example.
 %%% There are two potential sources of confusion:
 %%% 1. A set function that takes a set as argument
 %%% 2. Representing some set abstractly and some set with a list
-For example, consider the problem of computing all the subsets
+As another example, consider the problem of computing all the subsets
 of a set $S$.  This is called the powerset\index{powerset} of $S$. 
 Let us represent a set with a list.
 This representation requires some care to ensure that
@@ -556,6 +566,7 @@ subset of its argument, a set represented as a list
 \proghref{AllSubsets}{Program}:
 %
 \begin{curry}
+subset :: [a] -> [a]
 subset []     = []
 subset (x:xs) = x:subset xs
 subset (_:xs) =   subset xs
@@ -565,6 +576,7 @@ In \pakcs{}, with the help of the library \code{Control.Search.SetFunctions},
 we define the power set of a set as follows:
 %
 \begin{curry}
+powerset :: [a] -> Values [a]
 powerset s = set1 subset s  -- powerset is the set function of subset
 \end{curry}
 %
